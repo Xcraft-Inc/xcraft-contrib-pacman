@@ -1,0 +1,9 @@
+{
+  "configure": "change settings",
+  "list": "list all available packages",
+  "edit": " <package> create or edit a package definition",
+  "make": "make all or only the [package]",
+  "install": "install the  <package:arch>",
+  "remove": "remove the  <package:arch>",
+  "clean": "remove the devroot: the repository and the packages"
+}
