@@ -173,8 +173,7 @@ exports.data = [{
     var list = [];
 
     Object.keys (zogPeon).forEach (function (type) {
-      list.push (
-      {
+      list.push ({
         name: type
       });
     });
@@ -189,8 +188,7 @@ exports.data = [{
     var list = [];
 
     Object.keys (zogPeon[answers.fileType]).forEach (function (type) {
-      list.push (
-      {
+      list.push ({
         name: type
       });
     });
