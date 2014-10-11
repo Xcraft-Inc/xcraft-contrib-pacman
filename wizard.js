@@ -8,7 +8,7 @@ var busClient = require ('xcraft-core-busclient');
 var zogConfig = null;
 
 exports.initConfig = function (config) {
-    zogConfig = config;
+  zogConfig = config;
 };
 
 /* Version rules by Debian:
@@ -141,7 +141,9 @@ exports.dependency = [{
   type: 'rawlist',
   name: 'dependency',
   message: 'Package\'s name',
-  choices: function () { return zogFs.lsdir (zogConfig.pkgProductsRoot); },
+  choices: function () {
+    return zogFs.lsdir (zogConfig.pkgProductsRoot);
+  },
   when: function (answers) {
     return answers.hasDependency;
   }
