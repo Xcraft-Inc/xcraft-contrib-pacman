@@ -65,7 +65,7 @@ cmd['edit.header'] = function (msg) {
   var packageDef  = msg.data.packageDef;
   var isPassive   = msg.data.isPassive;
   var zogConfig   = msg.data.config;
-  var wizard      = require ('./manager/pkgWizard.js');
+  var wizard      = require ('./wizard.js');
   wizard.initConfig (zogConfig);
 
   /* The first question is the package's name, then we set the default value. */
@@ -102,7 +102,7 @@ cmd['edit.dependency'] = function (msg) {
   var isPassive   = msg.data.isPassive;
   var zogConfig   = msg.data.config;
 
-  var wizard      = require ('./manager/pkgWizard.js');
+  var wizard      = require ('./wizard.js');
   wizard.initConfig (zogConfig);
 
   try {
@@ -143,7 +143,7 @@ cmd['edit.data'] = function (msg) {
   var packageDef  = msg.data.packageDef;
   var isPassive   = msg.data.isPassive;
   var zogConfig   = msg.data.config;
-  var wizard      = require ('./manager/pkgWizard.js');
+  var wizard      = require ('./wizard.js');
   wizard.initConfig (zogConfig);
 
   try {

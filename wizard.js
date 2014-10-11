@@ -247,7 +247,7 @@ exports.busCommands = function () {
     /* generating cmd and result event name */
     var cmdName = category + '.' + fieldDef.name + '.' + funcName;
 
-    var evtName = 'pkgWizard.' +
+    var evtName = 'wizard.' +
                   category + '.' +
                   fieldDef.name + '.' +
                   resultEventName;
@@ -255,7 +255,7 @@ exports.busCommands = function () {
     /* Indicate to lokthar that a command for validation is available
      * and corresponding result event.
      */
-    fieldDef.loktharCommands['pkgWizard.' + cmdName] = evtName;
+    fieldDef.loktharCommands['wizard.' + cmdName] = evtName;
     list.push ({
       name   : cmdName,
       handler: function (value) {

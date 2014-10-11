@@ -69,10 +69,10 @@ exports.pkgTemplate = function (zogConfig, inquirerPkg, callbackDone) {
   var fs       = require ('fs');
   var url      = require ('url');
   var inquirer = require ('inquirer');
-  var wizard   = require ('./pkgWizard.js');
+  var wizard   = require ('./wizard.js');
   wizard.initConfig (zogConfig);
   var chestWizard = wizard.chest;
-    
+
   var pkgDir = path.join (zogConfig.pkgProductsRoot, packageDef.name);
 
   try {
