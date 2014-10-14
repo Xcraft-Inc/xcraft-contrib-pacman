@@ -108,7 +108,7 @@ cmd['edit.dependency'] = function (msg) {
 
       if (def.dependency[key].length > msg.data.idxRange) {
         wizard.dependency[0].default = true;
-        wizard.dependency[1].default = wizard.dependency[1].choices.indexOf (key);
+        wizard.dependency[1].default = wizard.dependency[1].choices ().indexOf (key);
         wizard.dependency[2].default = def.dependency[key][msg.data.idxRange];
         msg.data.idxRange++;
       } else {
