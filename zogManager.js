@@ -295,37 +295,37 @@ exports.xcraftConfig = [{
 }, {
   type: 'input',
   name: 'pkgCfgFileName',
-  message: '',
+  message: 'config file name for wpkg definitions',
   default: 'config.yaml'
 }, {
   type: 'input',
   name: 'pkgScript',
-  message: '',
+  message: 'template name for wpkg scripts',
   default: 'script' + zogPlatform.getShellExt ()
 }, {
   type: 'input',
   name: 'pkgPostinst',
-  message: '',
+  message: 'postinst wpkg script name',
   default: 'postinst' + zogPlatform.getShellExt ()
 }, {
   type: 'input',
   name: 'pkgPrerm',
-  message: '',
+  message: 'prerm wpkg script name',
   default: 'prerm' + zogPlatform.getShellExt ()
 }, {
   type: 'input',
   name: 'pkgWPKG',
-  message: '',
+  message: 'wpkg directory for packages',
   default: 'WPKG'
 }, {
   type: 'input',
   name: 'pkgRepository',
-  message: '',
+  message: 'toolchain repository path',
   default: 'toolchain/'
 }, {
   type: 'input',
   name: 'pkgIndex',
-  message: '',
+  message: 'index file for wpkg repositories',
   default: 'index.tar.gz'
 }];
 
