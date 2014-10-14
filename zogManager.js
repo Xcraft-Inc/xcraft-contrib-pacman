@@ -187,6 +187,9 @@ cmd.make = function (msg) {
   if (packageName === 'all') {
     /* We use a grunt task for this job (with mtime check). */
     var grunt = require ('grunt');
+
+    /* FIXME: broken stuff. */
+    /* require ('./gruntTasks.js') (grunt); */
     grunt.tasks (['newer'], null, function () {
       busClient.events.send ('zogManager.make.finished');
     });
