@@ -236,7 +236,7 @@ exports.chest = [{
   }
 }];
 
-exports.busCommands = function () {
+exports.xcraftCommands = function () {
   var list = [];
 
   var tryPushFunction = function (fieldDef, category, funcName, resultEventName) {
