@@ -10,7 +10,7 @@ var pkgCreate     = require ('./manager/pkgCreate.js');
 var pkgDefinition = require ('./manager/pkgDefinition.js');
 var zogLog        = require ('xcraft-core-log') (moduleName);
 var busClient     = require ('xcraft-core-busclient');
-
+var zogPlatform   = require ('xcraft-core-platform');
 
 var cmd = {};
 process.chdir (path.join (__dirname, '/../..'));
@@ -285,6 +285,59 @@ exports.busCommands = function () {
 
   return list;
 };
+
+exports.xcraftConfig = [{
+  type: 'checkbox',
+  name: 'architecture',
+  message: '',
+  default : [
+    'mswindows-i386',
+    'mswindows-amd64',
+    'linux-i386',
+    'linux-amd64',
+    'darwin-i386',
+    'darwin-amd64',
+    'solaris-i386',
+    'solaris-amd64',
+    'freebsd-i386',
+    'freebsd-amd64'
+  ]
+}, {
+  type: 'input',
+  name: 'pkgCfgFileName',
+  message: '',
+  default: 'config.yaml'
+}, {
+  type: 'input',
+  name: 'pkgScript',
+  message: '',
+  default: 'script' + zogPlatform.getShellExt ()
+}, {
+  type: 'input',
+  name: 'pkgPostinst',
+  message: '',
+  default: 'postinst' + zogPlatform.getShellExt ()
+}, {
+  type: 'input',
+  name: 'pkgPrerm',
+  message: '',
+  default: 'prerm' + zogPlatform.getShellExt ()
+}, {
+  type: 'input',
+  name: 'pkgWPKG',
+  message: '',
+  default: 'WPKG'
+}, {
+  type: 'input',
+  name: 'pkgRepository',
+  message: '',
+  default: 'toolchain/'
+}, {
+  type: 'input',
+  name: 'pkgIndex',
+  message: '',
+  default: 'index.tar.gz'
+}];
 
 /**
  * Publish commands for std module exports.
