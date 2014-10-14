@@ -287,7 +287,7 @@ exports.xcraftConfig = [{
     pacmanConfig.architectures.forEach (function (arch) {
       list.push ({
         name: arch,
-        checked: false
+        checked: true
       });
     });
 
