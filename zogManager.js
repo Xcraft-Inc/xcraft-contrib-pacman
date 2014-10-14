@@ -12,7 +12,6 @@ var zogLog        = require ('xcraft-core-log') (moduleName);
 var busClient     = require ('xcraft-core-busclient');
 var zogPlatform   = require ('xcraft-core-platform');
 var xcraftConfig  = require ('xcraft-core-etc').load ('xcraft');
-var pacmanConfig  = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
 
 var cmd = {};
 
