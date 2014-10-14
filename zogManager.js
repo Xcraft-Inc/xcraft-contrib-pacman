@@ -12,6 +12,7 @@ var zogLog        = require ('xcraft-core-log') (moduleName);
 var busClient     = require ('xcraft-core-busclient');
 var zogPlatform   = require ('xcraft-core-platform');
 var xcraftConfig  = require ('xcraft-core-etc').load ('xcraft');
+var pacmanConfig  = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
 
 var cmd = {};
 
@@ -278,20 +279,20 @@ exports.xcraftCommands = function () {
 
 exports.xcraftConfig = [{
   type: 'checkbox',
-  name: 'architecture',
+  name: 'architectures',
   message: 'supported architectures',
-  choices: [
-    'mswindows-i386',
-    'mswindows-amd64',
-    'linux-i386',
-    'linux-amd64',
-    'darwin-i386',
-    'darwin-amd64',
-    'solaris-i386',
-    'solaris-amd64',
-    'freebsd-i386',
-    'freebsd-amd64'
-  ],
+  choices: function () {
+    var list = [];
+
+    pacmanConfig.architectures.forEach (function (arch) {
+      list.push ({
+        name: arch,
+        checked: false
+      });
+    });
+
+    return list;
+  },
   default: [
     'mswindows-i386',
     'mswindows-amd64',
