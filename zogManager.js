@@ -279,8 +279,20 @@ exports.xcraftCommands = function () {
 exports.xcraftConfig = [{
   type: 'checkbox',
   name: 'architecture',
-  message: '',
-  default : [
+  message: 'supported architectures',
+  choices: [
+    'mswindows-i386',
+    'mswindows-amd64',
+    'linux-i386',
+    'linux-amd64',
+    'darwin-i386',
+    'darwin-amd64',
+    'solaris-i386',
+    'solaris-amd64',
+    'freebsd-i386',
+    'freebsd-amd64'
+  ],
+  default: [
     'mswindows-i386',
     'mswindows-amd64',
     'linux-i386',
