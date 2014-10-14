@@ -271,7 +271,7 @@ cmd.clean = function (msg) {
   busClient.events.send ('zogManager.clean.finished');
 };
 
-exports.busCommands = function () {
+exports.xcraftCommands = function () {
   var rc   = require ('./rc.json');
   var list = [];
 
