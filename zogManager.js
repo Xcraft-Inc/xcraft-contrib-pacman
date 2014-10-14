@@ -276,6 +276,19 @@ exports.xcraftCommands = function () {
   return list;
 };
 
+var wpkgArch = [
+  'mswindows-i386',
+  'mswindows-amd64',
+  'linux-i386',
+  'linux-amd64',
+  'darwin-i386',
+  'darwin-amd64',
+  'solaris-i386',
+  'solaris-amd64',
+  'freebsd-i386',
+  'freebsd-amd64'
+];
+
 exports.xcraftConfig = [{
   type: 'checkbox',
   name: 'architectures',
@@ -283,7 +296,7 @@ exports.xcraftConfig = [{
   choices: function () {
     var list = [];
 
-    exports.xcraftConfig[0].default.forEach (function (arch) {
+    wpkgArch.forEach (function (arch) {
       list.push ({
         name: arch,
         checked: true
@@ -292,18 +305,7 @@ exports.xcraftConfig = [{
 
     return list;
   },
-  default: [
-    'mswindows-i386',
-    'mswindows-amd64',
-    'linux-i386',
-    'linux-amd64',
-    'darwin-i386',
-    'darwin-amd64',
-    'solaris-i386',
-    'solaris-amd64',
-    'freebsd-i386',
-    'freebsd-amd64'
-  ]
+  default: wpkgArch
 }, {
   type: 'input',
   name: 'pkgCfgFileName',
