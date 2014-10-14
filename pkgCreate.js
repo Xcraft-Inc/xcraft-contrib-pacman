@@ -65,7 +65,7 @@ var inquirerToPackage = function (pkgRepository, inquirerPkg) {
 exports.pkgTemplate = function (inquirerPkg, callbackDone) {
   zogLog.info ('create the package definition for ' + inquirerPkg[0].package);
 
-  var packageDef = inquirerToPackage (xcraftConfig.pkgRepository, inquirerPkg);
+  var packageDef = inquirerToPackage (pacmanConfig.pkgRepository, inquirerPkg);
   zogLog.verb ('JSON output (package):\n' + JSON.stringify (packageDef, null, '  '));
 
   var fs       = require ('fs');
