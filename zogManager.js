@@ -6,8 +6,8 @@ var moduleName = 'pacman';
 var path     = require ('path');
 var inquirer = require ('inquirer');
 
-var pkgCreate     = require ('./manager/pkgCreate.js');
-var pkgDefinition = require ('./manager/pkgDefinition.js');
+var pkgCreate     = require ('./pkgCreate.js');
+var pkgDefinition = require ('./pkgDefinition.js');
 var zogLog        = require ('xcraft-core-log') (moduleName);
 var busClient     = require ('xcraft-core-busclient');
 var zogPlatform   = require ('xcraft-core-platform');
