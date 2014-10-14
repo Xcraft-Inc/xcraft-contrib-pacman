@@ -14,7 +14,6 @@ var zogPlatform   = require ('xcraft-core-platform');
 var xcraftConfig  = require ('xcraft-core-etc').load ('xcraft');
 
 var cmd = {};
-process.chdir (path.join (__dirname, '/../..'));
 
 cmd.list = function () {
   var util = require ('util');
