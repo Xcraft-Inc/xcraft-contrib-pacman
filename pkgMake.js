@@ -9,14 +9,18 @@ var zogLog        = require ('xcraft-core-log') (moduleName);
 var pkgControl    = require ('./pkgControl.js');
 var pkgChangelog  = require ('./pkgChangelog.js');
 var pkgDefinition = require ('./pkgDefinition.js');
+var xcraftConfig  = require ('xcraft-core-etc').load ('xcraft');
+var pacmanConfig  = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
 
-var copyTemplateFiles = function (zogConfig, packagePath, script, postInstDir) {
+var copyTemplateFiles = function (packagePath, script, postInstDir) {
   var fs = require ('fs');
 
   var action = script.replace (/\..*$/, '');
 
-  var scriptFileIn  = path.join (zogConfig.pkgTemplatesRoot, zogConfig.pkgScript);
-  var scriptFileOut = path.join (packagePath, zogConfig.pkgWPKG, script);
+  var scriptFileIn  = path.join (xcraftConfig.pkgTemplatesRoot,
+                                 pacmanConfig.pkgScript
+                                );
+  var scriptFileOut = path.join (packagePath, pacmanConfig.pkgWPKG, script);
 
   var placeHolders = {
     __SHARE__  : path.relative (packagePath, postInstDir),
@@ -34,21 +38,21 @@ var copyTemplateFiles = function (zogConfig, packagePath, script, postInstDir) {
   fs.writeFileSync (scriptFileOut, data, 'utf8');
 };
 
-var createConfigJson = function (zogConfig, packageName, postInstDir) {
+var createConfigJson = function (packageName, postInstDir) {
   var fs  = require ('fs');
   var zogUri = require ('xcraft-core-uri');
 
-  var def = pkgDefinition.load (zogConfig, packageName);
+  var def = pkgDefinition.load (packageName);
   var config = def.data;
 
-  config.uri = zogUri.realUri (config.uri, packageName, zogConfig);
+  config.uri = zogUri.realUri (config.uri, packageName);
 
   var data = JSON.stringify (config, null, 2);
   var outFile = path.join (postInstDir, 'config.json');
   fs.writeFileSync (outFile, data, 'utf8');
 };
 
-var processFile = function (zogConfig, packageName, files, arch, callbackDone) {
+var processFile = function (packageName, files, arch, callbackDone) {
   var i = 0;
 
   var wpkgEngine = require ('./wpkgEngine.js');
@@ -78,19 +82,19 @@ var processFile = function (zogConfig, packageName, files, arch, callbackDone) {
         if (packageDef.architecture.indexOf ('all')    === -1 &&
             packageDef.architecture.indexOf ('source') === -1) {
           var scripts = [
-            zogConfig.pkgPostinst,
-            zogConfig.pkgPrerm
+            pacmanConfig.pkgPostinst,
+            pacmanConfig.pkgPrerm
           ];
 
           scripts.forEach (function (it) {
-            copyTemplateFiles (zogConfig, packagePath, it, sharePath);
+            copyTemplateFiles (packagePath, it, sharePath);
           });
         }
 
         createConfigJson (packageName, sharePath);
 
         /* Build the package with wpkg. */
-        wpkgEngine.build (zogConfig, packagePath, packageDef.distribution, function (error) { /* jshint ignore:line */
+        wpkgEngine.build (packagePath, packageDef.distribution, function (error) { /* jshint ignore:line */
           /* When we reach the last item, then we have done all async work. */
           if (i === files.length - 1) {
             if (callbackDone) {
@@ -103,7 +107,7 @@ var processFile = function (zogConfig, packageName, files, arch, callbackDone) {
         });
       };
 
-      var packageDef = pkgDefinition.load (zogConfig, packageName);
+      var packageDef = pkgDefinition.load (packageName);
 
       /* Are the resources embedded in the package (less than 1GB)? */
       if (packageDef.data.embedded && packageDef.data.uri.length) {
@@ -117,7 +121,7 @@ var processFile = function (zogConfig, packageName, files, arch, callbackDone) {
         /* NOTE: even with the 'exec' rule, we prevent to pass the binary to
          *       execute because here we are not installing, but only packaging.
          */
-        zogPeon[dataType][rulesType] (zogUri.realUri (uri, packageName, zogConfig), packagePath, sharePath, {}, function (done) {
+        zogPeon[dataType][rulesType] (zogUri.realUri (uri, packageName), packagePath, sharePath, {}, function (done) {
           if (done) {
             wpkgBuild (packageDef);
           } else {
@@ -131,8 +135,8 @@ var processFile = function (zogConfig, packageName, files, arch, callbackDone) {
 
     /* Look for premake script. */
     try {
-      var productPath = path.join (zogConfig.pkgProductsRoot, packageName);
-      var premake = require (path.join (productPath, 'premake.js')) (zogConfig, packagePath, sharePath);
+      var productPath = path.join (xcraftConfig.pkgProductsRoot, packageName);
+      var premake = require (path.join (productPath, 'premake.js')) (packagePath, sharePath);
       premake.copy (function (done) {
         if (done) {
           build ();
@@ -155,12 +159,12 @@ var processFile = function (zogConfig, packageName, files, arch, callbackDone) {
   }
 };
 
-exports.package = function (zogConfig, packageName, arch, callbackDone) {
+exports.package = function (packageName, arch, callbackDone) {
   try {
-    pkgChangelog.changelogFiles (zogConfig, packageName, arch, true);
-    var controlFiles = pkgControl.controlFiles (zogConfig, packageName, arch, true);
+    pkgChangelog.changelogFiles (packageName, arch, true);
+    var controlFiles = pkgControl.controlFiles (packageName, arch, true);
 
-    processFile (zogConfig, packageName, controlFiles, arch, callbackDone);
+    processFile (packageName, controlFiles, arch, callbackDone);
   } catch (err) {
     zogLog.err (err);
     callbackDone (false);

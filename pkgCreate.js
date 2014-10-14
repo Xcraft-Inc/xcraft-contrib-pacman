@@ -6,7 +6,9 @@ var path      = require ('path');
 var util      = require ('util');
 var async     = require ('async');
 var zogLog    = require ('xcraft-core-log') (moduleName);
-
+var xcraftConfig  = require ('xcraft-core-etc').load ('xcraft');
+var chestConfig   = require ('xcraft-core-etc').load ('xcraft-contrib-chest');
+var pacmanConfig  = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
 /**
  * Convert an inquirer answer to a package definition.
  * @param {string} pkgRepository
@@ -60,20 +62,19 @@ var inquirerToPackage = function (pkgRepository, inquirerPkg) {
  * @param {function(done)} callbackDone
  * @param {boolean} callbackDone.done - True on success.
  */
-exports.pkgTemplate = function (zogConfig, inquirerPkg, callbackDone) {
+exports.pkgTemplate = function (inquirerPkg, callbackDone) {
   zogLog.info ('create the package definition for ' + inquirerPkg[0].package);
 
-  var packageDef = inquirerToPackage (zogConfig.pkgRepository, inquirerPkg);
+  var packageDef = inquirerToPackage (xcraftConfig.pkgRepository, inquirerPkg);
   zogLog.verb ('JSON output (package):\n' + JSON.stringify (packageDef, null, '  '));
 
   var fs       = require ('fs');
   var url      = require ('url');
   var inquirer = require ('inquirer');
   var wizard   = require ('./wizard.js');
-  wizard.initConfig (zogConfig);
   var chestWizard = wizard.chest;
 
-  var pkgDir = path.join (zogConfig.pkgProductsRoot, packageDef.name);
+  var pkgDir = path.join (xcraftConfig.pkgProductsRoot, packageDef.name);
 
   try {
     var st = fs.statSync (pkgDir);
@@ -117,8 +118,8 @@ exports.pkgTemplate = function (zogConfig, inquirerPkg, callbackDone) {
 
         zogLog.info ('upload %s to chest://%s:%d/%s',
                      answers.localPath,
-                     zogConfig.chest.host,
-                     zogConfig.chest.port,
+                     chestConfig.host,
+                     chestConfig.port,
                      file);
 
         var chestClient = require ('../chest/chestClient.js');
@@ -131,7 +132,7 @@ exports.pkgTemplate = function (zogConfig, inquirerPkg, callbackDone) {
       var yaml = require ('js-yaml');
 
       var yamlPkg = yaml.safeDump (packageDef);
-      fs.writeFileSync (path.join (pkgDir, zogConfig.pkgCfgFileName), yamlPkg, null);
+      fs.writeFileSync (path.join (pkgDir, pacmanConfig.pkgCfgFileName), yamlPkg, null);
       callback ();
     }
   ], function (err) {

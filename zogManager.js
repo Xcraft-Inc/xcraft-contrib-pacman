@@ -11,19 +11,19 @@ var pkgDefinition = require ('./manager/pkgDefinition.js');
 var zogLog        = require ('xcraft-core-log') (moduleName);
 var busClient     = require ('xcraft-core-busclient');
 var zogPlatform   = require ('xcraft-core-platform');
+var xcraftConfig  = require ('xcraft-core-etc').load ('xcraft');
 
 var cmd = {};
 process.chdir (path.join (__dirname, '/../..'));
 
-cmd.list = function (msg) {
-  var zogConfig = msg.data;
+cmd.list = function () {
   var util = require ('util');
 
   zogLog.info ('list of all products');
 
-  var pkgList = require ('./manager/pkgList.js');
+  var pkgList = require ('./pkgList.js');
 
-  var list = pkgList.listProducts (zogConfig);
+  var list = pkgList.listProducts ();
   var header = util.format ('name%s version%s architectures',
                             new Array (40 - 'name'.length).join (' '),
                             new Array (15 - 'version'.length).join (' '));
@@ -64,15 +64,13 @@ cmd['edit.header'] = function (msg) {
   var packageName = msg.data.packageName;
   var packageDef  = msg.data.packageDef;
   var isPassive   = msg.data.isPassive;
-  var zogConfig   = msg.data.config;
   var wizard      = require ('./wizard.js');
-  wizard.initConfig (zogConfig);
 
   /* The first question is the package's name, then we set the default value. */
   wizard.header[0].default = packageName;
 
   try {
-    var def = pkgDefinition.load (zogConfig, packageName);
+    var def = pkgDefinition.load (packageName);
 
     wizard.header[1].default = def.version;
     wizard.header[2].default = def.maintainer.name;
@@ -100,13 +98,10 @@ cmd['edit.dependency'] = function (msg) {
   var packageName = msg.data.packageName;
   var packageDef  = msg.data.packageDef;
   var isPassive   = msg.data.isPassive;
-  var zogConfig   = msg.data.config;
-
   var wizard      = require ('./wizard.js');
-  wizard.initConfig (zogConfig);
 
   try {
-    var def  = pkgDefinition.load (zogConfig, packageName);
+    var def  = pkgDefinition.load (packageName);
     var keys = Object.keys (def.dependency);
 
     if (keys.length > msg.data.idxDep) {
@@ -142,12 +137,10 @@ cmd['edit.data'] = function (msg) {
   var packageName = msg.data.packageName;
   var packageDef  = msg.data.packageDef;
   var isPassive   = msg.data.isPassive;
-  var zogConfig   = msg.data.config;
   var wizard      = require ('./wizard.js');
-  wizard.initConfig (zogConfig);
 
   try {
-    var def = pkgDefinition.load (zogConfig, packageName);
+    var def = pkgDefinition.load (packageName);
 
     wizard.data[0].default = def.data.uri;
     wizard.data[1].default = def.data.type;
@@ -170,11 +163,10 @@ cmd['edit.data'] = function (msg) {
 
 cmd['edit.save'] = function (msg) {
   var packageDef  = msg.data.packageDef;
-  var zogConfig      = msg.data.config;
   zogLog.verb ('JSON output for pre-package definition:\n' +
                JSON.stringify (packageDef, null, '  '));
 
-  pkgCreate.pkgTemplate (zogConfig, packageDef, function (done) { /* jshint ignore:line */
+  pkgCreate.pkgTemplate (packageDef, function (done) { /* jshint ignore:line */
     busClient.events.send ('zogManager.edit.finished');
   });
 };
@@ -185,10 +177,9 @@ cmd['edit.save'] = function (msg) {
  */
 cmd.make = function (msg) {
   var packageName = msg.data.packageName;
-  var zogConfig   = msg.data.config;
   zogLog.info ('make the wpkg package for ' + (packageName || 'all'));
 
-  var pkgMake = require ('./manager/pkgMake.js');
+  var pkgMake = require ('./pkgMake.js');
 
   if (!packageName) {
     packageName = 'all';
@@ -201,7 +192,7 @@ cmd.make = function (msg) {
       busClient.events.send ('zogManager.make.finished');
     });
   } else {
-    pkgMake.package (zogConfig, packageName, null, function (done) { /* jshint ignore:line */
+    pkgMake.package (packageName, null, function (done) { /* jshint ignore:line */
       busClient.events.send ('zogManager.make.finished');
     }); /* TODO: arch support */
   }
@@ -213,12 +204,11 @@ cmd.make = function (msg) {
  */
 cmd.install = function (msg) {
   var packageRef = msg.data.packageRef;
-  var zogConfig  = msg.data.config;
   zogLog.info ('install development package: ' + packageRef);
 
   var pkgCmd = require ('./manager/pkgCmd.js');
 
-  pkgCmd.install (zogConfig, packageRef, function (done) { /* jshint ignore:line */
+  pkgCmd.install (packageRef, function (done) { /* jshint ignore:line */
     busClient.events.send ('zogManager.install.finished');
   });
 };
@@ -229,13 +219,12 @@ cmd.install = function (msg) {
  */
 cmd.remove = function (msg) {
   var packageRef = msg.data.packageRef;
-  var zogConfig  = msg.data.config;
 
   zogLog.info ('remove development package: ' + packageRef);
 
   var pkgCmd = require ('./manager/pkgCmd.js');
 
-  pkgCmd.remove (zogConfig, packageRef, function (done) { /* jshint ignore:line */
+  pkgCmd.remove (packageRef, function (done) { /* jshint ignore:line */
     busClient.events.send ('zogManager.remove.finished');
   });
 };
@@ -243,21 +232,20 @@ cmd.remove = function (msg) {
 /**
  * Remove all the generated files.
  */
-cmd.clean = function (msg) {
-  var zogConfig = msg.data;
+cmd.clean = function () {
   var fse   = require ('fs-extra');
   var zogFs = require ('xcraft-core-fs');
 
   zogLog.info ('clean all generated files');
 
-  zogLog.verb ('delete ' + zogConfig.pkgTargetRoot);
-  fse.removeSync (zogConfig.pkgTargetRoot);
+  zogLog.verb ('delete ' + xcraftConfig.pkgTargetRoot);
+  fse.removeSync (xcraftConfig.pkgTargetRoot);
 
-  zogLog.verb ('delete ' + zogConfig.pkgDebRoot);
-  fse.removeSync (zogConfig.pkgDebRoot);
+  zogLog.verb ('delete ' + xcraftConfig.pkgDebRoot);
+  fse.removeSync (xcraftConfig.pkgDebRoot);
 
-  zogFs.ls (zogConfig.tempRoot, /^(?!.*\.gitignore)/).forEach (function (file) {
-    file = path.join (zogConfig.tempRoot, file);
+  zogFs.ls (xcraftConfig.tempRoot, /^(?!.*\.gitignore)/).forEach (function (file) {
+    file = path.join (xcraftConfig.tempRoot, file);
     zogLog.verb ('delete ' + file);
 
     var st = fse.statSync (file);

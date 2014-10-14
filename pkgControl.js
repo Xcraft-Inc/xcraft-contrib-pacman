@@ -99,24 +99,24 @@ var defToControl = function (packageDef) {
 
 /**
  * Generate and save all control files accordingly to the config.yaml files.
- * @param {Object} zogConfig
  * @param {string} packageName
  * @param {string} packageArch - null for all architectures.
  * @param {boolean} saveFiles - Saves the control files.
  * @returns {string[]} The list of all control file paths.
  */
-exports.controlFiles = function (zogConfig, packageName, packageArch, saveFiles) {
+exports.controlFiles = function (packageName, packageArch, saveFiles) {
   if (saveFiles) {
     zogLog.info ('if necessary, save the control files for ' + packageName);
   }
 
   var fs  = require ('fs');
-
+  var xcraftConfig  = require ('xcraft-core-etc').load ('xcraft');
+  var pacmanConfig  = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
   var zogFs         = require ('xcraft-core-fs');
   var zogPlatform   = require ('xcraft-core-platform');
   var pkgDefinition = require ('./pkgDefinition.js');
 
-  var def     = pkgDefinition.load (zogConfig, packageName);
+  var def     = pkgDefinition.load (packageName);
   var control = defToControl (def);
 
   var controlFiles = [];
@@ -139,7 +139,11 @@ exports.controlFiles = function (zogConfig, packageName, packageArch, saveFiles)
       return;
     }
 
-    var controlDir  = path.join (zogConfig.pkgTempRoot, arch, packageName, zogConfig.pkgWPKG);
+    var controlDir  = path.join (xcraftConfig.pkgTempRoot,
+                                 arch,
+                                 packageName,
+                                 pacmanConfig.pkgWPKG);
+                                 
     var controlFile = path.join (controlDir, 'control');
 
     if (saveFiles) {

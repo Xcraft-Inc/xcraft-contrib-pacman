@@ -4,12 +4,9 @@ var inquirer  = require ('inquirer');
 var zogFs     = require ('xcraft-core-fs');
 var zogPeon   = require ('xcraft-core-peon');
 var busClient = require ('xcraft-core-busclient');
+var xcraftConfig  = require ('xcraft-core-etc').load ('xcraft');
+var pacmanConfig  = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
 
-var zogConfig = null;
-
-exports.initConfig = function (config) {
-  zogConfig = config;
-};
 
 /* Version rules by Debian:
  * http://windowspackager.org/documentation/implementation-details/debian-version
@@ -90,7 +87,7 @@ exports.header = [{
     list.push ({name: 'all'});
     list.push ({name: 'source'});
     list.push (new inquirer.Separator ('== Architectures =='));
-    zogConfig.architectures.forEach (function (arch) {
+    pacmanConfig.architectures.forEach (function (arch) {
       list.push ({name: arch});
     });
 
@@ -142,7 +139,7 @@ exports.dependency = [{
   name: 'dependency',
   message: 'Package\'s name',
   choices: function () {
-    return zogFs.lsdir (zogConfig.pkgProductsRoot);
+    return zogFs.lsdir (xcraftConfig.pkgProductsRoot);
   },
   when: function (answers) {
     return answers.hasDependency;

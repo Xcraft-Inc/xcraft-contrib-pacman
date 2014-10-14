@@ -5,6 +5,8 @@ var moduleName = 'wpkg';
 var path      = require ('path');
 var fs        = require ('fs');
 var zogLog    = require ('xcraft-core-log') (moduleName);
+var xcraftConfig  = require ('xcraft-core-etc').load ('xcraft');
+var pacmanConfig  = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
 
 /**
  * Create a wrapper on wpkg.
@@ -12,7 +14,7 @@ var zogLog    = require ('xcraft-core-log') (moduleName);
  * @param {function(done)} callbackDone
  * @param {boolean} callbackDone.done - True on success.
  */
-var WpkgArgs = function (zogConfig, callbackDone) {
+var WpkgArgs = function (callbackDone) {
   var zogProcess = require ('xcraft-core-process');
   var bin = 'wpkg';
 
@@ -71,7 +73,7 @@ var WpkgArgs = function (zogConfig, callbackDone) {
     build: function (packagePath, arch) {
       var args = [
         '--verbose',
-        '--output-repository-dir', path.join (zogConfig.pkgDebRoot, arch),
+        '--output-repository-dir', path.join (xcraftConfig.pkgDebRoot, arch),
         '--compressor', 'gz',
         '--zlevel', 6,
         '--build'
@@ -91,11 +93,15 @@ var WpkgArgs = function (zogConfig, callbackDone) {
     },
 
     install: function (packagePath, arch) {
-      var allRepository = path.join (zogConfig.pkgDebRoot, 'all', zogConfig.pkgRepository);
+      var allRepository = path.join (xcraftConfig.pkgDebRoot,
+                                     'all',
+                                     pacmanConfig.pkgRepository);
       var args =  [
         '--verbose',
-        '--root', path.join (zogConfig.pkgTargetRoot, arch),
-        '--repository', path.join (zogConfig.pkgDebRoot, arch, zogConfig.pkgRepository)
+        '--root', path.join (xcraftConfig.pkgTargetRoot, arch),
+        '--repository', path.join (xcraftConfig.pkgDebRoot,
+                                   arch,
+                                   pacmanConfig.pkgRepository)
       ];
 
       /* Maybe there is a 'all' repository, in this case we add this one. */
@@ -111,7 +117,7 @@ var WpkgArgs = function (zogConfig, callbackDone) {
     remove: function (packageName, arch) {
       var args = [
         '--verbose',
-        '--root', path.join (zogConfig.pkgTargetRoot, arch),
+        '--root', path.join (xcraftConfig.pkgTargetRoot, arch),
         '--remove'
       ];
 
@@ -121,7 +127,7 @@ var WpkgArgs = function (zogConfig, callbackDone) {
     createAdmindir: function (controlFile, arch) {
       var args = [
         '--verbose',
-        '--root', path.join (zogConfig.pkgTargetRoot, arch),
+        '--root', path.join (xcraftConfig.pkgTargetRoot, arch),
         '--create-admindir'
       ];
 
@@ -131,7 +137,7 @@ var WpkgArgs = function (zogConfig, callbackDone) {
     addSources: function (source, arch) {
       var args = [
         '--verbose',
-        '--root', path.join (zogConfig.pkgTargetRoot, arch),
+        '--root', path.join (xcraftConfig.pkgTargetRoot, arch),
         '--add-sources'
       ];
 
@@ -140,7 +146,7 @@ var WpkgArgs = function (zogConfig, callbackDone) {
 
     listSources: function (arch, listOut) {
       var args = [
-        '--root', path.join (zogConfig.pkgTargetRoot, arch),
+        '--root', path.join (xcraftConfig.pkgTargetRoot, arch),
         '--list-sources'
       ];
 
@@ -156,7 +162,7 @@ var WpkgArgs = function (zogConfig, callbackDone) {
     update: function (arch) {
       var args = [
         '--verbose',
-        '--root', path.join (zogConfig.pkgTargetRoot, arch),
+        '--root', path.join (xcraftConfig.pkgTargetRoot, arch),
         '--update'
       ];
 
@@ -166,11 +172,11 @@ var WpkgArgs = function (zogConfig, callbackDone) {
     listIndexPackages: function (repositoryPath, arch, listOut) {
       var args = [
         '--verbose',
-        '--root', path.join (zogConfig.pkgTargetRoot, arch),
+        '--root', path.join (xcraftConfig.pkgTargetRoot, arch),
         '--list-index-packages'
       ];
 
-      run (args, path.join (repositoryPath, zogConfig.pkgIndex), function (line) {
+      run (args, path.join (repositoryPath, pacmanConfig.pkgIndex), function (line) {
         var result = line.trim ().match (/.* ([^ _]*)([^ ]*)\.ctrl$/);
         var deb  = result[1] + result[2] + '.deb';
         var name = result[1];
@@ -183,39 +189,41 @@ var WpkgArgs = function (zogConfig, callbackDone) {
 
 /**
  * Build a new package.
- * @param {Object} zogConfig
  * @param {string} packagePath
  * @param {string} distribution
  * @param {function(done)} callbackDone
  * @param {boolean} callbackDone.done - True on success.
  */
-exports.build = function (zogConfig, packagePath, distribution, callbackDone) {
+exports.build = function (packagePath, distribution, callbackDone) {
   var pathObj = packagePath.split (path.sep);
 
   /* Retrieve the architecture which is in the packagePath. */
   var arch = pathObj[pathObj.length - 2];
 
-  var wpkg = new WpkgArgs (zogConfig, function (done) {
+  var wpkg = new WpkgArgs (function (done) {
     if (!done) {
       callbackDone (false);
       return;
     }
 
-    var wpkg = new WpkgArgs (zogConfig, callbackDone);
-    var repositoryPath = path.join (zogConfig.pkgDebRoot, arch, distribution);
+    var wpkg = new WpkgArgs (callbackDone);
+    var repositoryPath = path.join (xcraftConfig.pkgDebRoot, arch, distribution);
 
     /* We create or update the index with our new package. */
-    wpkg.createIndex (repositoryPath, zogConfig.pkgIndex);
+    wpkg.createIndex (repositoryPath, pacmanConfig.pkgIndex);
   });
 
   wpkg.build (packagePath, arch);
 };
 
-var lookForPackage = function (zogConfig, packageName, archRoot, arch, callbackResult) {
-  var repositoryPath = path.join (zogConfig.pkgDebRoot, arch, zogConfig.pkgRepository);
+var lookForPackage = function (packageName, archRoot, arch, callbackResult) {
+  var repositoryPath = path.join (xcraftConfig.pkgDebRoot,
+                                  arch,
+                                  pacmanConfig.pkgRepository
+                                 );
   var list = [];
 
-  var wpkg = new WpkgArgs (zogConfig, function (done) {
+  var wpkg = new WpkgArgs (function (done) {
     if (!done) {
       return;
     }
@@ -249,22 +257,21 @@ var lookForPackage = function (zogConfig, packageName, archRoot, arch, callbackR
 
 /**
  * Install a package with its dependencies.
- * @param {Object} zogConfig
  * @param {string} packageName
  * @param {string} arch - Architecture.
  * @param {function(done)} callbackDone
  * @param {boolean} callbackDone.done - True on success.
  */
-exports.install = function (zogConfig, packageName, arch, callbackDone) {
-  lookForPackage (zogConfig, packageName, arch, arch, function (debFile) {
-    var wpkg = new WpkgArgs (zogConfig, callbackDone);
+exports.install = function (packageName, arch, callbackDone) {
+  lookForPackage (packageName, arch, arch, function (debFile) {
+    var wpkg = new WpkgArgs (callbackDone);
 
     if (debFile) {
       wpkg.install (debFile, arch);
       return;
     }
 
-    lookForPackage (zogConfig, packageName, arch, 'all', function (debFile) {
+    lookForPackage (packageName, arch, 'all', function (debFile) {
       if (debFile) {
         wpkg.install (debFile, arch);
       }
@@ -274,43 +281,41 @@ exports.install = function (zogConfig, packageName, arch, callbackDone) {
 
 /**
  * Remove a package.
- * @param {Object} zogConfig
  * @param {string} packageName
  * @param {string} arch - Architecture.
  * @param {function(done)} callbackDone
  * @param {boolean} callbackDone.done - True on success.
  */
-exports.remove = function (zogConfig, packageName, arch, callbackDone) {
-  var wpkg = new WpkgArgs (zogConfig, callbackDone);
+exports.remove = function (packageName, arch, callbackDone) {
+  var wpkg = new WpkgArgs (callbackDone);
   wpkg.remove (packageName, arch);
 };
 
 /**
  * Create the administration directory in the target root.
  * The target root is the destination where are installed the packages.
- * @param {Object} zogConfig
  * @param {string} arch - Architecture.
  * @param {function(done)} callbackDone
  * @param {boolean} callbackDone.done - True on success.
  */
-exports.createAdmindir = function (zogConfig, arch, callbackDone) {
+exports.createAdmindir = function (arch, callbackDone) {
   var util  = require ('util');
   var fs    = require ('fs');
   var zogFs = require ('xcraft-core-fs');
 
   /* This control file is used in order to create a new admin directory. */
-  var controlFile = path.join (zogConfig.tempRoot, 'control');
+  var controlFile = path.join (xcraftConfig.tempRoot, 'control');
   var data = util.format ('Architecture: %s\n' +
                           'Maintainer: "Zog Toolchain" <zog@epsitec.ch>\n' +
                           'Distribution: %s\n',
-                          arch, zogConfig.pkgRepository);
+                          arch, pacmanConfig.pkgRepository);
 
   fs.writeFileSync (controlFile, data);
 
   /* Create the target directory. */
-  zogFs.mkdir (path.join (zogConfig.pkgTargetRoot, arch));
+  zogFs.mkdir (path.join (xcraftConfig.pkgTargetRoot, arch));
 
-  var wpkg = new WpkgArgs (zogConfig, callbackDone);
+  var wpkg = new WpkgArgs (callbackDone);
   wpkg.createAdmindir (controlFile, arch);
 };
 
@@ -318,16 +323,15 @@ exports.createAdmindir = function (zogConfig, arch, callbackDone) {
  * Add a new source in the target installation.
  * A source is needed in order to upgrade the packages in the target root
  * accordingly to the versions in the repository referenced in the source.
- * @param {Object} zogConfig
  * @param {string} sourcePath
  * @param {string} arch - Architecture.
  * @param {function(done)} callbackDone
  * @param {boolean} callbackDone.done - True on success.
  */
-exports.addSources = function (zogConfig, sourcePath, arch, callbackDone) {
+exports.addSources = function (sourcePath, arch, callbackDone) {
   var list = [];
 
-  var wpkg = new WpkgArgs (zogConfig, function (done) {
+  var wpkg = new WpkgArgs (function (done) {
     if (!done) {
       callbackDone (false);
       return;
@@ -339,7 +343,7 @@ exports.addSources = function (zogConfig, sourcePath, arch, callbackDone) {
       return; /* already in the sources.list */
     }
 
-    var wpkg = new WpkgArgs (zogConfig, callbackDone);
+    var wpkg = new WpkgArgs (callbackDone);
     wpkg.addSources (sourcePath, arch);
   });
 
@@ -348,12 +352,11 @@ exports.addSources = function (zogConfig, sourcePath, arch, callbackDone) {
 
 /**
  * Update the list of available packages from the repository.
- * @param {Object} zogConfig
  * @param {string} arch - Architecture.
  * @param {function(done)} callbackDone
  * @param {boolean} callbackDone.done - True on success.
  */
-exports.update = function (zogConfig, arch, callbackDone) {
-  var wpkg = new WpkgArgs (zogConfig, callbackDone);
+exports.update = function (arch, callbackDone) {
+  var wpkg = new WpkgArgs (callbackDone);
   wpkg.update (arch);
 };

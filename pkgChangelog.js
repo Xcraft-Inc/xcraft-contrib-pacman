@@ -64,23 +64,23 @@ var defToChangelog = function (packageDef) {
 
 /**
  * Generate and save all ChangeLog files accordingly to the config.yaml files.
- * @param {Object} zogConfig
  * @param {string} packageName
  * @param {string} packageArch
  * @param {boolean} saveFiles - Saves the control files.
  * @returns {string[]} The list of all control file paths.
  */
-exports.changelogFiles = function (zogConfig, packageName, packageArch, saveFiles) {
+exports.changelogFiles = function (packageName, packageArch, saveFiles) {
   if (saveFiles) {
     zogLog.info ('if necessary, save the ChangeLog file for ' + packageName);
   }
 
   var fs = require ('fs');
-
+  var xcraftConfig  = require ('xcraft-core-etc').load ('xcraft');
+  var pacmanConfig  = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
   var zogFs         = require ('xcraft-core-fs');
   var pkgDefinition = require ('./pkgDefinition.js');
 
-  var def       = pkgDefinition.load (zogConfig, packageName);
+  var def       = pkgDefinition.load (packageName);
   var changelog = defToChangelog (def);
 
   var changelogFiles = [];
@@ -90,7 +90,11 @@ exports.changelogFiles = function (zogConfig, packageName, packageArch, saveFile
       return;
     }
 
-    var wpkgDir       = path.join (zogConfig.pkgTempRoot, arch, packageName, zogConfig.pkgWPKG);
+    var wpkgDir       = path.join ( xcraftConfig.pkgTempRoot,
+                                    arch,
+                                    packageName,
+                                    pacmanConfig.pkgWPKG
+                                  );
     var changelogFile = path.join (wpkgDir, 'ChangeLog');
 
     if (saveFiles) {

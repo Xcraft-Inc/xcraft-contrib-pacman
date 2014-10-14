@@ -4,10 +4,13 @@ var moduleName = 'manager';
 
 var path      = require ('path');
 var zogLog    = require ('xcraft-core-log') (moduleName);
+var xcraftConfig  = require ('xcraft-core-etc').load ('xcraft');
 
-
-exports.load = function (zogConfig, packageName) {
-  var pkgConfig = path.join (zogConfig.pkgProductsRoot, packageName, zogConfig.pkgCfgFileName);
+exports.load = function (packageName) {
+  var pkgConfig = path.join ( xcraftConfig.pkgProductsRoot,
+                              packageName,
+                              xcraftConfig.pkgCfgFileName
+                            );
 
   var yaml = require ('js-yaml');
   var fs   = require ('fs');
