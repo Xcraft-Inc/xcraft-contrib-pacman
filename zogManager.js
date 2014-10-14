@@ -206,7 +206,7 @@ cmd.install = function (msg) {
   var packageRef = msg.data.packageRef;
   zogLog.info ('install development package: ' + packageRef);
 
-  var pkgCmd = require ('./manager/pkgCmd.js');
+  var pkgCmd = require ('./pkgCmd.js');
 
   pkgCmd.install (packageRef, function (done) { /* jshint ignore:line */
     busClient.events.send ('zogManager.install.finished');
@@ -222,7 +222,7 @@ cmd.remove = function (msg) {
 
   zogLog.info ('remove development package: ' + packageRef);
 
-  var pkgCmd = require ('./manager/pkgCmd.js');
+  var pkgCmd = require ('./pkgCmd.js');
 
   pkgCmd.remove (packageRef, function (done) { /* jshint ignore:line */
     busClient.events.send ('zogManager.remove.finished');
