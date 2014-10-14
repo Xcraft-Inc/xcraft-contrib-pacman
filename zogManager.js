@@ -284,7 +284,7 @@ exports.xcraftConfig = [{
   choices: function () {
     var list = [];
 
-    pacmanConfig.architectures.forEach (function (arch) {
+    exports.xcraftConfig[0].default.forEach (function (arch) {
       list.push ({
         name: arch,
         checked: true
