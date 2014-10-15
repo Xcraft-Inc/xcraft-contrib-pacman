@@ -1,9 +1,30 @@
 {
-  "configure": "change settings",
-  "list": "list all available packages",
-  "edit": " <package> create or edit a package definition",
-  "make": "make all or only the [package]",
-  "install": "install the  <package:arch>",
-  "remove": "remove the  <package:arch>",
-  "clean": "remove the devroot: the repository and the packages"
+  "configure": {
+    "params": "",
+    "desc": "change settings"
+  },
+  "list": {
+    "params": "",
+    "desc": "list all available packages"
+  },
+  "edit": {
+    "params": ":packageName",
+    "desc": " <package> create or edit a package definition"
+  },
+  "make": {
+    "params": ":packageName",
+    "desc":"make all or only the [package]"
+  },
+  "install": {
+    "params": ":packageRef",
+    "desc": "install the  <package:arch>"
+  },
+  "remove": {
+    "params": ":packageRef",
+    "desc":"remove the  <package:arch>"
+  },
+  "clean": {
+    "params": "",
+    "desc":"remove the devroot: the repository and the packages"
+  }
 }
