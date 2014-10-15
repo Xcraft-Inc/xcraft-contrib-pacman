@@ -255,6 +255,8 @@ exports.xcraftCommands = function () {
     fieldDef.loktharCommands['wizard.' + cmdName] = evtName;
     list.push ({
       name   : cmdName,
+      desc   : '',
+      params : '',
       handler: function (value) {
         /* execute function */
         var result = fieldDef[funcName] (value.data);
