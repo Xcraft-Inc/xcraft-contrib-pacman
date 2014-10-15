@@ -262,13 +262,17 @@ cmd.clean = function () {
 };
 
 exports.xcraftCommands = function () {
-  var rc   = require ('./rc.json');
+  var utils  = require ('xcraft-core-utils');
+  var rcFile = path.join (__dirname, './rc.json');
+  var rc     = utils.jsonFile2Json (rcFile);
   var list = [];
 
   Object.keys (cmd).forEach (function (action) {
+
     list.push ({
       name   : action,
-      desc   : rc[action] || '',
+      desc   : rc[action] ? rc[action].desc : '',
+      params : rc[action] ? rc[action].params : '',
       handler: cmd[action]
     });
   });
