@@ -8,19 +8,19 @@
     "desc": "list all available packages"
   },
   "edit": {
-    "params": "<packageName>",
+    "params": "packageName",
     "desc": "create or edit a package definition"
   },
   "make": {
-    "params": "<packageName>",
+    "params": "packageName",
     "desc":"make all or only the specified package"
   },
   "install": {
-    "params": "<packageRef:arch>",
+    "params": "packageRef",
     "desc": "install the package"
   },
   "remove": {
-    "params": "<packageRef:arch>",
+    "params": "packageRef",
     "desc":"remove the package"
   },
   "clean": {
