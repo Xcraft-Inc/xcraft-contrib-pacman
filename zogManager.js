@@ -265,10 +265,9 @@ exports.xcraftCommands = function () {
   var utils  = require ('xcraft-core-utils');
   var rcFile = path.join (__dirname, './rc.json');
   var rc     = utils.jsonFile2Json (rcFile);
-  var list = [];
+  var list   = [];
 
   Object.keys (cmd).forEach (function (action) {
-
     list.push ({
       name   : action,
       desc   : rc[action] ? rc[action].desc : '',
