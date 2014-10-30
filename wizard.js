@@ -129,20 +129,19 @@ exports.header = [{
   loktharType : 'multi-line'
 }];
 
-exports.dependency = [{
+exports.askdep = [{
   type: 'confirm',
   name: 'hasDependency',
   message: 'Add a dependency',
   default: false
-}, {
+}];
+
+exports.dependency = [{
   type: 'rawlist',
   name: 'dependency',
   message: 'Package\'s name',
   choices: function () {
     return zogFs.lsdir (xcraftConfig.pkgProductsRoot);
-  },
-  when: function (answers) {
-    return answers.hasDependency;
   }
 }, {
   type: 'input',
@@ -152,9 +151,6 @@ exports.dependency = [{
     var rangeRegex = /((<[<=]|>[>=])|=)/;
     var regex = new RegExp ('^(|' + rangeRegex.source + '[ ]{1}' + versionRegex.source + ')$');
     return regex.test (value);
-  },
-  when: function (answers) {
-    return answers.hasDependency;
   }
 }];
 
@@ -282,6 +278,7 @@ exports.xcraftCommands = function () {
 
   /* extacts cmds handlers for each category */
   extractCommandsHandlers ('header');
+  extractCommandsHandlers ('askdep');
   extractCommandsHandlers ('dependency');
   extractCommandsHandlers ('data');
   extractCommandsHandlers ('chest');

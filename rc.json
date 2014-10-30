@@ -9,7 +9,10 @@
   },
   "edit": {
     "params": "packageName",
-    "desc": "create or edit a package definition"
+    "desc": "create or edit a package definition",
+    "options": {
+      "wizard": true
+    }
   },
   "make": {
     "params": "packageName",

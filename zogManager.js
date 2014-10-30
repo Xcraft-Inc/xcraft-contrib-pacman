@@ -4,7 +4,6 @@
 var moduleName = 'pacman';
 
 var path     = require ('path');
-var inquirer = require ('inquirer');
 
 var pkgCreate     = require ('./pkgCreate.js');
 var pkgDefinition = require ('./pkgDefinition.js');
@@ -47,8 +46,7 @@ cmd.list = function () {
  */
 cmd.edit = function (msg) {
   var packageName = msg.data.packageName;
-  msg.data.isPassive   = msg.data.isPassive || false;
-  msg.data.packageDef  = [];
+  msg.data.wizardAnswers = [];
 
   zogLog.info ('create a new package: ' + packageName);
 
@@ -60,112 +58,124 @@ cmd.edit = function (msg) {
 };
 
 cmd['edit.header'] = function (msg) {
-  var packageName = msg.data.packageName;
-  var packageDef  = msg.data.packageDef;
-  var isPassive   = msg.data.isPassive;
-  var wizard      = require ('./wizard.js');
-
   /* The first question is the package's name, then we set the default value. */
-  wizard.header[0].default = packageName;
+  var wizard = {
+    package: msg.data.packageName
+  };
 
   try {
-    var def = pkgDefinition.load (packageName);
+    var def = pkgDefinition.load (msg.data.packageName);
 
-    wizard.header[1].default = def.version;
-    wizard.header[2].default = def.maintainer.name;
-    wizard.header[3].default = def.maintainer.email;
-    wizard.header[4].default = def.architecture;
-    wizard.header[5].default = def.description.brief;
-    wizard.header[6].default = def.description.long;
+    wizard.version          = def.version;
+    wizard.maintainerName   = def.maintainer.name;
+    wizard.maintainerEmail  = def.maintainer.email;
+    wizard.architecture     = def.architecture;
+    wizard.descriptionBrief = def.description.brief;
+    wizard.descriptionLong  = def.description.long;
   } catch (err) {}
 
-  if (!isPassive) {
-    inquirer.prompt (wizard.header, function (answers) {
-      packageDef.push (answers);
+  msg.data.wizardPath     = path.join (__dirname, 'wizard.js');
+  msg.data.wizardName     = 'header';
+  msg.data.wizardDefaults = wizard;
 
-      /* Indices for the dependency. */
-      msg.data.idxDep   = 0;
-      msg.data.idxRange = 0;
-      busClient.command.send ('zogManager.edit.dependency', msg.data, null);
-    });
-  } else {
-    busClient.events.send ('zogManager.edit.header.added', wizard.header);
-  }
+  msg.data.idxDep   = 0;
+  msg.data.idxRange = 0;
+
+  msg.data.nextCommand = 'zogManager.edit.askdep';
+  busClient.events.send ('zogManager.edit.added', msg.data);
 };
 
-cmd['edit.dependency'] = function (msg) {
-  var packageName = msg.data.packageName;
-  var packageDef  = msg.data.packageDef;
-  var isPassive   = msg.data.isPassive;
-  var wizard      = require ('./wizard.js');
+cmd['edit.askdep'] = function (msg) {
+  var wizard = {};
 
   try {
-    var def  = pkgDefinition.load (packageName);
+    var def  = pkgDefinition.load (msg.data.packageName);
     var keys = Object.keys (def.dependency);
 
     if (keys.length > msg.data.idxDep) {
       var key = keys[msg.data.idxDep];
 
       if (def.dependency[key].length > msg.data.idxRange) {
-        wizard.dependency[0].default = true;
-        wizard.dependency[1].default = wizard.dependency[1].choices ().indexOf (key);
-        wizard.dependency[2].default = def.dependency[key][msg.data.idxRange];
+        wizard.hasDependency = true;
+      } else if (keys.length > msg.data.idxDep + 1) {
+        wizard.hasDependency = true;
+        msg.data.idxDep++;
+        msg.data.idxRange = 0;
+      } else {
+        wizard.hasDependency = false;
+      }
+    }
+  } catch (err) {}
+
+  msg.data.wizardName     = 'askdep';
+  msg.data.wizardDefaults = wizard;
+
+  msg.data.nextCommand = 'zogManager.edit.dependency';
+  busClient.events.send ('zogManager.edit.added', msg.data);
+};
+
+cmd['edit.dependency'] = function (msg) {
+  var wizard = {};
+
+  if (msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].hasDependency === false) {
+    cmd['edit.data'] (msg);
+    return;
+  }
+
+  try {
+    var def  = pkgDefinition.load (msg.data.packageName);
+    var keys = Object.keys (def.dependency);
+
+    if (keys.length > msg.data.idxDep) {
+      var key = keys[msg.data.idxDep];
+
+      if (def.dependency[key].length > msg.data.idxRange) {
+        var wizardFile = require ('./wizard.js');
+
+        wizard.dependency = wizardFile.dependency[0].choices ().indexOf (key);
+        wizard.version    = def.dependency[key][msg.data.idxRange];
         msg.data.idxRange++;
       } else {
-        wizard.dependency[0].default = false;
-        delete wizard.dependency[1].default;
-        delete wizard.dependency[2].default;
         msg.data.idxDep++;
       }
     }
   } catch (err) {}
 
-  if (!isPassive) {
-    inquirer.prompt (wizard.dependency, function (answers) {
-      packageDef.push (answers);
+  msg.data.wizardName     = 'dependency';
+  msg.data.wizardDefaults = wizard;
 
-      var subCmd = answers.hasDependency ? 'dependency' : 'data';
-      busClient.command.send ('zogManager.edit.' + subCmd, msg.data, null);
-    });
-  } else {
-    busClient.events.send ('zogManager.edit.dependency.added', wizard.dependency);
-  }
+  msg.data.nextCommand = 'zogManager.edit.askdep';
+  busClient.events.send ('zogManager.edit.added', msg.data);
 };
 
 cmd['edit.data'] = function (msg) {
-  var packageName = msg.data.packageName;
-  var packageDef  = msg.data.packageDef;
-  var isPassive   = msg.data.isPassive;
-  var wizard      = require ('./wizard.js');
+  var wizard = {};
 
   try {
-    var def = pkgDefinition.load (packageName);
+    var def = pkgDefinition.load (msg.data.packageName);
 
-    wizard.data[0].default = def.data.uri;
-    wizard.data[1].default = def.data.type;
-    wizard.data[2].default = def.data.rules.type;
-    wizard.data[3].default = def.data.rules.location;
-    wizard.data[4].default = def.data.rules.args.install;
-    wizard.data[5].default = def.data.rules.args.remove;
-    wizard.data[6].default = def.data.embedded;
+    wizard.uri              = def.data.uri;
+    wizard.fileType         = def.data.type;
+    wizard.rulesType        = def.data.rules.type;
+    wizard.rulesLocation    = def.data.rules.location;
+    wizard.rulesArgsInstall = def.data.rules.args.install;
+    wizard.rulesArgsRemove  = def.data.rules.args.remove;
+    wizard.embedded         = def.data.embedded;
   } catch (err) {}
 
-  if (!isPassive) {
-    inquirer.prompt (wizard.data, function (answers) {
-      packageDef.push (answers);
-      busClient.command.send ('zogManager.edit.save', msg.data);
-    });
-  } else {
-    busClient.events.send ('zogManager.edit.data.added', wizard.data);
-  }
+  msg.data.wizardName     = 'data';
+  msg.data.wizardDefaults = wizard;
+
+  msg.data.nextCommand = 'zogManager.edit.save';
+  busClient.events.send ('zogManager.edit.added', msg.data);
 };
 
 cmd['edit.save'] = function (msg) {
-  var packageDef  = msg.data.packageDef;
+  var wizardAnswers  = msg.data.wizardAnswers;
   zogLog.verb ('JSON output for pre-package definition:\n' +
-               JSON.stringify (packageDef, null, '  '));
+               JSON.stringify (wizardAnswers, null, '  '));
 
-  pkgCreate.pkgTemplate (packageDef, function (done) { /* jshint ignore:line */
+  pkgCreate.pkgTemplate (wizardAnswers, function (done) { /* jshint ignore:line */
     busClient.events.send ('zogManager.edit.finished');
   });
 };
@@ -269,10 +279,11 @@ exports.xcraftCommands = function () {
 
   Object.keys (cmd).forEach (function (action) {
     list.push ({
-      name   : action,
-      desc   : rc[action] ? rc[action].desc : '',
-      params : rc[action] ? rc[action].params : '',
-      handler: cmd[action]
+      name    : action,
+      desc    : rc[action] ? rc[action].desc : '',
+      params  : rc[action] ? rc[action].params : '',
+      options : rc[action] ? rc[action].options : {},
+      handler : cmd[action]
     });
   });
 

@@ -30,7 +30,7 @@ var inquirerToPackage = function (pkgRepository, inquirerPkg) {
       packageDef.description.brief = it.descriptionBrief;
       packageDef.description.long  = it.descriptionLong;
       packageDef.dependency        = {};
-    } else if (it.hasOwnProperty ('hasDependency') && it.hasDependency === true) {
+    } else if (it.hasOwnProperty ('dependency')) {
       if (!util.isArray (packageDef.dependency[it.dependency])) {
         packageDef.dependency[it.dependency] = [];
       }
