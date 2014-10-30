@@ -175,7 +175,39 @@ cmd['edit.save'] = function (msg) {
   zogLog.verb ('JSON output for pre-package definition:\n' +
                JSON.stringify (wizardAnswers, null, '  '));
 
-  pkgCreate.pkgTemplate (wizardAnswers, function (done) { /* jshint ignore:line */
+  pkgCreate.pkgTemplate (wizardAnswers, function (wizardName, file) {
+    msg.data.wizardName     = wizardName;
+    msg.data.wizardDefaults = {};
+
+    msg.data.chestFile = file;
+
+    msg.data.nextCommand = 'zogManager.edit.upload';
+    busClient.events.send ('zogManager.edit.added', msg.data);
+  }, function (done, useChest) { /* jshint ignore:line */
+    if (!useChest) {
+      busClient.events.send ('zogManager.edit.finished');
+    }
+  });
+};
+
+cmd['edit.upload'] = function (msg) {
+  var chestConfig = require ('xcraft-core-etc').load ('xcraft-contrib-chest');
+
+  if (!chestConfig || !msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].mustUpload) {
+    busClient.events.send ('zogManager.edit.finished');
+    return;
+  }
+
+  zogLog.info ('upload %s to chest://%s:%d/%s',
+               msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].localPath,
+               chestConfig.host,
+               chestConfig.port,
+               msg.data.chestFile);
+
+  var xChest = require ('xcraft-contrib-chest');
+  var chestClient = xChest.client ();
+
+  chestClient.upload (msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].localPath, function (err) { /* jshint ignore:line */
     busClient.events.send ('zogManager.edit.finished');
   });
 };

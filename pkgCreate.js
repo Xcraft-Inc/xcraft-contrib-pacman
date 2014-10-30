@@ -7,7 +7,6 @@ var util      = require ('util');
 var async     = require ('async');
 var zogLog    = require ('xcraft-core-log') (moduleName);
 var xcraftConfig  = require ('xcraft-core-etc').load ('xcraft');
-var chestConfig   = require ('xcraft-core-etc').load ('xcraft-contrib-chest');
 var pacmanConfig  = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
 /**
  * Convert an inquirer answer to a package definition.
@@ -62,17 +61,14 @@ var inquirerToPackage = function (pkgRepository, inquirerPkg) {
  * @param {function(done)} callbackDone
  * @param {boolean} callbackDone.done - True on success.
  */
-exports.pkgTemplate = function (inquirerPkg, callbackDone) {
+exports.pkgTemplate = function (inquirerPkg, callbackInquirer, callbackDone) {
   zogLog.info ('create the package definition for ' + inquirerPkg[0].package);
 
   var packageDef = inquirerToPackage (pacmanConfig.pkgRepository, inquirerPkg);
   zogLog.verb ('JSON output (package):\n' + JSON.stringify (packageDef, null, '  '));
 
-  var fs       = require ('fs');
-  var url      = require ('url');
-  var inquirer = require ('inquirer');
-  var wizard   = require ('./wizard.js');
-  var chestWizard = wizard.chest;
+  var fs  = require ('fs');
+  var url = require ('url');
 
   var pkgDir = path.join (xcraftConfig.pkgProductsRoot, packageDef.name);
 
@@ -102,31 +98,14 @@ exports.pkgTemplate = function (inquirerPkg, callbackDone) {
     function (callback) {
       /* We look for chest: and we propose to upload the file. */
       var urlObj = url.parse (packageDef.data.uri);
-      if (urlObj.protocol !== 'chest:') {
-        callback ();
+      if (urlObj.protocol !== 'chest:' || !callbackInquirer) {
+        callback (null, false);
         return;
       }
 
       var file = urlObj.pathname || urlObj.hostname;
-
-      inquirer.prompt (chestWizard, function (answers) {
-        /* Async */
-        if (!answers.mustUpload) {
-          callback ();
-          return;
-        }
-
-        zogLog.info ('upload %s to chest://%s:%d/%s',
-                     answers.localPath,
-                     chestConfig.host,
-                     chestConfig.port,
-                     file);
-
-        var chestClient = require ('../chest/chestClient.js');
-        chestClient.upload (answers.localPath, function (error) {
-          callback (error);
-        });
-      });
+      callbackInquirer ('chest', file);
+      callback (null, true);
     },
     function (callback) {
       var yaml = require ('js-yaml');
@@ -135,11 +114,11 @@ exports.pkgTemplate = function (inquirerPkg, callbackDone) {
       fs.writeFileSync (path.join (pkgDir, pacmanConfig.pkgCfgFileName), yamlPkg, null);
       callback ();
     }
-  ], function (err) {
+  ], function (err, results) {
     if (err) {
       zogLog.err (err);
     }
 
-    callbackDone (!err);
+    callbackDone (!err, results[0]);
   });
 };
