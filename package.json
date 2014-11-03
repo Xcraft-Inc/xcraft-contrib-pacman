@@ -22,7 +22,8 @@
     "xcraft-core-busclient": "0.1.0",
     "xcraft-contrib-wpkg": "0.1.0",
     "xcraft-core-fs": "0.1.0",
-    "xcraft-core-uri": "0.1.0"
+    "xcraft-core-uri": "0.1.0",
+    "inquirer": "^0.8.x"
   },
   "author": "Mathieu Schroeter",
   "license": "ISC",
