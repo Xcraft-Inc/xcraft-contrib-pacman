@@ -36,8 +36,8 @@ cmd.list = function () {
                  def.architecture.join (', '));
   });
 
-  busClient.events.send ('zogManager.list', list);
-  busClient.events.send ('zogManager.list.finished');
+  busClient.events.send ('pacman.list', list);
+  busClient.events.send ('pacman.list.finished');
 };
 
 /**
@@ -51,7 +51,7 @@ cmd.edit = function (msg) {
   zogLog.info ('create a new package: ' + packageName);
 
   try {
-    busClient.command.send ('zogManager.edit.header', msg.data);
+    busClient.command.send ('pacman.edit.header', msg.data);
   } catch (err) {
     zogLog.err (err);
   }
@@ -81,8 +81,8 @@ cmd['edit.header'] = function (msg) {
   msg.data.idxDep   = 0;
   msg.data.idxRange = 0;
 
-  msg.data.nextCommand = 'zogManager.edit.askdep';
-  busClient.events.send ('zogManager.edit.added', msg.data);
+  msg.data.nextCommand = 'pacman.edit.askdep';
+  busClient.events.send ('pacman.edit.added', msg.data);
 };
 
 cmd['edit.askdep'] = function (msg) {
@@ -110,8 +110,8 @@ cmd['edit.askdep'] = function (msg) {
   msg.data.wizardName     = 'askdep';
   msg.data.wizardDefaults = wizard;
 
-  msg.data.nextCommand = 'zogManager.edit.dependency';
-  busClient.events.send ('zogManager.edit.added', msg.data);
+  msg.data.nextCommand = 'pacman.edit.dependency';
+  busClient.events.send ('pacman.edit.added', msg.data);
 };
 
 cmd['edit.dependency'] = function (msg) {
@@ -144,8 +144,8 @@ cmd['edit.dependency'] = function (msg) {
   msg.data.wizardName     = 'dependency';
   msg.data.wizardDefaults = wizard;
 
-  msg.data.nextCommand = 'zogManager.edit.askdep';
-  busClient.events.send ('zogManager.edit.added', msg.data);
+  msg.data.nextCommand = 'pacman.edit.askdep';
+  busClient.events.send ('pacman.edit.added', msg.data);
 };
 
 cmd['edit.data'] = function (msg) {
@@ -166,8 +166,8 @@ cmd['edit.data'] = function (msg) {
   msg.data.wizardName     = 'data';
   msg.data.wizardDefaults = wizard;
 
-  msg.data.nextCommand = 'zogManager.edit.save';
-  busClient.events.send ('zogManager.edit.added', msg.data);
+  msg.data.nextCommand = 'pacman.edit.save';
+  busClient.events.send ('pacman.edit.added', msg.data);
 };
 
 cmd['edit.save'] = function (msg) {
@@ -181,11 +181,11 @@ cmd['edit.save'] = function (msg) {
 
     msg.data.chestFile = file;
 
-    msg.data.nextCommand = 'zogManager.edit.upload';
-    busClient.events.send ('zogManager.edit.added', msg.data);
+    msg.data.nextCommand = 'pacman.edit.upload';
+    busClient.events.send ('pacman.edit.added', msg.data);
   }, function (done, useChest) { /* jshint ignore:line */
     if (!useChest) {
-      busClient.events.send ('zogManager.edit.finished');
+      busClient.events.send ('pacman.edit.finished');
     }
   });
 };
@@ -194,7 +194,7 @@ cmd['edit.upload'] = function (msg) {
   var chestConfig = require ('xcraft-core-etc').load ('xcraft-contrib-chest');
 
   if (!chestConfig || !msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].mustUpload) {
-    busClient.events.send ('zogManager.edit.finished');
+    busClient.events.send ('pacman.edit.finished');
     return;
   }
 
@@ -205,7 +205,7 @@ cmd['edit.upload'] = function (msg) {
                msg.data.chestFile);
 
   busClient.events.subscribe ('chest.send.finished', function (msg) {
-    busClient.events.send ('zogManager.edit.finished');
+    busClient.events.send ('pacman.edit.finished');
   });
 
   var chestMsg = {
@@ -235,11 +235,11 @@ cmd.make = function (msg) {
     /* FIXME: broken stuff. */
     /* require ('./gruntTasks.js') (grunt); */
     grunt.tasks (['newer'], null, function () {
-      busClient.events.send ('zogManager.make.finished');
+      busClient.events.send ('pacman.make.finished');
     });
   } else {
     pkgMake.package (packageName, null, function (done) { /* jshint ignore:line */
-      busClient.events.send ('zogManager.make.finished');
+      busClient.events.send ('pacman.make.finished');
     }); /* TODO: arch support */
   }
 };
@@ -255,7 +255,7 @@ cmd.install = function (msg) {
   var pkgCmd = require ('./pkgCmd.js');
 
   pkgCmd.install (packageRef, function (done) { /* jshint ignore:line */
-    busClient.events.send ('zogManager.install.finished');
+    busClient.events.send ('pacman.install.finished');
   });
 };
 
@@ -271,7 +271,7 @@ cmd.remove = function (msg) {
   var pkgCmd = require ('./pkgCmd.js');
 
   pkgCmd.remove (packageRef, function (done) { /* jshint ignore:line */
-    busClient.events.send ('zogManager.remove.finished');
+    busClient.events.send ('pacman.remove.finished');
   });
 };
 
@@ -302,7 +302,7 @@ cmd.clean = function () {
     }
   });
 
-  busClient.events.send ('zogManager.clean.finished');
+  busClient.events.send ('pacman.clean.finished');
 };
 
 exports.xcraftCommands = function () {

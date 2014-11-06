@@ -2,7 +2,7 @@
   "name": "xcraft-contrib-pacman",
   "version": "0.1.0",
   "description": "Xcraft package manager",
-  "main": "zogManager.js",
+  "main": "pacman.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
