@@ -15,27 +15,11 @@ var xcraftConfig  = require ('xcraft-core-etc').load ('xcraft');
 var cmd = {};
 
 cmd.list = function () {
-  var util = require ('util');
-
   zogLog.info ('list of all products');
 
   var pkgList = require ('./pkgList.js');
 
   var list = pkgList.listProducts ();
-  var header = util.format ('name%s version%s architectures',
-                            new Array (40 - 'name'.length).join (' '),
-                            new Array (15 - 'version'.length).join (' '));
-  console.log (header);
-  console.log (new Array (header.length + 1).join ('-'));
-  list.forEach (function (def) {
-    console.log ('%s%s %s%s',
-                 def.name,
-                 new Array (40 - def.name.length).join (' '),
-                 def.version,
-                 new Array (15 - def.version.toString ().length).join (' '),
-                 def.architecture.join (', '));
-  });
-
   busClient.events.send ('pacman.list', list);
   busClient.events.send ('pacman.list.finished');
 };
