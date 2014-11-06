@@ -2,12 +2,13 @@
 
 var moduleName = 'manager';
 
-var path      = require ('path');
-var util      = require ('util');
-var async     = require ('async');
-var zogLog    = require ('xcraft-core-log') (moduleName);
-var xcraftConfig  = require ('xcraft-core-etc').load ('xcraft');
-var pacmanConfig  = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
+var path  = require ('path');
+var util  = require ('util');
+var async = require ('async');
+
+var xLog         = require ('xcraft-core-log') (moduleName);
+var xcraftConfig = require ('xcraft-core-etc').load ('xcraft');
+var pacmanConfig = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
 /**
  * Convert an inquirer answer to a package definition.
  * @param {string} pkgRepository
@@ -62,10 +63,10 @@ var inquirerToPackage = function (pkgRepository, inquirerPkg) {
  * @param {boolean} callbackDone.done - True on success.
  */
 exports.pkgTemplate = function (inquirerPkg, callbackInquirer, callbackDone) {
-  zogLog.info ('create the package definition for ' + inquirerPkg[0].package);
+  xLog.info ('create the package definition for ' + inquirerPkg[0].package);
 
   var packageDef = inquirerToPackage (pacmanConfig.pkgRepository, inquirerPkg);
-  zogLog.verb ('JSON output (package):\n' + JSON.stringify (packageDef, null, '  '));
+  xLog.verb ('JSON output (package):\n' + JSON.stringify (packageDef, null, '  '));
 
   var fs  = require ('fs');
   var url = require ('url');
@@ -116,7 +117,7 @@ exports.pkgTemplate = function (inquirerPkg, callbackInquirer, callbackDone) {
     }
   ], function (err, results) {
     if (err) {
-      zogLog.err (err);
+      xLog.err (err);
     }
 
     callbackDone (!err, results[0]);

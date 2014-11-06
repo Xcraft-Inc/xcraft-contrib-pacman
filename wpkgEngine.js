@@ -2,11 +2,12 @@
 
 var moduleName = 'wpkg';
 
-var path      = require ('path');
-var fs        = require ('fs');
-var zogLog    = require ('xcraft-core-log') (moduleName);
-var xcraftConfig  = require ('xcraft-core-etc').load ('xcraft');
-var pacmanConfig  = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
+var path = require ('path');
+var fs   = require ('fs');
+
+var xLog         = require ('xcraft-core-log') (moduleName);
+var xcraftConfig = require ('xcraft-core-etc').load ('xcraft');
+var pacmanConfig = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
 
 /**
  * Create a wrapper on wpkg.
@@ -28,17 +29,17 @@ var WpkgArgs = function (callbackDone) {
   var run = function (args, lastArg, callbackStdout) {
     var cmdName = args[args.length - 1];
 
-    zogLog.info ('begin command ' + cmdName);
+    xLog.info ('begin command ' + cmdName);
 
     if (lastArg) {
       args.push (lastArg);
     }
 
-    zogLog.verb ('%s %s', bin, args.join (' '));
+    xLog.verb ('%s %s', bin, args.join (' '));
 
     zogProcess.spawn (bin, args, function (done) {
       /* When the call is terminated. */
-      zogLog.info ('end command ' + cmdName);
+      xLog.info ('end command ' + cmdName);
 
       if (callbackDone) {
         callbackDone (done);
@@ -46,9 +47,9 @@ var WpkgArgs = function (callbackDone) {
     }, function (line) {
       /* For each line in stdout. */
       if (/^error/.test (line)) {
-        zogLog.err (line);
+        xLog.err (line);
       } else {
-        zogLog.verb (line);
+        xLog.verb (line);
       }
 
       if (callbackStdout) {
@@ -57,14 +58,14 @@ var WpkgArgs = function (callbackDone) {
     }, function (line) {
       /* For each line in stderr. */
       if (/^wpkg:debug/.test (line)) {
-        zogLog.verb (line);
+        xLog.verb (line);
       } else if (/^wpkg:info/.test (line)) {
-        zogLog.info (line);
+        xLog.info (line);
       } else if (/^wpkg:warning/.test (line) ||
                  /^\(node\) warning/.test (line)) {
-        zogLog.warn (line);
+        xLog.warn (line);
       } else {
-        zogLog.err (line);
+        xLog.err (line);
       }
     });
   };
@@ -231,7 +232,7 @@ var lookForPackage = function (packageName, archRoot, arch, callbackResult) {
     /* The list array is populated by listIndexPackages. */
     var debFile = list[packageName];
     if (!debFile) {
-      zogLog.warn ('the package %s is unavailable in %s', packageName, arch);
+      xLog.warn ('the package %s is unavailable in %s', packageName, arch);
       if (callbackResult) {
         callbackResult (null);
       }

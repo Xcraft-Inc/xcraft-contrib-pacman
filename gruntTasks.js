@@ -3,10 +3,11 @@
 var moduleName = 'grunt';
 
 module.exports = function (grunt) {
-  var path         = require ('path');
+  var path = require ('path');
+
   var xcraftConfig = require ('xcraft-core-etc').load ('xcraft');
   var pacmanConfig = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
-  var zogLog       = require ('xcraft-core-log') (moduleName);
+  var xLog         = require ('xcraft-core-log') (moduleName);
 
   var initNewer = function () {
     var zogFs      = require ('xcraft-core-fs');
@@ -48,7 +49,7 @@ module.exports = function (grunt) {
     var packageName = target.replace (/\/.*/, '');
     var arch        = target.replace (/.*\//, '');
 
-    zogLog.info ('make the control file for ' + packageName + ' on ' + arch);
+    xLog.info ('make the control file for ' + packageName + ' on ' + arch);
 
     pkgMake.package (packageName, arch, function (error) {
       done (error);

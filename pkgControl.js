@@ -2,9 +2,10 @@
 
 var moduleName = 'manager';
 
-var path      = require ('path');
-var util      = require ('util');
-var zogLog    = require ('xcraft-core-log') (moduleName);
+var path = require ('path');
+var util = require ('util');
+
+var xLog = require ('xcraft-core-log') (moduleName);
 
 
 /**
@@ -91,7 +92,7 @@ var defToControl = function (packageDef) {
 
     controlList[arch] = control;
 
-    zogLog.verb (util.format ('Control file (%s):\n%s', arch, control));
+    xLog.verb (util.format ('Control file (%s):\n%s', arch, control));
   });
 
   return controlList;
@@ -106,7 +107,7 @@ var defToControl = function (packageDef) {
  */
 exports.controlFiles = function (packageName, packageArch, saveFiles) {
   if (saveFiles) {
-    zogLog.info ('if necessary, save the control files for ' + packageName);
+    xLog.info ('if necessary, save the control files for ' + packageName);
   }
 
   var fs  = require ('fs');
@@ -134,7 +135,7 @@ exports.controlFiles = function (packageName, packageArch, saveFiles) {
     if (!/^(all|source)$/.test (arch) &&
         (os === 'win' && !/^mswindows/.test (arch) ||
          os !== 'win' &&  /^mswindows/.test (arch))) {
-      zogLog.warn ('package \'%s\' for %s unsupported on %s',
+      xLog.warn ('package \'%s\' for %s unsupported on %s',
                    packageName, arch, os);
       return;
     }
@@ -143,12 +144,12 @@ exports.controlFiles = function (packageName, packageArch, saveFiles) {
                                  arch,
                                  packageName,
                                  pacmanConfig.pkgWPKG);
-                                 
+
     var controlFile = path.join (controlDir, 'control');
 
     if (saveFiles) {
       if (fs.existsSync (controlFile)) {
-        zogLog.warn ('the control file will be overwritten: ' + controlFile);
+        xLog.warn ('the control file will be overwritten: ' + controlFile);
       }
 
       /* A directory by architecture is created. */

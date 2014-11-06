@@ -5,10 +5,12 @@ var moduleName = 'command';
 var fs   = require ('fs');
 var path = require ('path');
 var util = require ('util');
+
+var wpkgEngine = require ('./wpkgEngine.js');
+
 var xcraftConfig  = require ('xcraft-core-etc').load ('xcraft');
 var pacmanConfig  = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
-var zogLog     = require ('xcraft-core-log') (moduleName);
-var wpkgEngine = require ('./wpkgEngine.js');
+var xLog          = require ('xcraft-core-log') (moduleName);
 
 
 var updateAndInstall = function (packageName, arch, callbackDone) {
@@ -31,7 +33,7 @@ var addRepositoryForAll = function (packageName, arch, callbackDone) {
                               pacmanConfig.pkgRepository);
     wpkgEngine.addSources (source, arch, function (done) {
       if (!done) {
-        zogLog.err ('impossible to add the source path for "all"');
+        xLog.err ('impossible to add the source path for "all"');
         callbackDone (false);
         return;
       }
@@ -52,7 +54,7 @@ var parsePkgRef = function (packageRef) {
 
 var checkArch = function (arch) {
   if (pacmanConfig.architectures.indexOf (arch) === -1) {
-    zogLog.err ('the architecture ' + arch + ' is unknown');
+    xLog.err ('the architecture ' + arch + ' is unknown');
     return false;
   }
 
@@ -62,7 +64,7 @@ var checkArch = function (arch) {
 exports.install = function (packageRef, callbackDone) {
   var pkg = parsePkgRef (packageRef);
 
-  zogLog.verb ('install package name: ' + pkg.name + ' on architecture: ' + pkg.arch);
+  xLog.verb ('install package name: ' + pkg.name + ' on architecture: ' + pkg.arch);
 
   if (!checkArch (pkg.arch)) {
     callbackDone (false);
@@ -77,7 +79,7 @@ exports.install = function (packageRef, callbackDone) {
 
   wpkgEngine.createAdmindir (pkg.arch, function (done) {
     if (!done) {
-      zogLog.err ('impossible to create the admin directory');
+      xLog.err ('impossible to create the admin directory');
       callbackDone (false);
       return;
     }
@@ -87,7 +89,7 @@ exports.install = function (packageRef, callbackDone) {
                               pacmanConfig.pkgRepository);
     wpkgEngine.addSources (source, pkg.arch, function (done) {
       if (!done) {
-        zogLog.err ('impossible to add the source path for "%s"', pkg.arch);
+        xLog.err ('impossible to add the source path for "%s"', pkg.arch);
         callbackDone (false);
         return;
       }
@@ -100,7 +102,7 @@ exports.install = function (packageRef, callbackDone) {
 exports.remove = function (packageRef, callbackDone) {
   var pkg = parsePkgRef (packageRef);
 
-  zogLog.verb ('remove package name: ' + pkg.name + ' on architecture: ' + pkg.arch);
+  xLog.verb ('remove package name: ' + pkg.name + ' on architecture: ' + pkg.arch);
 
   if (!checkArch (pkg.arch)) {
     callbackDone (false);

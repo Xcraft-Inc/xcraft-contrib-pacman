@@ -4,13 +4,14 @@ var moduleName = 'manager';
 
 var path = require ('path');
 
-var zogFs         = require ('xcraft-core-fs');
-var zogLog        = require ('xcraft-core-log') (moduleName);
 var pkgControl    = require ('./pkgControl.js');
 var pkgChangelog  = require ('./pkgChangelog.js');
 var pkgDefinition = require ('./pkgDefinition.js');
-var xcraftConfig  = require ('xcraft-core-etc').load ('xcraft');
-var pacmanConfig  = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
+
+var zogFs        = require ('xcraft-core-fs');
+var xLog         = require ('xcraft-core-log') (moduleName);
+var xcraftConfig = require ('xcraft-core-etc').load ('xcraft');
+var pacmanConfig = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
 
 var copyTemplateFiles = function (packagePath, script, postInstDir) {
   var fs = require ('fs');
@@ -60,7 +61,7 @@ var processFile = function (packageName, files, arch, callbackDone) {
   var nextFile = function () {
     var controlFile = files[i].control;
 
-    zogLog.info ('process ' + controlFile);
+    xLog.info ('process ' + controlFile);
 
     var packagePath = path.resolve (path.dirname (controlFile), '..');
 
@@ -125,7 +126,7 @@ var processFile = function (packageName, files, arch, callbackDone) {
           if (done) {
             wpkgBuild (packageDef);
           } else {
-            zogLog.err ('can not build ' + packageName);
+            xLog.err ('can not build ' + packageName);
           }
         });
       } else {
@@ -144,10 +145,10 @@ var processFile = function (packageName, files, arch, callbackDone) {
       });
     } catch (err) {
       if (err.code === 'MODULE_NOT_FOUND') {
-        zogLog.info ('no premake script for this package');
+        xLog.info ('no premake script for this package');
         build ();
       } else {
-        zogLog.err (err);
+        xLog.err (err);
       }
     }
   };
@@ -166,7 +167,7 @@ exports.package = function (packageName, arch, callbackDone) {
 
     processFile (packageName, controlFiles, arch, callbackDone);
   } catch (err) {
-    zogLog.err (err);
+    xLog.err (err);
     callbackDone (false);
   }
 };

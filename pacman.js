@@ -1,21 +1,21 @@
 'use strict';
 
-/* ᗤ <- pacman ? */
 var moduleName = 'pacman';
 
-var path     = require ('path');
+var path = require ('path');
 
 var pkgCreate     = require ('./pkgCreate.js');
 var pkgDefinition = require ('./pkgDefinition.js');
-var zogLog        = require ('xcraft-core-log') (moduleName);
-var busClient     = require ('xcraft-core-busclient');
-var zogPlatform   = require ('xcraft-core-platform');
-var xcraftConfig  = require ('xcraft-core-etc').load ('xcraft');
+
+var xLog         = require ('xcraft-core-log') (moduleName);
+var busClient    = require ('xcraft-core-busclient');
+var zogPlatform  = require ('xcraft-core-platform');
+var xcraftConfig = require ('xcraft-core-etc').load ('xcraft');
 
 var cmd = {};
 
 cmd.list = function () {
-  zogLog.info ('list of all products');
+  xLog.info ('list of all products');
 
   var pkgList = require ('./pkgList.js');
 
@@ -32,12 +32,12 @@ cmd.edit = function (msg) {
   var packageName = msg.data.packageName;
   msg.data.wizardAnswers = [];
 
-  zogLog.info ('create a new package: ' + packageName);
+  xLog.info ('create a new package: ' + packageName);
 
   try {
     busClient.command.send ('pacman.edit.header', msg.data);
   } catch (err) {
-    zogLog.err (err);
+    xLog.err (err);
   }
 };
 
@@ -156,7 +156,7 @@ cmd['edit.data'] = function (msg) {
 
 cmd['edit.save'] = function (msg) {
   var wizardAnswers  = msg.data.wizardAnswers;
-  zogLog.verb ('JSON output for pre-package definition:\n' +
+  xLog.verb ('JSON output for pre-package definition:\n' +
                JSON.stringify (wizardAnswers, null, '  '));
 
   pkgCreate.pkgTemplate (wizardAnswers, function (wizardName, file) {
@@ -182,7 +182,7 @@ cmd['edit.upload'] = function (msg) {
     return;
   }
 
-  zogLog.info ('upload %s to chest://%s:%d/%s',
+  xLog.info ('upload %s to chest://%s:%d/%s',
                msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].localPath,
                chestConfig.host,
                chestConfig.port,
@@ -204,7 +204,7 @@ cmd['edit.upload'] = function (msg) {
  */
 cmd.make = function (msg) {
   var packageName = msg.data.packageName;
-  zogLog.info ('make the wpkg package for ' + (packageName || 'all'));
+  xLog.info ('make the wpkg package for ' + (packageName || 'all'));
 
   var pkgMake = require ('./pkgMake.js');
 
@@ -234,7 +234,7 @@ cmd.make = function (msg) {
  */
 cmd.install = function (msg) {
   var packageRef = msg.data.packageRef;
-  zogLog.info ('install development package: ' + packageRef);
+  xLog.info ('install development package: ' + packageRef);
 
   var pkgCmd = require ('./pkgCmd.js');
 
@@ -250,7 +250,7 @@ cmd.install = function (msg) {
 cmd.remove = function (msg) {
   var packageRef = msg.data.packageRef;
 
-  zogLog.info ('remove development package: ' + packageRef);
+  xLog.info ('remove development package: ' + packageRef);
 
   var pkgCmd = require ('./pkgCmd.js');
 
@@ -266,17 +266,17 @@ cmd.clean = function () {
   var fse   = require ('fs-extra');
   var zogFs = require ('xcraft-core-fs');
 
-  zogLog.info ('clean all generated files');
+  xLog.info ('clean all generated files');
 
-  zogLog.verb ('delete ' + xcraftConfig.pkgTargetRoot);
+  xLog.verb ('delete ' + xcraftConfig.pkgTargetRoot);
   fse.removeSync (xcraftConfig.pkgTargetRoot);
 
-  zogLog.verb ('delete ' + xcraftConfig.pkgDebRoot);
+  xLog.verb ('delete ' + xcraftConfig.pkgDebRoot);
   fse.removeSync (xcraftConfig.pkgDebRoot);
 
   zogFs.ls (xcraftConfig.tempRoot, /^(?!.*\.gitignore)/).forEach (function (file) {
     file = path.join (xcraftConfig.tempRoot, file);
-    zogLog.verb ('delete ' + file);
+    xLog.verb ('delete ' + file);
 
     var st = fse.statSync (file);
     if (st.isDirectory (file)) {

@@ -2,9 +2,10 @@
 
 var moduleName = 'manager';
 
-var path      = require ('path');
-var util      = require ('util');
-var zogLog    = require ('xcraft-core-log') (moduleName);
+var path = require ('path');
+var util = require ('util');
+
+var xLog = require ('xcraft-core-log') (moduleName);
 
 
 var pad = function (n, w) {
@@ -56,7 +57,7 @@ var defToChangelog = function (packageDef) {
 
     changelogList[arch] = changelog;
 
-    zogLog.verb (util.format ('ChangeLog file:\n%s', changelog));
+    xLog.verb (util.format ('ChangeLog file:\n%s', changelog));
   });
 
   return changelogList;
@@ -71,7 +72,7 @@ var defToChangelog = function (packageDef) {
  */
 exports.changelogFiles = function (packageName, packageArch, saveFiles) {
   if (saveFiles) {
-    zogLog.info ('if necessary, save the ChangeLog file for ' + packageName);
+    xLog.info ('if necessary, save the ChangeLog file for ' + packageName);
   }
 
   var fs = require ('fs');
@@ -99,7 +100,7 @@ exports.changelogFiles = function (packageName, packageArch, saveFiles) {
 
     if (saveFiles) {
       if (fs.existsSync (changelogFile)) {
-        zogLog.warn ('the ChangeLog file will be overwritten: ' + changelogFile);
+        xLog.warn ('the ChangeLog file will be overwritten: ' + changelogFile);
       }
 
       zogFs.mkdir (wpkgDir);
