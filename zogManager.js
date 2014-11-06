@@ -204,14 +204,14 @@ cmd['edit.upload'] = function (msg) {
                chestConfig.port,
                msg.data.chestFile);
 
-  busClient.events.subscribe ('zogChest.send.finished', function (msg) {
+  busClient.events.subscribe ('chest.send.finished', function (msg) {
     busClient.events.send ('zogManager.edit.finished');
   });
 
   var chestMsg = {
     file: msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].localPath
   };
-  busClient.command.send ('zogChest.send', chestMsg);
+  busClient.command.send ('chest.send', chestMsg);
 };
 
 /**
