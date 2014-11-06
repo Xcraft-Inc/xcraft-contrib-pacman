@@ -16,7 +16,7 @@ var pacmanConfig = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
  * @param {boolean} callbackDone.done - True on success.
  */
 var WpkgArgs = function (callbackDone) {
-  var zogProcess = require ('xcraft-core-process');
+  var xProcess = require ('xcraft-core-process');
   var bin = 'wpkg';
 
   /**
@@ -37,7 +37,7 @@ var WpkgArgs = function (callbackDone) {
 
     xLog.verb ('%s %s', bin, args.join (' '));
 
-    zogProcess.spawn (bin, args, function (done) {
+    xProcess.spawn (bin, args, function (done) {
       /* When the call is terminated. */
       xLog.info ('end command ' + cmdName);
 
