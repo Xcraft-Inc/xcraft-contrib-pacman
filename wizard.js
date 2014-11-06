@@ -1,11 +1,12 @@
 'use strict';
 
-var inquirer  = require ('inquirer');
-var zogFs     = require ('xcraft-core-fs');
-var zogPeon   = require ('xcraft-core-peon');
-var busClient = require ('xcraft-core-busclient');
-var xcraftConfig  = require ('xcraft-core-etc').load ('xcraft');
-var pacmanConfig  = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
+var inquirer = require ('inquirer');
+
+var xFs          = require ('xcraft-core-fs');
+var zogPeon      = require ('xcraft-core-peon');
+var busClient    = require ('xcraft-core-busclient');
+var xcraftConfig = require ('xcraft-core-etc').load ('xcraft');
+var pacmanConfig = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
 
 
 /* Version rules by Debian:
@@ -141,7 +142,7 @@ exports.dependency = [{
   name: 'dependency',
   message: 'Package\'s name',
   choices: function () {
-    return zogFs.lsdir (xcraftConfig.pkgProductsRoot);
+    return xFs.lsdir (xcraftConfig.pkgProductsRoot);
   }
 }, {
   type: 'input',

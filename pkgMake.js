@@ -8,7 +8,7 @@ var pkgControl    = require ('./pkgControl.js');
 var pkgChangelog  = require ('./pkgChangelog.js');
 var pkgDefinition = require ('./pkgDefinition.js');
 
-var zogFs        = require ('xcraft-core-fs');
+var xFs          = require ('xcraft-core-fs');
 var xLog         = require ('xcraft-core-log') (moduleName);
 var xcraftConfig = require ('xcraft-core-etc').load ('xcraft');
 var pacmanConfig = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
@@ -75,7 +75,7 @@ var processFile = function (packageName, files, arch, callbackDone) {
     }
 
     var sharePath = path.join (packagePath, 'usr', 'share', namespace, name);
-    zogFs.mkdir (sharePath);
+    xFs.mkdir (sharePath);
 
     var build = function () {
       var wpkgBuild = function (packageDef) {

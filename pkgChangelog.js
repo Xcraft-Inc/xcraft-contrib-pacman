@@ -78,7 +78,7 @@ exports.changelogFiles = function (packageName, packageArch, saveFiles) {
   var fs = require ('fs');
   var xcraftConfig  = require ('xcraft-core-etc').load ('xcraft');
   var pacmanConfig  = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
-  var zogFs         = require ('xcraft-core-fs');
+  var xFs           = require ('xcraft-core-fs');
   var pkgDefinition = require ('./pkgDefinition.js');
 
   var def       = pkgDefinition.load (packageName);
@@ -103,7 +103,7 @@ exports.changelogFiles = function (packageName, packageArch, saveFiles) {
         xLog.warn ('the ChangeLog file will be overwritten: ' + changelogFile);
       }
 
-      zogFs.mkdir (wpkgDir);
+      xFs.mkdir (wpkgDir);
       fs.writeFileSync (changelogFile, changelog[arch]);
     }
 

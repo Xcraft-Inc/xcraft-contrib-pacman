@@ -300,9 +300,10 @@ exports.remove = function (packageName, arch, callbackDone) {
  * @param {boolean} callbackDone.done - True on success.
  */
 exports.createAdmindir = function (arch, callbackDone) {
-  var util  = require ('util');
-  var fs    = require ('fs');
-  var zogFs = require ('xcraft-core-fs');
+  var util = require ('util');
+  var fs   = require ('fs');
+
+  var xFs = require ('xcraft-core-fs');
 
   /* This control file is used in order to create a new admin directory. */
   var controlFile = path.join (xcraftConfig.tempRoot, 'control');
@@ -314,7 +315,7 @@ exports.createAdmindir = function (arch, callbackDone) {
   fs.writeFileSync (controlFile, data);
 
   /* Create the target directory. */
-  zogFs.mkdir (path.join (xcraftConfig.pkgTargetRoot, arch));
+  xFs.mkdir (path.join (xcraftConfig.pkgTargetRoot, arch));
 
   var wpkg = new WpkgArgs (callbackDone);
   wpkg.createAdmindir (controlFile, arch);

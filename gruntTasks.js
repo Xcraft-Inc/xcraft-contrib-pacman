@@ -10,11 +10,11 @@ module.exports = function (grunt) {
   var xLog         = require ('xcraft-core-log') (moduleName);
 
   var initNewer = function () {
-    var zogFs      = require ('xcraft-core-fs');
+    var xFs        = require ('xcraft-core-fs');
     var pkgControl = require ('./pkgControl.js');
 
     var list = {};
-    var srcYaml = zogFs.lsdir (xcraftConfig.pkgProductsRoot);
+    var srcYaml = xFs.lsdir (xcraftConfig.pkgProductsRoot);
 
     /* Loop for each package available in the products directory. */
     srcYaml.forEach (function (packageName) {

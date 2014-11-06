@@ -113,7 +113,7 @@ exports.controlFiles = function (packageName, packageArch, saveFiles) {
   var fs  = require ('fs');
   var xcraftConfig  = require ('xcraft-core-etc').load ('xcraft');
   var pacmanConfig  = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
-  var zogFs         = require ('xcraft-core-fs');
+  var xFs           = require ('xcraft-core-fs');
   var xPlatform     = require ('xcraft-core-platform');
   var pkgDefinition = require ('./pkgDefinition.js');
 
@@ -153,7 +153,7 @@ exports.controlFiles = function (packageName, packageArch, saveFiles) {
       }
 
       /* A directory by architecture is created. */
-      zogFs.mkdir (controlDir);
+      xFs.mkdir (controlDir);
       fs.writeFileSync (controlFile, control[arch]);
     }
 
