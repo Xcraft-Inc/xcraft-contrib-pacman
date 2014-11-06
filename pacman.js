@@ -9,7 +9,7 @@ var pkgDefinition = require ('./pkgDefinition.js');
 
 var xLog         = require ('xcraft-core-log') (moduleName);
 var busClient    = require ('xcraft-core-busclient');
-var zogPlatform  = require ('xcraft-core-platform');
+var xPlatform    = require ('xcraft-core-platform');
 var xcraftConfig = require ('xcraft-core-etc').load ('xcraft');
 
 var cmd = {};
@@ -345,17 +345,17 @@ exports.xcraftConfig = [{
   type: 'input',
   name: 'pkgScript',
   message: 'template name for wpkg scripts',
-  default: 'script' + zogPlatform.getShellExt ()
+  default: 'script' + xPlatform.getShellExt ()
 }, {
   type: 'input',
   name: 'pkgPostinst',
   message: 'postinst wpkg script name',
-  default: 'postinst' + zogPlatform.getShellExt ()
+  default: 'postinst' + xPlatform.getShellExt ()
 }, {
   type: 'input',
   name: 'pkgPrerm',
   message: 'prerm wpkg script name',
-  default: 'prerm' + zogPlatform.getShellExt ()
+  default: 'prerm' + xPlatform.getShellExt ()
 }, {
   type: 'input',
   name: 'pkgWPKG',

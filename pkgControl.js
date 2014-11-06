@@ -114,7 +114,7 @@ exports.controlFiles = function (packageName, packageArch, saveFiles) {
   var xcraftConfig  = require ('xcraft-core-etc').load ('xcraft');
   var pacmanConfig  = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
   var zogFs         = require ('xcraft-core-fs');
-  var zogPlatform   = require ('xcraft-core-platform');
+  var xPlatform     = require ('xcraft-core-platform');
   var pkgDefinition = require ('./pkgDefinition.js');
 
   var def     = pkgDefinition.load (packageName);
@@ -131,7 +131,7 @@ exports.controlFiles = function (packageName, packageArch, saveFiles) {
      * with Windows. The first reason is the post/pre scripts which have not the
      * same name that on unix (.bat suffix under Windows).
      */
-    var os = zogPlatform.getOs ();
+    var os = xPlatform.getOs ();
     if (!/^(all|source)$/.test (arch) &&
         (os === 'win' && !/^mswindows/.test (arch) ||
          os !== 'win' &&  /^mswindows/.test (arch))) {
