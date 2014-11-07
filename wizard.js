@@ -3,7 +3,7 @@
 var inquirer = require ('inquirer');
 
 var xFs          = require ('xcraft-core-fs');
-var zogPeon      = require ('xcraft-core-peon');
+var xPeon        = require ('xcraft-core-peon');
 var busClient    = require ('xcraft-core-busclient');
 var xcraftConfig = require ('xcraft-core-etc').load ('xcraft');
 var pacmanConfig = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
@@ -166,7 +166,7 @@ exports.data = [{
   choices: function () {
     var list = [];
 
-    Object.keys (zogPeon).forEach (function (type) {
+    Object.keys (xPeon).forEach (function (type) {
       list.push ({
         name: type
       });
@@ -181,7 +181,7 @@ exports.data = [{
   choices: function (answers) {
     var list = [];
 
-    Object.keys (zogPeon[answers.fileType]).forEach (function (type) {
+    Object.keys (xPeon[answers.fileType]).forEach (function (type) {
       list.push ({
         name: type
       });

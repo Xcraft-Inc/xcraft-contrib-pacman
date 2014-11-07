@@ -112,7 +112,7 @@ var processFile = function (packageName, files, arch, callbackDone) {
 
       /* Are the resources embedded in the package (less than 1GB)? */
       if (packageDef.data.embedded && packageDef.data.uri.length) {
-        var zogPeon = require ('xcraft-core-peon');
+        var xPeon = require ('xcraft-core-peon');
         var xUri  = require ('xcraft-core-uri');
 
         var dataType  = packageDef.data.type;
@@ -122,7 +122,7 @@ var processFile = function (packageName, files, arch, callbackDone) {
         /* NOTE: even with the 'exec' rule, we prevent to pass the binary to
          *       execute because here we are not installing, but only packaging.
          */
-        zogPeon[dataType][rulesType] (xUri.realUri (uri, packageName), packagePath, sharePath, {}, function (done) {
+        xPeon[dataType][rulesType] (xUri.realUri (uri, packageName), packagePath, sharePath, {}, function (done) {
           if (done) {
             wpkgBuild (packageDef);
           } else {
