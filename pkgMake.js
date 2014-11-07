@@ -40,13 +40,13 @@ var copyTemplateFiles = function (packagePath, script, postInstDir) {
 };
 
 var createConfigJson = function (packageName, postInstDir) {
-  var fs  = require ('fs');
-  var zogUri = require ('xcraft-core-uri');
+  var fs   = require ('fs');
+  var xUri = require ('xcraft-core-uri');
 
   var def = pkgDefinition.load (packageName);
   var config = def.data;
 
-  config.uri = zogUri.realUri (config.uri, packageName);
+  config.uri = xUri.realUri (config.uri, packageName);
 
   var data = JSON.stringify (config, null, 2);
   var outFile = path.join (postInstDir, 'config.json');
@@ -113,7 +113,7 @@ var processFile = function (packageName, files, arch, callbackDone) {
       /* Are the resources embedded in the package (less than 1GB)? */
       if (packageDef.data.embedded && packageDef.data.uri.length) {
         var zogPeon = require ('xcraft-core-peon');
-        var zogUri  = require ('xcraft-core-uri');
+        var xUri  = require ('xcraft-core-uri');
 
         var dataType  = packageDef.data.type;
         var rulesType = packageDef.data.rules.type;
@@ -122,7 +122,7 @@ var processFile = function (packageName, files, arch, callbackDone) {
         /* NOTE: even with the 'exec' rule, we prevent to pass the binary to
          *       execute because here we are not installing, but only packaging.
          */
-        zogPeon[dataType][rulesType] (zogUri.realUri (uri, packageName), packagePath, sharePath, {}, function (done) {
+        zogPeon[dataType][rulesType] (xUri.realUri (uri, packageName), packagePath, sharePath, {}, function (done) {
           if (done) {
             wpkgBuild (packageDef);
           } else {
