@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+
+SHARE=__SHARE__
+ACTION=__ACTION__
+SYSROOT=__SYSROOT__
+CONFIG=__CONFIG__
+
+PEON=$(node -e "process.stdout.write (require ('path').resolve (require ('$SYSROOT$CONFIG').bin));")
+
+node "$PEON" "$(pwd)/$SHARE" $ACTION
