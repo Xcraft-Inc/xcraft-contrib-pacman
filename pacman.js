@@ -189,6 +189,7 @@ cmd['edit.upload'] = function (msg) {
                msg.data.chestFile);
 
   busClient.events.subscribe ('chest.send.finished', function (msg) {
+    busClient.events.unsubscribe ('chest.send.finished');
     busClient.events.send ('pacman.edit.finished');
   });
 
