@@ -19,8 +19,7 @@ var copyTemplateFiles = function (packagePath, script, postInstDir) {
   var action = script.replace (/\..*$/, '');
 
   var scriptFileIn  = path.join (pacmanConfig.pkgTemplatesRoot,
-                                 pacmanConfig.pkgScript
-                                );
+                                 pacmanConfig.pkgScript);
   var scriptFileOut = path.join (packagePath, pacmanConfig.pkgWPKG, script);
 
   var placeHolders = {
