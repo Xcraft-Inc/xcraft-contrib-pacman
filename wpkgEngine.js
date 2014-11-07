@@ -308,7 +308,7 @@ exports.createAdmindir = function (arch, callbackDone) {
   /* This control file is used in order to create a new admin directory. */
   var controlFile = path.join (xcraftConfig.tempRoot, 'control');
   var data = util.format ('Architecture: %s\n' +
-                          'Maintainer: "Zog Toolchain" <zog@epsitec.ch>\n' +
+                          'Maintainer: "Xcraft Toolchain" <xcraft@epsitec.ch>\n' +
                           'Distribution: %s\n',
                           arch, pacmanConfig.pkgRepository);
 
