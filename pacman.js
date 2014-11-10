@@ -372,11 +372,6 @@ exports.xcraftConfig = [{
   name: 'pkgIndex',
   message: 'index file for wpkg repositories',
   default: 'index.tar.gz'
-}, {
-  type: 'input',
-  name: 'pkgTemplatesRoot',
-  message: 'location for the templates',
-  default: path.join (__dirname, './wpkg/'),
 }];
 
 /**

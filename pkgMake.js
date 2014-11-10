@@ -18,7 +18,7 @@ var copyTemplateFiles = function (packagePath, script, postInstDir) {
 
   var action = script.replace (/\..*$/, '');
 
-  var scriptFileIn  = path.join (pacmanConfig.pkgTemplatesRoot,
+  var scriptFileIn  = path.join (path.join (__dirname, './wpkg/'),
                                  pacmanConfig.pkgScript);
   var scriptFileOut = path.join (packagePath, pacmanConfig.pkgWPKG, script);
 
