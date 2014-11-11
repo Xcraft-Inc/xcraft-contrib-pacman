@@ -213,13 +213,19 @@ cmd.make = function (msg) {
     packageName = 'all';
   }
 
+  /* TODO: make only when the source has changed (make-like behaviour) */
   if (packageName === 'all') {
-    /* We use a grunt task for this job (with mtime check). */
-    var grunt = require ('grunt');
+    var async = require ('async');
+    var xFs   = require ('xcraft-core-fs');
 
-    /* FIXME: broken stuff. */
-    /* require ('./gruntTasks.js') (grunt); */
-    grunt.tasks (['newer'], null, function () {
+    var packages = xFs.lsdir (xcraftConfig.pkgProductsRoot);
+
+    /* Loop for each package available in the products directory. */
+    async.eachSeries (packages, function (packageName, callback) {
+      pkgMake.package (packageName, null, function (done) { /* jshint ignore:line */
+        callback ();
+      });
+    }, function () {
       busClient.events.send ('pacman.make.finished');
     });
   } else {
