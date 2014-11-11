@@ -143,6 +143,7 @@ var processFile = function (packageName, files, arch, callbackDone) {
         }
       });
     } catch (err) {
+      /* FIXME: how to handle the case where an internal require fails? */
       if (err.code === 'MODULE_NOT_FOUND') {
         xLog.info ('no premake script for this package');
         build ();
