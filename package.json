@@ -11,19 +11,19 @@
     "packages",
     "wpkg"
   ],
-  "repository" : {
-    "type" : "file",
-    "url" : "lib/xcraft-contrib-pacman"
+  "repository": {
+    "type": "file",
+    "url": "lib/xcraft-contrib-pacman"
   },
   "dependencies": {
-    "xcraft-core-utils" : "0.1.0",
-    "xcraft-core-etc" : "0.1.0",
-    "xcraft-core-log" : "0.1.0",
-    "xcraft-core-busclient": "0.1.0",
+    "inquirer": "^0.8.0",
     "xcraft-contrib-wpkg": "0.1.0",
+    "xcraft-core-busclient": "0.1.0",
+    "xcraft-core-etc": "0.1.0",
     "xcraft-core-fs": "0.1.0",
+    "xcraft-core-log": "0.1.0",
     "xcraft-core-uri": "0.1.0",
-    "inquirer": "^0.8.x"
+    "xcraft-core-utils": "0.1.0"
   },
   "author": "Mathieu Schroeter",
   "license": "ISC",
