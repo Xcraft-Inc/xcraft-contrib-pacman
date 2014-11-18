@@ -62,7 +62,7 @@ var inquirerToPackage = function (pkgRepository, inquirerPkg) {
  * @param {function(done)} callbackDone
  * @param {boolean} callbackDone.done - True on success.
  */
-exports.pkgTemplate = function (inquirerPkg, callbackInquirer, callbackDone) {
+exports.pkgTemplate = function (inquirerPkg, callbackInquirer, callback) {
   xLog.info ('create the package definition for ' + inquirerPkg[0].package);
 
   var packageDef = inquirerToPackage (pacmanConfig.pkgRepository, inquirerPkg);
@@ -120,6 +120,6 @@ exports.pkgTemplate = function (inquirerPkg, callbackInquirer, callbackDone) {
       xLog.err (err);
     }
 
-    callbackDone (!err, results[0]);
+    callback (err, results[0]);
   });
 };

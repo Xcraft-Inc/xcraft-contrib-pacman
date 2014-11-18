@@ -167,7 +167,10 @@ cmd['edit.save'] = function (msg) {
 
     msg.data.nextCommand = 'pacman.edit.upload';
     busClient.events.send ('pacman.edit.added', msg.data);
-  }, function (done, useChest) { /* jshint ignore:line */
+  }, function (err, useChest) {
+    if (err) {
+      xLog.err (err);
+    }
     if (!useChest) {
       busClient.events.send ('pacman.edit.finished');
     }
