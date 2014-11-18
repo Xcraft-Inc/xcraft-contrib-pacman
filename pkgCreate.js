@@ -59,8 +59,8 @@ var inquirerToPackage = function (pkgRepository, inquirerPkg) {
 /**
  * Create a package template for the toolchain.
  * @param {Object} inquirerPkg - The Inquirer answers.
- * @param {function(done)} callbackDone
- * @param {boolean} callbackDone.done - True on success.
+ * @param {Object} callbackInquirer
+ * @param {function(err, results)} callback
  */
 exports.pkgTemplate = function (inquirerPkg, callbackInquirer, callback) {
   xLog.info ('create the package definition for ' + inquirerPkg[0].package);
@@ -92,7 +92,7 @@ exports.pkgTemplate = function (inquirerPkg, callbackInquirer, callback) {
     }
   }
 
-  /* The definitions can be writtent even if we are in inquirer for uploading
+  /* The definitions can be written even if we are in inquirer for uploading
    * the resources in the chest server.
    */
   async.parallel ([
