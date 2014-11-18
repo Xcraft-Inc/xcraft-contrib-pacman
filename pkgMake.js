@@ -137,8 +137,10 @@ var processFile = function (packageName, files, arch, callback) {
     try {
       var productPath = path.join (xcraftConfig.pkgProductsRoot, packageName);
       var premake = require (path.join (productPath, 'premake.js')) (packagePath, sharePath);
-      premake.copy (function (done) {
-        if (done) {
+      premake.copy (function (err) {
+        if (err) {
+          xLog.err (err);
+        } else {
           build ();
         }
       });

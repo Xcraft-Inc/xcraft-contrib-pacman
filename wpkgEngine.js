@@ -222,8 +222,8 @@ var lookForPackage = function (packageName, archRoot, arch, callbackResult) {
                                  );
   var list = [];
 
-  var wpkg = new WpkgArgs (function (done) {
-    if (!done) {
+  var wpkg = new WpkgArgs (function (err) {
+    if (err) {
       return;
     }
 

@@ -225,14 +225,12 @@ cmd.make = function (msg) {
 
     /* Loop for each package available in the products directory. */
     async.eachSeries (packages, function (packageName, callback) {
-      pkgMake.package (packageName, null, function (done) { /* jshint ignore:line */
-        callback ();
-      });
+      pkgMake.package (packageName, null, callback);
     }, function () {
       busClient.events.send ('pacman.make.finished');
     });
   } else {
-    pkgMake.package (packageName, null, function (done) { /* jshint ignore:line */
+    pkgMake.package (packageName, null, function (err) { /* jshint ignore:line */
       busClient.events.send ('pacman.make.finished');
     }); /* TODO: arch support */
   }
@@ -248,7 +246,7 @@ cmd.install = function (msg) {
 
   var pkgCmd = require ('./pkgCmd.js');
 
-  pkgCmd.install (packageRef, function (done) { /* jshint ignore:line */
+  pkgCmd.install (packageRef, function (err) { /* jshint ignore:line */
     busClient.events.send ('pacman.install.finished');
   });
 };
@@ -264,7 +262,7 @@ cmd.remove = function (msg) {
 
   var pkgCmd = require ('./pkgCmd.js');
 
-  pkgCmd.remove (packageRef, function (done) { /* jshint ignore:line */
+  pkgCmd.remove (packageRef, function (err) { /* jshint ignore:line */
     busClient.events.send ('pacman.remove.finished');
   });
 };
