@@ -12,10 +12,9 @@ var pacmanConfig = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
 /**
  * Create a wrapper on wpkg.
  * @class wpkg wrapper.
- * @param {function(done)} callbackDone
- * @param {boolean} callbackDone.done - True on success.
+ * @param {function(err, results)} callback
  */
-var WpkgArgs = function (callbackDone) {
+var WpkgArgs = function (callback) {
   var xProcess = require ('xcraft-core-process');
   var bin = 'wpkg';
 
@@ -37,12 +36,12 @@ var WpkgArgs = function (callbackDone) {
 
     xLog.verb ('%s %s', bin, args.join (' '));
 
-    xProcess.spawn (bin, args, function (done) {
+    xProcess.spawn (bin, args, function (err) {
       /* When the call is terminated. */
       xLog.info ('end command ' + cmdName);
 
-      if (callbackDone) {
-        callbackDone (done);
+      if (callback) {
+        callback (err);
       }
     }, function (line) {
       /* For each line in stdout. */
@@ -192,22 +191,21 @@ var WpkgArgs = function (callbackDone) {
  * Build a new package.
  * @param {string} packagePath
  * @param {string} distribution
- * @param {function(done)} callbackDone
- * @param {boolean} callbackDone.done - True on success.
+ * @param {function(err, results)} callback
  */
-exports.build = function (packagePath, distribution, callbackDone) {
+exports.build = function (packagePath, distribution, callback) {
   var pathObj = packagePath.split (path.sep);
 
   /* Retrieve the architecture which is in the packagePath. */
   var arch = pathObj[pathObj.length - 2];
 
-  var wpkg = new WpkgArgs (function (done) {
-    if (!done) {
-      callbackDone (false);
+  var wpkg = new WpkgArgs (function (err) {
+    if (err) {
+      callback (err);
       return;
     }
 
-    var wpkg = new WpkgArgs (callbackDone);
+    var wpkg = new WpkgArgs (callback);
     var repositoryPath = path.join (xcraftConfig.pkgDebRoot, arch, distribution);
 
     /* We create or update the index with our new package. */
@@ -260,12 +258,11 @@ var lookForPackage = function (packageName, archRoot, arch, callbackResult) {
  * Install a package with its dependencies.
  * @param {string} packageName
  * @param {string} arch - Architecture.
- * @param {function(done)} callbackDone
- * @param {boolean} callbackDone.done - True on success.
+ * @param {function(err, results)} callback
  */
-exports.install = function (packageName, arch, callbackDone) {
+exports.install = function (packageName, arch, callback) {
   lookForPackage (packageName, arch, arch, function (debFile) {
-    var wpkg = new WpkgArgs (callbackDone);
+    var wpkg = new WpkgArgs (callback);
 
     if (debFile) {
       wpkg.install (debFile, arch);
@@ -284,11 +281,10 @@ exports.install = function (packageName, arch, callbackDone) {
  * Remove a package.
  * @param {string} packageName
  * @param {string} arch - Architecture.
- * @param {function(done)} callbackDone
- * @param {boolean} callbackDone.done - True on success.
+ * @param {function(err, results)} callback
  */
-exports.remove = function (packageName, arch, callbackDone) {
-  var wpkg = new WpkgArgs (callbackDone);
+exports.remove = function (packageName, arch, callback) {
+  var wpkg = new WpkgArgs (callback);
   wpkg.remove (packageName, arch);
 };
 
@@ -296,10 +292,9 @@ exports.remove = function (packageName, arch, callbackDone) {
  * Create the administration directory in the target root.
  * The target root is the destination where are installed the packages.
  * @param {string} arch - Architecture.
- * @param {function(done)} callbackDone
- * @param {boolean} callbackDone.done - True on success.
+ * @param {function(err, results)} callback
  */
-exports.createAdmindir = function (arch, callbackDone) {
+exports.createAdmindir = function (arch, callback) {
   var util = require ('util');
   var fs   = require ('fs');
 
@@ -317,7 +312,7 @@ exports.createAdmindir = function (arch, callbackDone) {
   /* Create the target directory. */
   xFs.mkdir (path.join (xcraftConfig.pkgTargetRoot, arch));
 
-  var wpkg = new WpkgArgs (callbackDone);
+  var wpkg = new WpkgArgs (callback);
   wpkg.createAdmindir (controlFile, arch);
 };
 
@@ -327,25 +322,24 @@ exports.createAdmindir = function (arch, callbackDone) {
  * accordingly to the versions in the repository referenced in the source.
  * @param {string} sourcePath
  * @param {string} arch - Architecture.
- * @param {function(done)} callbackDone
- * @param {boolean} callbackDone.done - True on success.
+ * @param {function(err, results)} callback
  */
-exports.addSources = function (sourcePath, arch, callbackDone) {
+exports.addSources = function (sourcePath, arch, callback) {
   var list = [];
 
-  var wpkg = new WpkgArgs (function (done) {
-    if (!done) {
-      callbackDone (false);
+  var wpkg = new WpkgArgs (function (err) {
+    if (err) {
+      callback (err);
       return;
     }
 
     /* The list array is populated by listSources. */
     if (list.indexOf (sourcePath) >= 0) {
-      callbackDone (true);
+      callback ();
       return; /* already in the sources.list */
     }
 
-    var wpkg = new WpkgArgs (callbackDone);
+    var wpkg = new WpkgArgs (callback);
     wpkg.addSources (sourcePath, arch);
   });
 
@@ -355,10 +349,9 @@ exports.addSources = function (sourcePath, arch, callbackDone) {
 /**
  * Update the list of available packages from the repository.
  * @param {string} arch - Architecture.
- * @param {function(done)} callbackDone
- * @param {boolean} callbackDone.done - True on success.
+ * @param {function(err, results)} callback
  */
-exports.update = function (arch, callbackDone) {
-  var wpkg = new WpkgArgs (callbackDone);
+exports.update = function (arch, callback) {
+  var wpkg = new WpkgArgs (callback);
   wpkg.update (arch);
 };

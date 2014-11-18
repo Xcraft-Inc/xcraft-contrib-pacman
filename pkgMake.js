@@ -52,7 +52,7 @@ var createConfigJson = function (packageName, postInstDir) {
   fs.writeFileSync (outFile, data, 'utf8');
 };
 
-var processFile = function (packageName, files, arch, callbackDone) {
+var processFile = function (packageName, files, arch, callback) {
   var i = 0;
 
   var wpkgEngine = require ('./wpkgEngine.js');
@@ -97,8 +97,8 @@ var processFile = function (packageName, files, arch, callbackDone) {
         wpkgEngine.build (packagePath, packageDef.distribution, function (error) { /* jshint ignore:line */
           /* When we reach the last item, then we have done all async work. */
           if (i === files.length - 1) {
-            if (callbackDone) {
-              callbackDone (true);
+            if (callback) {
+              callback ();
             }
           } else {
             i++;
@@ -155,19 +155,18 @@ var processFile = function (packageName, files, arch, callbackDone) {
 
   if (files.length) {
     nextFile ();
-  } else if (callbackDone) {
-    callbackDone (true);
+  } else if (callback) {
+    callback ();
   }
 };
 
-exports.package = function (packageName, arch, callbackDone) {
+exports.package = function (packageName, arch, callback) {
   try {
     pkgChangelog.changelogFiles (packageName, arch, true);
     var controlFiles = pkgControl.controlFiles (packageName, arch, true);
 
-    processFile (packageName, controlFiles, arch, callbackDone);
+    processFile (packageName, controlFiles, arch, callback);
   } catch (err) {
-    xLog.err (err);
-    callbackDone (false);
+    callback (err);
   }
 };

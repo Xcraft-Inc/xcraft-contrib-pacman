@@ -13,17 +13,17 @@ var pacmanConfig  = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
 var xLog          = require ('xcraft-core-log') (moduleName);
 
 
-var updateAndInstall = function (packageName, arch, callbackDone) {
-  wpkgEngine.update (arch, function (done) {
-    if (done) {
-      wpkgEngine.install (packageName, arch, callbackDone);
+var updateAndInstall = function (packageName, arch, callback) {
+  wpkgEngine.update (arch, function (err) {
+    if (err) {
+      callback (err);
     } else {
-      callbackDone (false);
+      wpkgEngine.install (packageName, arch, callback);
     }
   });
 };
 
-var addRepositoryForAll = function (packageName, arch, callbackDone) {
+var addRepositoryForAll = function (packageName, arch, callback) {
   /* This repository is useful for all architectures. */
   var allRespository = path.join (xcraftConfig.pkgDebRoot, 'all');
 
@@ -31,17 +31,17 @@ var addRepositoryForAll = function (packageName, arch, callbackDone) {
     var source = util.format ('wpkg file://%s/ %s',
                               allRespository.replace (/\\/g, '/'),
                               pacmanConfig.pkgRepository);
-    wpkgEngine.addSources (source, arch, function (done) {
-      if (!done) {
+    wpkgEngine.addSources (source, arch, function (err) {
+      if (err) {
         xLog.err ('impossible to add the source path for "all"');
-        callbackDone (false);
+        callback (err);
         return;
       }
 
-      updateAndInstall (packageName, arch, callbackDone);
+      updateAndInstall (packageName, arch, callback);
     });
   } else {
-    updateAndInstall (packageName, arch, callbackDone);
+    updateAndInstall (packageName, arch, callback);
   }
 };
 
@@ -61,53 +61,53 @@ var checkArch = function (arch) {
   return true;
 };
 
-exports.install = function (packageRef, callbackDone) {
+exports.install = function (packageRef, callback) {
   var pkg = parsePkgRef (packageRef);
 
   xLog.verb ('install package name: ' + pkg.name + ' on architecture: ' + pkg.arch);
 
   if (!checkArch (pkg.arch)) {
-    callbackDone (false);
+    callback ('bad architecture');
     return;
   }
 
   /* Check if the admindir exists; create if necessary. */
   if (fs.existsSync (path.join (xcraftConfig.pkgTargetRoot, pkg.arch, 'var', 'lib', 'wpkg'))) {
-    addRepositoryForAll (pkg.name, pkg.arch, callbackDone);
+    addRepositoryForAll (pkg.name, pkg.arch, callback);
     return;
   }
 
-  wpkgEngine.createAdmindir (pkg.arch, function (done) {
-    if (!done) {
+  wpkgEngine.createAdmindir (pkg.arch, function (err) {
+    if (err) {
       xLog.err ('impossible to create the admin directory');
-      callbackDone (false);
+      callback (err);
       return;
     }
 
     var source = util.format ('wpkg file://%s/ %s',
                               path.join (xcraftConfig.pkgDebRoot, pkg.arch).replace (/\\/g, '/'),
                               pacmanConfig.pkgRepository);
-    wpkgEngine.addSources (source, pkg.arch, function (done) {
-      if (!done) {
+    wpkgEngine.addSources (source, pkg.arch, function (err) {
+      if (err) {
         xLog.err ('impossible to add the source path for "%s"', pkg.arch);
-        callbackDone (false);
+        callback (err);
         return;
       }
 
-      addRepositoryForAll (pkg.name, pkg.arch, callbackDone);
+      addRepositoryForAll (pkg.name, pkg.arch, callback);
     });
   });
 };
 
-exports.remove = function (packageRef, callbackDone) {
+exports.remove = function (packageRef, callback) {
   var pkg = parsePkgRef (packageRef);
 
   xLog.verb ('remove package name: ' + pkg.name + ' on architecture: ' + pkg.arch);
 
   if (!checkArch (pkg.arch)) {
-    callbackDone (false);
+    callback ('bad architecture');
     return;
   }
 
-  wpkgEngine.remove (pkg.name, pkg.arch, callbackDone);
+  wpkgEngine.remove (pkg.name, pkg.arch, callback);
 };
