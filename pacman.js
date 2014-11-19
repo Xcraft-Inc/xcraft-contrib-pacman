@@ -4,8 +4,7 @@ var moduleName = 'pacman';
 
 var path = require ('path');
 
-var pkgCreate     = require ('./pkgCreate.js');
-var pkgDefinition = require ('./pkgDefinition.js');
+var definition = require ('./lib/definition.js');
 
 var xLog         = require ('xcraft-core-log') (moduleName);
 var busClient    = require ('xcraft-core-busclient');
@@ -17,10 +16,10 @@ var cmd = {};
 cmd.list = function () {
   xLog.info ('list of all products');
 
-  var pkgList = require ('./pkgList.js');
+  var list = require ('./lib/list.js');
 
-  var list = pkgList.listProducts ();
-  busClient.events.send ('pacman.list', list);
+  var results = list.listProducts ();
+  busClient.events.send ('pacman.list', results);
   busClient.events.send ('pacman.list.finished');
 };
 
@@ -48,7 +47,7 @@ cmd['edit.header'] = function (msg) {
   };
 
   try {
-    var def = pkgDefinition.load (msg.data.packageName);
+    var def = definition.load (msg.data.packageName);
 
     wizard.version          = def.version;
     wizard.maintainerName   = def.maintainer.name;
@@ -73,7 +72,7 @@ cmd['edit.askdep'] = function (msg) {
   var wizard = {};
 
   try {
-    var def  = pkgDefinition.load (msg.data.packageName);
+    var def  = definition.load (msg.data.packageName);
     var keys = Object.keys (def.dependency);
 
     if (keys.length > msg.data.idxDep) {
@@ -107,7 +106,7 @@ cmd['edit.dependency'] = function (msg) {
   }
 
   try {
-    var def  = pkgDefinition.load (msg.data.packageName);
+    var def  = definition.load (msg.data.packageName);
     var keys = Object.keys (def.dependency);
 
     if (keys.length > msg.data.idxDep) {
@@ -136,7 +135,7 @@ cmd['edit.data'] = function (msg) {
   var wizard = {};
 
   try {
-    var def = pkgDefinition.load (msg.data.packageName);
+    var def = definition.load (msg.data.packageName);
 
     wizard.uri              = def.data.uri;
     wizard.fileType         = def.data.type;
@@ -155,11 +154,13 @@ cmd['edit.data'] = function (msg) {
 };
 
 cmd['edit.save'] = function (msg) {
+  var create = require ('./lib/create.js');
+
   var wizardAnswers  = msg.data.wizardAnswers;
   xLog.verb ('JSON output for pre-package definition:\n' +
                JSON.stringify (wizardAnswers, null, '  '));
 
-  pkgCreate.pkgTemplate (wizardAnswers, function (wizardName, file) {
+  create.pkgTemplate (wizardAnswers, function (wizardName, file) {
     msg.data.wizardName     = wizardName;
     msg.data.wizardDefaults = {};
 
@@ -210,7 +211,7 @@ cmd.make = function (msg) {
   var packageName = msg.data.packageName;
   xLog.info ('make the wpkg package for ' + (packageName || 'all'));
 
-  var pkgMake = require ('./pkgMake.js');
+  var make = require ('./lib/make.js');
 
   if (!packageName) {
     packageName = 'all';
@@ -225,12 +226,12 @@ cmd.make = function (msg) {
 
     /* Loop for each package available in the products directory. */
     async.eachSeries (packages, function (packageName, callback) {
-      pkgMake.package (packageName, null, callback);
+      make.package (packageName, null, callback);
     }, function () {
       busClient.events.send ('pacman.make.finished');
     });
   } else {
-    pkgMake.package (packageName, null, function (err) { /* jshint ignore:line */
+    make.package (packageName, null, function (err) { /* jshint ignore:line */
       busClient.events.send ('pacman.make.finished');
     }); /* TODO: arch support */
   }
@@ -244,9 +245,9 @@ cmd.install = function (msg) {
   var packageRef = msg.data.packageRef;
   xLog.info ('install development package: ' + packageRef);
 
-  var pkgCmd = require ('./pkgCmd.js');
+  var cmd = require ('./lib/cmd.js');
 
-  pkgCmd.install (packageRef, function (err) { /* jshint ignore:line */
+  cmd.install (packageRef, function (err) { /* jshint ignore:line */
     busClient.events.send ('pacman.install.finished');
   });
 };
@@ -260,9 +261,9 @@ cmd.remove = function (msg) {
 
   xLog.info ('remove development package: ' + packageRef);
 
-  var pkgCmd = require ('./pkgCmd.js');
+  var cmd = require ('./lib/cmd.js');
 
-  pkgCmd.remove (packageRef, function (err) { /* jshint ignore:line */
+  cmd.remove (packageRef, function (err) { /* jshint ignore:line */
     busClient.events.send ('pacman.remove.finished');
   });
 };
