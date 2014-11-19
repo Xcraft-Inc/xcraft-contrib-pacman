@@ -354,7 +354,7 @@ exports.xcraftConfig = [{
   type: 'input',
   name: 'pkgScript',
   message: 'template name for wpkg scripts',
-  default: 'script' + xPlatform.getShellExt ()
+  default: path.resolve ('./lib/wpkg/script' + xPlatform.getShellExt ())
 }, {
   type: 'input',
   name: 'pkgPostinst',
