@@ -273,7 +273,7 @@ exports.xcraftCommands = function () {
       tryPushFunction (fieldDef, category, 'validate', 'validated');
       tryPushFunction (fieldDef, category, 'choices',  'choices.loaded');
       tryPushFunction (fieldDef, category, 'filter',   'filtered');
-      tryPushFunction (fieldDef, category, 'when',   'displayed');
+      tryPushFunction (fieldDef, category, 'when',     'displayed');
     });
   };
 
