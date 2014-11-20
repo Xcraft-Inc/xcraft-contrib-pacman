@@ -227,7 +227,10 @@ cmd.make = function (msg) {
       busClient.events.send ('pacman.make.finished');
     });
   } else {
-    make.package (packageName, null, function (err) { /* jshint ignore:line */
+    make.package (packageName, null, function (err) {
+      if (err) {
+        xLog.err (err);
+      }
       busClient.events.send ('pacman.make.finished');
     }); /* TODO: arch support */
   }
@@ -243,7 +246,10 @@ cmd.install = function (msg) {
 
   var cmd = require ('./lib/cmd.js');
 
-  cmd.install (packageRef, function (err) { /* jshint ignore:line */
+  cmd.install (packageRef, function (err) {
+    if (err) {
+      xLog.err (err);
+    }
     busClient.events.send ('pacman.install.finished');
   });
 };
@@ -259,7 +265,10 @@ cmd.remove = function (msg) {
 
   var cmd = require ('./lib/cmd.js');
 
-  cmd.remove (packageRef, function (err) { /* jshint ignore:line */
+  cmd.remove (packageRef, function (err) {
+    if (err) {
+      xLog.err (err);
+    }
     busClient.events.send ('pacman.remove.finished');
   });
 };
