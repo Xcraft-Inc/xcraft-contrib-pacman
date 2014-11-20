@@ -1,33 +1,44 @@
 {
   "configure": {
-    "params": null,
     "desc": "change settings"
   },
   "list": {
-    "params": null,
     "desc": "list all available packages"
   },
   "edit": {
-    "params": "packageName",
     "desc": "create or edit a package definition",
     "options": {
-      "wizard": true
+      "wizard": true,
+      "params": {
+        "optional": "packageName"
+      }
     }
   },
   "make": {
-    "params": "packageName",
-    "desc":"make all or only the specified package"
+    "desc":"make all or only the specified package",
+    "options": {
+      "params": {
+        "optional": "packageName..."
+      }
+    }
   },
   "install": {
-    "params": "packageRef",
-    "desc": "install the package"
+    "desc": "install the package",
+    "options": {
+      "params": {
+        "optional": "packageRef..."
+      }
+    }
   },
   "remove": {
-    "params": "packageRef",
-    "desc":"remove the package"
+    "desc":"remove the package",
+    "options": {
+      "params": {
+        "optional": "packageRef..."
+      }
+    }
   },
   "clean": {
-    "params": null,
     "desc":"remove the devroot, the repository and the packages"
   }
 }
