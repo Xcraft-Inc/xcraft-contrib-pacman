@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "inquirer": "^0.8.0",
+    "js-yaml": "^3.2.3",
     "xcraft-contrib-wpkg": "0.1.0",
     "xcraft-core-busclient": "0.1.0",
     "xcraft-core-etc": "0.1.0",
