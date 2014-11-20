@@ -213,12 +213,8 @@ cmd.make = function (msg) {
 
   var make = require ('./lib/make.js');
 
-  if (!packageName) {
-    packageName = 'all';
-  }
-
   /* TODO: make only when the source has changed (make-like behaviour) */
-  if (packageName === 'all') {
+  if (!packageName) {
     var async = require ('async');
     var xFs   = require ('xcraft-core-fs');
 
