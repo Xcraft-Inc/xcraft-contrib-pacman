@@ -25,6 +25,7 @@ cmd.list = function () {
 
 /**
  * Create a new package template or modify an existing package config file.
+ *
  * @param {Object} msg
  */
 cmd.edit = function (msg) {
@@ -205,6 +206,7 @@ cmd['edit.upload'] = function (msg) {
 
 /**
  * Make the Control file for WPKG by using a package config file.
+ *
  * @param {Object} msg
  */
 cmd.make = function (msg) {
@@ -238,6 +240,7 @@ cmd.make = function (msg) {
 
 /**
  * Try to install the developement package.
+ *
  * @param {Object} msg
  */
 cmd.install = function (msg) {
@@ -256,6 +259,7 @@ cmd.install = function (msg) {
 
 /**
  * Try to remove the developement package.
+ *
  * @param {Object} msg
  */
 cmd.remove = function (msg) {
