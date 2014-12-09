@@ -99,6 +99,12 @@ exports.header = [{
       return 'You must choose at least one topping.';
     }
 
+    if (value.length > 1 && value.some (function (arch) {
+      return arch === 'source';
+    })) {
+      return 'A source package can not have other architectures.';
+    }
+
     return true;
   },
   filter: function (answer) {
