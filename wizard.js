@@ -237,7 +237,7 @@ exports.chest = [{
 }];
 
 exports.xcraftCommands = function () {
-  var list = [];
+  var cmd = {};
 
   var tryPushFunction = function (fieldDef, category, funcName, resultEventName) {
     if (!fieldDef.hasOwnProperty (funcName)) {
@@ -256,17 +256,12 @@ exports.xcraftCommands = function () {
      * and corresponding result event.
      */
     fieldDef.loktharCommands['wizard.' + cmdName] = evtName;
-    list.push ({
-      name   : cmdName,
-      desc   : '',
-      params : '',
-      handler: function (value) {
-        /* execute function */
-        var result = fieldDef[funcName] (value.data);
-        console.log (funcName + ': ' + result);
-        busClient.events.send (evtName, result);
-      }
-    });
+    cmd[cmdName] = function (value) {
+      /* execute function */
+      var result = fieldDef[funcName] (value.data);
+      console.log (funcName + ': ' + result);
+      busClient.events.send (evtName, result);
+    };
   };
 
   var extractCommandsHandlers = function (category) {
@@ -290,5 +285,8 @@ exports.xcraftCommands = function () {
   extractCommandsHandlers ('data');
   extractCommandsHandlers ('chest');
 
-  return list;
+  return {
+    handlers: cmd,
+    rc: null
+  };
 };

@@ -307,22 +307,16 @@ cmd.clean = function () {
   busClient.events.send ('pacman.clean.finished');
 };
 
+/**
+ * Retrieve the list of available commands.
+ *
+ * @returns {Object} The list and definitions of commands.
+ */
 exports.xcraftCommands = function () {
-  var utils  = require ('xcraft-core-utils');
-  var rcFile = path.join (__dirname, './rc.json');
-  var rc     = utils.jsonFile2Json (rcFile);
-  var list   = [];
-
-  Object.keys (cmd).forEach (function (action) {
-    list.push ({
-      name    : action,
-      desc    : rc[action] ? rc[action].desc    : '',
-      options : rc[action] ? rc[action].options : {},
-      handler : cmd[action]
-    });
-  });
-
-  return list;
+  return {
+    handlers: cmd,
+    rc: path.join (__dirname, './rc.json')
+  };
 };
 
 exports.xcraftConfig = [{
