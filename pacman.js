@@ -274,7 +274,6 @@ cmd.build = function (msg) {
  */
 cmd.remove = function (msg) {
   var packageRef = msg.data.packageRef;
-
   xLog.info ('remove development package: ' + packageRef);
 
   var cmd = require ('./lib/cmd.js');
