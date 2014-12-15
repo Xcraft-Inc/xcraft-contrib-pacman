@@ -40,7 +40,7 @@
     }
   },
   "remove": {
-    "desc":"remove the package",
+    "desc": "remove the package",
     "options": {
       "params": {
         "optional": "packageRef..."
