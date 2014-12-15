@@ -258,6 +258,15 @@ cmd.install = function (msg) {
 };
 
 /**
+ * Try to compile the sources of a source package.
+ *
+ * @param {Object} msg
+ */
+cmd.build = function (msg) {
+  xLog.warn ('stub');
+};
+
+/**
  * Try to remove the developement package.
  *
  * @param {Object} msg
