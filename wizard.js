@@ -31,6 +31,11 @@ exports.header = [{
              'start with an alphanumeric character.';
     }
 
+    if (/-src$/.test (value)) {
+      return 'A package name can not be terminated by \'-src\' which is ' +
+             'a reserved word.';
+    }
+
     return true;
   }
 }, {
