@@ -264,6 +264,7 @@ cmd.install = function (msg) {
  */
 cmd.build = function (msg) {
   xLog.warn ('stub');
+  busClient.events.send ('pacman.build.finished');
 };
 
 /**
