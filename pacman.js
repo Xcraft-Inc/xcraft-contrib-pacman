@@ -263,8 +263,17 @@ cmd.install = function (msg) {
  * @param {Object} msg
  */
 cmd.build = function (msg) {
-  xLog.warn ('stub');
-  busClient.events.send ('pacman.build.finished');
+  var packageRef = msg.data.packageRef;
+  xLog.info ('compile a development package: ' + packageRef);
+
+  var build = require ('./lib/build.js');
+
+  build.package (packageRef, function (err) {
+    if (err) {
+      xLog.err (err);
+    }
+    busClient.events.send ('pacman.build.finished');
+  });
 };
 
 /**
