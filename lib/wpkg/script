@@ -6,6 +6,6 @@ ACTION=__ACTION__
 SYSROOT=__SYSROOT__
 CONFIG=__CONFIG__
 
-PEON=$(node -e "process.stdout.write (require ('path').resolve (require ('$SYSROOT$CONFIG').bin));")
+PEON=$(node -e "process.stdout.write (require ('path').resolve (__dirname, '$SYSROOT', require (require ('path').resolve (__dirname, '$SYSROOT', '$CONFIG')).bin));")
 
 node "$PEON" "$(pwd)/$SHARE" $ACTION
