@@ -209,17 +209,24 @@ exports.data = [{
   }
 }, {
   type: 'input',
-  name: 'rulesArgsInstall',
+  name: 'rulesArgsPostinst',
   message: 'Arguments for the installer (to install):',
   when: function (answers) {
     return answers.rulesType === 'exec';
   }
 }, {
   type: 'input',
-  name: 'rulesArgsRemove',
+  name: 'rulesArgsPrerm',
   message: 'Arguments for the installer (to remove):',
   when: function (answers) {
     return answers.rulesType === 'exec';
+  }
+}, {
+  type: 'input',
+  name: 'rulesArgsMakeall',
+  message: 'Arguments for `make all`:',
+  when: function (answers) {
+    return answers.fileType === 'src';
   }
 }, {
   type: 'confirm',

@@ -10,6 +10,7 @@ var xLog         = require ('xcraft-core-log') (moduleName);
 var busClient    = require ('xcraft-core-busclient');
 var xPlatform    = require ('xcraft-core-platform');
 var xcraftConfig = require ('xcraft-core-etc').load ('xcraft');
+var pacmanConfig = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
 
 var cmd = {};
 
@@ -138,13 +139,14 @@ cmd['edit.data'] = function (msg) {
   try {
     var def = definition.load (msg.data.packageName);
 
-    wizard.uri              = def.data.uri;
-    wizard.fileType         = def.data.type;
-    wizard.rulesType        = def.data.rules.type;
-    wizard.rulesLocation    = def.data.rules.location;
-    wizard.rulesArgsInstall = def.data.rules.args.install;
-    wizard.rulesArgsRemove  = def.data.rules.args.remove;
-    wizard.embedded         = def.data.embedded;
+    wizard.uri               = def.data.uri;
+    wizard.fileType          = def.data.type;
+    wizard.rulesType         = def.data.rules.type;
+    wizard.rulesLocation     = def.data.rules.location;
+    wizard.rulesArgsPostinst = def.data.rules.args[pacmanConfig.pkgPostinst];
+    wizard.rulesArgsPrerm    = def.data.rules.args[pacmanConfig.pkgPrerm];
+    wizard.rulesArgsMakeall  = def.data.rules.args[pacmanConfig.pkgMakeall];
+    wizard.embedded          = def.data.embedded;
   } catch (err) {}
 
   msg.data.wizardName     = 'data';
@@ -374,17 +376,22 @@ exports.xcraftConfig = [{
   type: 'input',
   name: 'pkgScript',
   message: 'template name for wpkg scripts',
-  default: 'script' + xPlatform.getShellExt ()
+  default: 'script'
 }, {
   type: 'input',
   name: 'pkgPostinst',
   message: 'postinst wpkg script name',
-  default: 'postinst' + xPlatform.getShellExt ()
+  default: 'postinst'
 }, {
   type: 'input',
   name: 'pkgPrerm',
   message: 'prerm wpkg script name',
-  default: 'prerm' + xPlatform.getShellExt ()
+  default: 'prerm'
+}, {
+  type: 'input',
+  name: 'pkgMakeall',
+  message: 'make all script name',
+  default: 'makeall'
 }, {
   type: 'input',
   name: 'pkgWPKG',
