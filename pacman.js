@@ -8,6 +8,7 @@ var definition = require ('./lib/definition.js');
 
 var xLog         = require ('xcraft-core-log') (moduleName);
 var busClient    = require ('xcraft-core-busclient');
+var activity     = require ('xcraft-core-activity');
 var xPlatform    = require ('xcraft-core-platform');
 var xcraftConfig = require ('xcraft-core-etc').load ('xcraft');
 var pacmanConfig = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
@@ -34,6 +35,7 @@ cmd.edit = function (msg) {
   msg.data.wizardAnswers = [];
 
   xLog.info ('create a new package: ' + packageName);
+  activity.create ('pacman.edit', msg);
 
   try {
     busClient.command.send ('pacman.edit.header', msg.data);
