@@ -19,7 +19,7 @@
     "desc":"make all or only the specified package",
     "options": {
       "params": {
-        "optional": "packageName..."
+        "optional": "packageName"
       }
     }
   },
@@ -27,7 +27,7 @@
     "desc": "install the package",
     "options": {
       "params": {
-        "optional": "packageRef..."
+        "optional": "packageRef"
       }
     }
   },
@@ -35,7 +35,7 @@
     "desc": "compile a source package",
     "options": {
       "params": {
-        "optional": "packageRef..."
+        "optional": "packageRef"
       }
     }
   },
@@ -43,7 +43,7 @@
     "desc": "remove the package",
     "options": {
       "params": {
-        "optional": "packageRef..."
+        "optional": "packageRef"
       }
     }
   },
