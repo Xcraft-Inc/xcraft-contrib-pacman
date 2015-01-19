@@ -8,7 +8,6 @@ var definition = require ('./lib/definition.js');
 
 var xLog         = require ('xcraft-core-log') (moduleName);
 var busClient    = require ('xcraft-core-busclient');
-var xPlatform    = require ('xcraft-core-platform');
 var xcraftConfig = require ('xcraft-core-etc').load ('xcraft');
 var pacmanConfig = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
 
@@ -196,7 +195,7 @@ cmd['edit.upload'] = function (msg) {
                chestConfig.port,
                msg.data.chestFile);
 
-  busClient.events.subscribe ('chest.send.finished', function (msg) {
+  busClient.events.subscribe ('chest.send.finished', function () {
     busClient.events.unsubscribe ('chest.send.finished');
     busClient.events.send ('pacman.edit.finished');
   });
