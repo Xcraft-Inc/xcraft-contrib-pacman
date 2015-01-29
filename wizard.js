@@ -226,9 +226,9 @@ exports.data = [{
 }, {
   type: 'input',
   name: 'rulesLocation',
-  message: 'Installer file name, source directory ,...',
+  message: 'Installer file name, source directory, executable, ...',
   when: function (answers) {
-    return /(exec|make)/.test (answers.rulesType);
+    return /(copy|exec|make)/.test (answers.rulesType);
   }
 }, {
   type: 'input',
