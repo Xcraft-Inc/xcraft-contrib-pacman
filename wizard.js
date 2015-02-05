@@ -209,6 +209,10 @@ exports.data = [{
     return list;
   }
 }, {
+  type: 'input',
+  name: 'configureCmd',
+  message: 'Configure step (commands, script, ...):'
+}, {
   type: 'list',
   name: 'rulesType',
   message: 'How to install (to build)',

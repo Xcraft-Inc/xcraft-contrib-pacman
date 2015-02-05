@@ -141,6 +141,7 @@ cmd['edit.data'] = function (msg) {
 
     wizard.uri               = def.data.uri;
     wizard.fileType          = def.data.type;
+    wizard.configureCmd      = def.data.configure;
     wizard.rulesType         = def.data.rules.type;
     wizard.rulesLocation     = def.data.rules.location;
     wizard.rulesArgsPostinst = def.data.rules.args[pacmanConfig.pkgPostinst];
