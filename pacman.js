@@ -223,6 +223,7 @@ cmd.make = function (msg) {
     var async = require ('async');
     var xFs   = require ('xcraft-core-fs');
 
+    /* FIXME: use pacman.list */
     var packages = xFs.lsdir (xcraftConfig.pkgProductsRoot);
 
     /* Loop for each package available in the products directory. */
