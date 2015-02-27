@@ -161,7 +161,7 @@ exports.header = [{
   type: 'input',
   name: 'descriptionLong',
   message: 'Long description',
-  loktharType : 'multi-line'
+  loktharType: 'multi-line'
 }];
 
 exports.askdep = [{
