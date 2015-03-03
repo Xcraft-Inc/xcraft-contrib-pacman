@@ -256,6 +256,10 @@ exports.data = [{
     return answers.fileType === 'src';
   }
 }, {
+  type: 'input',
+  name: 'registerPath',
+  message: 'Register an unusual location for PATH (keep empty with default PATH):'
+}, {
   type: 'confirm',
   name: 'embedded',
   message: 'Embed data in the package (only if less than 1GB)?'
