@@ -307,27 +307,21 @@ cmd.remove = function (msg) {
  * Remove all the generated files.
  */
 cmd.clean = function () {
-  var fse = require ('fs-extra');
   var xFs = require ('xcraft-core-fs');
 
   xLog.info ('clean all generated files');
 
   xLog.verb ('delete ' + xcraftConfig.pkgTargetRoot);
-  fse.removeSync (xcraftConfig.pkgTargetRoot);
+  xFs.rm (xcraftConfig.pkgTargetRoot);
 
   xLog.verb ('delete ' + xcraftConfig.pkgDebRoot);
-  fse.removeSync (xcraftConfig.pkgDebRoot);
+  xFs.rm (xcraftConfig.pkgDebRoot);
 
   xFs.ls (xcraftConfig.tempRoot, /^(?!.*\.gitignore)/).forEach (function (file) {
     file = path.join (xcraftConfig.tempRoot, file);
     xLog.verb ('delete ' + file);
 
-    var st = fse.statSync (file);
-    if (st.isDirectory (file)) {
-      fse.removeSync (file);
-    } else {
-      fse.unlinkSync (file);
-    }
+    xFs.rm (file);
   });
 
   xPath.devrootUpdate ();
