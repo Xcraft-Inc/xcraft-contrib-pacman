@@ -17,7 +17,6 @@
   },
   "dependencies": {
     "async": "^0.9.0",
-    "fs-extra": "^0.13.0",
     "inquirer": "^0.8.0",
     "js-yaml": "^3.2.7",
     "xcraft-contrib-wpkg": "0.1.0",
