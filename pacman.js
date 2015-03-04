@@ -6,6 +6,7 @@ var path = require ('path');
 
 var definition = require ('./lib/definition.js');
 
+var xPath        = require ('xcraft-core-path');
 var xLog         = require ('xcraft-core-log') (moduleName);
 var busClient    = require ('xcraft-core-busclient');
 var xcraftConfig = require ('xcraft-core-etc').load ('xcraft');
@@ -258,6 +259,7 @@ cmd.install = function (msg) {
     if (err) {
       xLog.err (err);
     }
+    xPath.devrootUpdate ();
     busClient.events.send ('pacman.install.finished');
   });
 };
@@ -296,6 +298,7 @@ cmd.remove = function (msg) {
     if (err) {
       xLog.err (err);
     }
+    xPath.devrootUpdate ();
     busClient.events.send ('pacman.remove.finished');
   });
 };
@@ -327,6 +330,7 @@ cmd.clean = function () {
     }
   });
 
+  xPath.devrootUpdate ();
   busClient.events.send ('pacman.clean.finished');
 };
 
