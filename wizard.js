@@ -232,7 +232,7 @@ exports.data = [{
   name: 'rulesLocation',
   message: 'Installer file name, source directory, executable, ...',
   when: function (answers) {
-    return /(copy|exec|make)/.test (answers.rulesType);
+    return /(copy|move|exec|make)/.test (answers.rulesType);
   }
 }, {
   type: 'input',
