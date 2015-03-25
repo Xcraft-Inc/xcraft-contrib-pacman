@@ -30,7 +30,7 @@ cmd.list = function () {
  * @param {Object} msg
  */
 cmd.edit = function (msg) {
-  var packageName = msg.data.packageName;
+  var packageName = msg.data.packageName || '';
   msg.data.wizardAnswers = [];
 
   xLog.info ('create a new package: ' + packageName);
@@ -250,7 +250,7 @@ cmd.make = function (msg) {
  * @param {Object} msg
  */
 cmd.install = function (msg) {
-  var packageRef = msg.data.packageRef;
+  var packageRef = msg.data.packageRef || '';
   xLog.info ('install development package: ' + packageRef);
 
   var cmd = require ('./lib/cmd.js');
@@ -270,7 +270,7 @@ cmd.install = function (msg) {
  * @param {Object} msg
  */
 cmd.build = function (msg) {
-  var packageRef = msg.data.packageRef;
+  var packageRef = msg.data.packageRef || '';
   xLog.info ('compile a development package: ' + packageRef);
 
   var build = require ('./lib/build.js');
@@ -289,7 +289,7 @@ cmd.build = function (msg) {
  * @param {Object} msg
  */
 cmd.remove = function (msg) {
-  var packageRef = msg.data.packageRef;
+  var packageRef = msg.data.packageRef || '';
   xLog.info ('remove development package: ' + packageRef);
 
   var cmd = require ('./lib/cmd.js');
