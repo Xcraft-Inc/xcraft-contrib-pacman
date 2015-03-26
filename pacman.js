@@ -215,13 +215,16 @@ cmd['edit.upload'] = function (msg) {
  * @param {Object} msg
  */
 cmd.make = function (msg) {
-  var packageName = msg.data.packageName;
-  xLog.info ('make the wpkg package for ' + (packageName || 'all'));
+  var utils = require ('./lib/utils.js');
+  var make  = require ('./lib/make.js');
 
-  var make = require ('./lib/make.js');
+  var packageRef = msg.data.packageRef || '';
+  var pkg = utils.parsePkgRef (packageRef);
+
+  xLog.info ('make the wpkg package for ' + (pkg.name || 'all') + ' on architecture: ' + pkg.arch);
 
   /* TODO: make only when the source has changed (make-like behaviour) */
-  if (!packageName) {
+  if (!pkg.name) {
     var async = require ('async');
     var xFs   = require ('xcraft-core-fs');
 
@@ -230,17 +233,17 @@ cmd.make = function (msg) {
 
     /* Loop for each package available in the products directory. */
     async.eachSeries (packages, function (packageName, callback) {
-      make.package (packageName, null, callback);
+      make.package (packageName, pkg.arch, callback);
     }, function () {
       busClient.events.send ('pacman.make.finished');
     });
   } else {
-    make.package (packageName, null, function (err) {
+    make.package (pkg.name, pkg.arch, function (err) {
       if (err) {
         xLog.err (err);
       }
       busClient.events.send ('pacman.make.finished');
-    }); /* TODO: arch support */
+    });
   }
 };
 

@@ -19,7 +19,7 @@
     "desc":"make all or only the specified package",
     "options": {
       "params": {
-        "optional": "packageName"
+        "optional": "packageRef"
       }
     }
   },
