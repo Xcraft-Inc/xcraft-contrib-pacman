@@ -218,8 +218,7 @@ cmd.make = function (msg) {
   var utils = require ('./lib/utils.js');
   var make  = require ('./lib/make.js');
 
-  var packageRef = msg.data.packageRef || '';
-  var pkg = utils.parsePkgRef (packageRef);
+  var pkg = utils.parsePkgRef (msg.data.packageRef);
 
   xLog.info ('make the wpkg package for ' + (pkg.name || 'all') + ' on architecture: ' + pkg.arch);
 
@@ -253,12 +252,9 @@ cmd.make = function (msg) {
  * @param {Object} msg
  */
 cmd.install = function (msg) {
-  var packageRef = msg.data.packageRef || '';
-  xLog.info ('install development package: ' + packageRef);
-
   var cmd = require ('./lib/cmd.js');
 
-  cmd.install (packageRef, function (err) {
+  cmd.install (msg.data.packageRef, function (err) {
     if (err) {
       xLog.err (err);
     }
@@ -273,12 +269,9 @@ cmd.install = function (msg) {
  * @param {Object} msg
  */
 cmd.build = function (msg) {
-  var packageRef = msg.data.packageRef || '';
-  xLog.info ('compile a development package: ' + packageRef);
-
   var build = require ('./lib/build.js');
 
-  build.package (packageRef, function (err) {
+  build.package (msg.data.packageRef, function (err) {
     if (err) {
       xLog.err (err);
     }
@@ -292,12 +285,9 @@ cmd.build = function (msg) {
  * @param {Object} msg
  */
 cmd.remove = function (msg) {
-  var packageRef = msg.data.packageRef || '';
-  xLog.info ('remove development package: ' + packageRef);
-
   var cmd = require ('./lib/cmd.js');
 
-  cmd.remove (packageRef, function (err) {
+  cmd.remove (msg.data.packageRef, function (err) {
     if (err) {
       xLog.err (err);
     }
