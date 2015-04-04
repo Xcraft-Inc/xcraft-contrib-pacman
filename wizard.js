@@ -240,10 +240,7 @@ exports.data = [{
 }, {
   type: 'input',
   name: 'rulesLocation',
-  message: 'Installer file name, source directory, executable, ...',
-  when: function (answers) {
-    return /(copy|move|exec|make)/.test (answers.rulesType);
-  }
+  message: 'Installer file name, source directory, executable, ...'
 }, {
   type: 'input',
   name: 'rulesArgsPostinst',
