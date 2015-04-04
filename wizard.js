@@ -172,6 +172,16 @@ exports.askdep = [{
 }];
 
 exports.dependency = [{
+  type: 'list',
+  name: 'type',
+  message: 'Specify build dependency with source packages:',
+  choices: [{
+    name: 'runtime'
+  }, {
+    name: 'build'
+  }],
+  default: 'runtime'
+}, {
   type: 'rawlist',
   name: 'dependency',
   message: 'Package\'s name',

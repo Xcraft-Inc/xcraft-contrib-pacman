@@ -76,12 +76,12 @@ cmd['edit.askdep'] = function (msg) {
 
   try {
     var def  = definition.load (msg.data.packageName);
-    var keys = Object.keys (def.dependency);
+    var keys = Object.keys (def.dependency.runtime);
 
     if (keys.length > msg.data.idxDep) {
       var key = keys[msg.data.idxDep];
 
-      if (def.dependency[key].length > msg.data.idxRange) {
+      if (def.dependency.runtime[key].length > msg.data.idxRange) {
         wizard.hasDependency = true;
       } else if (keys.length > msg.data.idxDep + 1) {
         wizard.hasDependency = true;
@@ -110,16 +110,17 @@ cmd['edit.dependency'] = function (msg) {
 
   try {
     var def  = definition.load (msg.data.packageName);
-    var keys = Object.keys (def.dependency);
+    var keys = Object.keys (def.dependency.runtime);
 
     if (keys.length > msg.data.idxDep) {
       var key = keys[msg.data.idxDep];
 
-      if (def.dependency[key].length > msg.data.idxRange) {
+      if (def.dependency.runtime[key].length > msg.data.idxRange) {
         var wizardFile = require ('./wizard.js');
 
-        wizard.dependency = wizardFile.dependency[0].choices ().indexOf (key);
-        wizard.version    = def.dependency[key][msg.data.idxRange];
+        wizard.type       = 'runtime';
+        wizard.dependency = wizardFile.dependency[1].choices ().indexOf (key);
+        wizard.version    = def.dependency.runtime[key][msg.data.idxRange];
         msg.data.idxRange++;
       } else {
         msg.data.idxDep++;
