@@ -1,3 +1,3 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: <PACMAN.PACKAGE.NAME>
-Upstream-Contact: "<PACMAN.PACKAGE.MAINTAINER.NAME>" <<PACMAN.PACKAGE.MAINTAINER.EMAIL>>
+Upstream-Name: <PACKAGE.NAME>
+Upstream-Contact: "<PACKAGE.MAINTAINER.NAME>" <<PACKAGE.MAINTAINER.EMAIL>>
