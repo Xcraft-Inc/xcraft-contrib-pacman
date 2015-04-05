@@ -329,13 +329,11 @@ exports.xcraftCommands = function () {
   };
 
   /* extacts cmds handlers for each category */
-  extractCommandsHandlers ('header');
-  extractCommandsHandlers ('askdep/runtime');
-  extractCommandsHandlers ('askdep/build');
-  extractCommandsHandlers ('dependency/runtime');
-  extractCommandsHandlers ('dependency/build');
-  extractCommandsHandlers ('data');
-  extractCommandsHandlers ('chest');
+  Object.keys (exports).forEach (function (exp) {
+    if (exp !== 'xcraftCommands') {
+      extractCommandsHandlers (exp);
+    }
+  });
 
   return {
     handlers: cmd,
