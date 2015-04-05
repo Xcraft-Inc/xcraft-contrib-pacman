@@ -31,6 +31,14 @@
       }
     }
   },
+  "install.status": {
+    "desc": "test if a package is installed",
+    "options": {
+      "params": {
+        "required": "packageRef"
+      }
+    }
+  },
   "build": {
     "desc": "compile a source package",
     "options": {

@@ -289,6 +289,24 @@ cmd.install = function (msg) {
 };
 
 /**
+ * Test if a package is installed.
+ *
+ * @param {Object} msg
+ */
+cmd['install.status'] = function (msg) {
+  var cmd = require ('./lib/cmd.js');
+
+  cmd.status (msg.data.packageRef, function (err, code) {
+    if (err) {
+      xLog.err (err);
+    }
+
+    busClient.events.send ('pacman.install.status', !!code);
+    busClient.events.send ('pacman.install.status.finished');
+  });
+};
+
+/**
  * Try to compile the sources of a source package.
  *
  * @param {Object} msg
