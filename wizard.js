@@ -171,33 +171,28 @@ exports.askdep = [{
   default: false
 }];
 
-exports.dependency = [{
-  type: 'list',
-  name: 'type',
-  message: 'Specify build dependency with source packages:',
-  choices: [{
-    name: 'runtime'
+var dependency = function (type) {
+  return [{
+    type: 'list',
+    name: 'dependency/' + type,
+    message: 'Package\'s name',
+    choices: function () {
+      return xFs.lsdir (xcraftConfig.pkgProductsRoot);
+    }
   }, {
-    name: 'build'
-  }],
-  default: 'runtime'
-}, {
-  type: 'rawlist',
-  name: 'dependency',
-  message: 'Package\'s name',
-  choices: function () {
-    return xFs.lsdir (xcraftConfig.pkgProductsRoot);
-  }
-}, {
-  type: 'input',
-  name: 'version',
-  message: 'Empty string or range operator (>>, >=, =, <= or <<) with version (like >= 1.0):',
-  validate: function (value) {
-    var rangeRegex = /((<[<=]|>[>=])|=)/;
-    var regex = new RegExp ('^(|' + rangeRegex.source + '[ ]{1}' + versionRegex.source + ')$');
-    return regex.test (value);
-  }
-}];
+    type: 'input',
+    name: 'version',
+    message: 'Empty string or range operator (>>, >=, =, <= or <<) with version (like >= 1.0):',
+    validate: function (value) {
+      var rangeRegex = /((<[<=]|>[>=])|=)/;
+      var regex = new RegExp ('^(|' + rangeRegex.source + '[ ]{1}' + versionRegex.source + ')$');
+      return regex.test (value);
+    }
+  }];
+};
+
+exports['dependency/runtime'] = dependency ('runtime');
+exports['dependency/build']   = dependency ('build');
 
 exports.data = [{
   type: 'input',
@@ -331,7 +326,8 @@ exports.xcraftCommands = function () {
   /* extacts cmds handlers for each category */
   extractCommandsHandlers ('header');
   extractCommandsHandlers ('askdep');
-  extractCommandsHandlers ('dependency');
+  extractCommandsHandlers ('dependency/runtime');
+  extractCommandsHandlers ('dependency/build');
   extractCommandsHandlers ('data');
   extractCommandsHandlers ('chest');
 

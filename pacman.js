@@ -64,8 +64,11 @@ cmd['edit.header'] = function (msg) {
   msg.data.wizardName     = 'header';
   msg.data.wizardDefaults = wizard;
 
+  /* Prepare for dependency wizard. */
   msg.data.idxDep   = 0;
   msg.data.idxRange = 0;
+  msg.data.depType  = 'runtime';
+  msg.data.nextStep = 'edit.data';
 
   msg.data.nextCommand = 'pacman.edit.askdep';
   busClient.events.send ('pacman.edit.added', msg.data);
@@ -76,12 +79,12 @@ cmd['edit.askdep'] = function (msg) {
 
   try {
     var def  = definition.load (msg.data.packageName);
-    var keys = Object.keys (def.dependency.runtime);
+    var keys = Object.keys (def.dependency[msg.data.depType]);
 
     if (keys.length > msg.data.idxDep) {
       var key = keys[msg.data.idxDep];
 
-      if (def.dependency.runtime[key].length > msg.data.idxRange) {
+      if (def.dependency[msg.data.depType][key].length > msg.data.idxRange) {
         wizard.hasDependency = true;
       } else if (keys.length > msg.data.idxDep + 1) {
         wizard.hasDependency = true;
@@ -104,23 +107,22 @@ cmd['edit.dependency'] = function (msg) {
   var wizard = {};
 
   if (msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].hasDependency === false) {
-    cmd['edit.data'] (msg);
+    cmd[msg.data.nextStep] (msg);
     return;
   }
 
+  var wizardName = 'dependency/' + msg.data.depType;
+
   try {
     var def  = definition.load (msg.data.packageName);
-    var keys = Object.keys (def.dependency.runtime);
+    var keys = Object.keys (def.dependency[msg.data.depType]);
 
     if (keys.length > msg.data.idxDep) {
       var key = keys[msg.data.idxDep];
 
-      if (def.dependency.runtime[key].length > msg.data.idxRange) {
-        var wizardFile = require ('./wizard.js');
-
-        wizard.type       = 'runtime';
-        wizard.dependency = wizardFile.dependency[1].choices ().indexOf (key);
-        wizard.version    = def.dependency.runtime[key][msg.data.idxRange];
+      if (def.dependency[msg.data.depType][key].length > msg.data.idxRange) {
+        wizard[wizardName] = key;
+        wizard.version     = def.dependency[msg.data.depType][key][msg.data.idxRange];
         msg.data.idxRange++;
       } else {
         msg.data.idxDep++;
@@ -128,7 +130,7 @@ cmd['edit.dependency'] = function (msg) {
     }
   } catch (err) {}
 
-  msg.data.wizardName     = 'dependency';
+  msg.data.wizardName     = wizardName;
   msg.data.wizardDefaults = wizard;
 
   msg.data.nextCommand = 'pacman.edit.askdep';
@@ -156,7 +158,13 @@ cmd['edit.data'] = function (msg) {
   msg.data.wizardName     = 'data';
   msg.data.wizardDefaults = wizard;
 
-  msg.data.nextCommand = 'pacman.edit.save';
+  /* Prepare for dependency wizard. */
+  msg.data.idxDep   = 0;
+  msg.data.idxRange = 0;
+  msg.data.depType  = 'build';
+  msg.data.nextStep = 'edit.save';
+
+  msg.data.nextCommand = 'pacman.edit.askdep';
   busClient.events.send ('pacman.edit.added', msg.data);
 };
 
