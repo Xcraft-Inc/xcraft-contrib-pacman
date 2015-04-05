@@ -16,7 +16,7 @@
     }
   },
   "make": {
-    "desc":"make all or only the specified package",
+    "desc": "make all or only the specified package",
     "options": {
       "params": {
         "optional": "packageRef"
