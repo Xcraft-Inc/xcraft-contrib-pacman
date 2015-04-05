@@ -185,7 +185,7 @@ cmd['edit.data'] = function (msg) {
 };
 
 cmd['edit.save'] = function (msg) {
-  var create = require ('./lib/create.js');
+  var create = require ('./lib/edit.js');
 
   var wizardAnswers = msg.data.wizardAnswers;
   xLog.verb ('JSON output for pre-package definition:\n' +
