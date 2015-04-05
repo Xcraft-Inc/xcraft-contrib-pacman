@@ -77,6 +77,8 @@ cmd['edit.header'] = function (msg) {
 cmd['edit.askdep'] = function (msg) {
   var wizard = {};
 
+  var wizardName = 'askdep/' + msg.data.depType;
+
   try {
     var def  = definition.load (msg.data.packageName);
     var keys = Object.keys (def.dependency[msg.data.depType]);
@@ -96,7 +98,7 @@ cmd['edit.askdep'] = function (msg) {
     }
   } catch (err) {}
 
-  msg.data.wizardName     = 'askdep';
+  msg.data.wizardName     = wizardName;
   msg.data.wizardDefaults = wizard;
 
   msg.data.nextCommand = 'pacman.edit.dependency';

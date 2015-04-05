@@ -164,12 +164,17 @@ exports.header = [{
   loktharType: 'multi-line'
 }];
 
-exports.askdep = [{
-  type: 'confirm',
-  name: 'hasDependency',
-  message: 'Add a dependency',
-  default: false
-}];
+var askdep = function (type) {
+  return [{
+    type: 'confirm',
+    name: 'hasDependency',
+    message: 'Add a dependency for ' + type,
+    default: false
+  }];
+};
+
+exports['askdep/runtime'] = askdep ('runtime');
+exports['askdep/build']   = askdep ('build');
 
 var dependency = function (type) {
   return [{
@@ -325,7 +330,8 @@ exports.xcraftCommands = function () {
 
   /* extacts cmds handlers for each category */
   extractCommandsHandlers ('header');
-  extractCommandsHandlers ('askdep');
+  extractCommandsHandlers ('askdep/runtime');
+  extractCommandsHandlers ('askdep/build');
   extractCommandsHandlers ('dependency/runtime');
   extractCommandsHandlers ('dependency/build');
   extractCommandsHandlers ('data');
