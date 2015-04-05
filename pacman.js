@@ -104,7 +104,9 @@ cmd['edit.askdep'] = function (msg) {
 };
 
 cmd['edit.dependency'] = function (msg) {
-  var wizard = {};
+  var wizard = {
+    version: ''
+  };
 
   if (msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].hasDependency === false) {
     cmd[msg.data.nextStep] (msg);
