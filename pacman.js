@@ -279,7 +279,7 @@ cmd.make = function (msg) {
 cmd.install = function (msg) {
   var cmd = require ('./lib/cmd.js');
 
-  cmd.install (msg.data.packageRef, function (err) {
+  cmd.install (msg.data.packageRef, false, function (err) {
     if (err) {
       xLog.err (err);
     }
