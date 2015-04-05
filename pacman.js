@@ -289,6 +289,23 @@ cmd.install = function (msg) {
 };
 
 /**
+ * Try to reinstall the developement package.
+ *
+ * @param {Object} msg
+ */
+cmd.reinstall = function (msg) {
+  var cmd = require ('./lib/cmd.js');
+
+  cmd.install (msg.data.packageRef, true, function (err) {
+    if (err) {
+      xLog.err (err);
+    }
+    xPath.devrootUpdate ();
+    busClient.events.send ('pacman.reinstall.finished');
+  });
+};
+
+/**
  * Test if a package is installed.
  *
  * @param {Object} msg
