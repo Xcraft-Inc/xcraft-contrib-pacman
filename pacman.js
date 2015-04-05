@@ -160,13 +160,25 @@ cmd['edit.data'] = function (msg) {
   msg.data.wizardName     = 'data';
   msg.data.wizardDefaults = wizard;
 
-  /* Prepare for dependency wizard. */
-  msg.data.idxDep   = 0;
-  msg.data.idxRange = 0;
-  msg.data.depType  = 'build';
-  msg.data.nextStep = 'edit.save';
+  /* Ask for build dependencies only with source packages. */
+  if (msg.data.wizardAnswers.some (function (wizard) {
+    return Object.keys (wizard).some (function (it) {
+      return it === 'architecture' && wizard[it].some (function (arch) {
+        return arch === 'source';
+      });
+    });
+  })) {
+    /* Prepare for dependency wizard. */
+    msg.data.idxDep   = 0;
+    msg.data.idxRange = 0;
+    msg.data.depType  = 'build';
+    msg.data.nextStep = 'edit.save';
 
-  msg.data.nextCommand = 'pacman.edit.askdep';
+    msg.data.nextCommand = 'pacman.edit.askdep';
+  } else {
+    msg.data.nextCommand = 'pacman.edit.save';
+  }
+
   busClient.events.send ('pacman.edit.added', msg.data);
 };
 
