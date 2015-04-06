@@ -264,7 +264,7 @@ cmd.make = function (msg) {
   } else {
     make.package (pkg.name, pkg.arch, function (err) {
       if (err) {
-        xLog.err (err);
+        xLog.err (err.stack ? err.stack : err);
       }
       busClient.events.send ('pacman.make.finished');
     });
