@@ -4,7 +4,7 @@ var should    = require ('should'); /* jshint ignore:line */
 var xPlatform = require ('xcraft-core-platform');
 var utils     = require ('../lib/utils.js');
 
-describe ('utils', function () {
+describe ('xcraft-contrib-pacman/utils', function () {
   describe ('#parsePkgRef ()', function () {
     var packageRef = {
       nameAll:   'namespace+foobar:all',
