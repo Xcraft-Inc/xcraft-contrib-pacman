@@ -204,6 +204,24 @@ exports.data = [{
   name: 'uri',
   message: 'URI'
 }, {
+  type: 'input',
+  name: 'uriOut',
+  message: 'Output basename (keep empty for current URI basename):',
+  when: function (answers) {
+    var url = require ('url');
+    var uriObj = url.parse (answers.uri);
+
+    switch (uriObj.protocol) {
+    case 'http:':
+    case 'https:':
+    case 'chest:': {
+      return true;
+    }
+    }
+
+    return false;
+  }
+}, {
   type: 'list',
   name: 'fileType',
   message: 'Type of data',

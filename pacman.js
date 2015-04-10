@@ -147,7 +147,8 @@ cmd['edit.data'] = function (msg) {
   try {
     var def = definition.load (msg.data.packageName);
 
-    wizard.uri               = def.data.uri;
+    wizard.uri               = def.data.get.uri;
+    wizard.uriOut            = def.data.get.out;
     wizard.fileType          = def.data.type;
     wizard.configureCmd      = def.data.configure;
     wizard.rulesType         = def.data.rules.type;
