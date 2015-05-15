@@ -8,7 +8,7 @@ var definition = require ('./lib/definition.js');
 
 var xPath        = require ('xcraft-core-path');
 var xLog         = require ('xcraft-core-log') (moduleName);
-var busClient    = require ('xcraft-core-busclient');
+var busClient    = require ('xcraft-core-busclient').global;
 var xcraftConfig = require ('xcraft-core-etc').load ('xcraft');
 var pacmanConfig = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
 

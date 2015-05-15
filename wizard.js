@@ -4,7 +4,7 @@ var inquirer = require ('inquirer');
 
 var xFs          = require ('xcraft-core-fs');
 var xPeon        = require ('xcraft-contrib-peon');
-var busClient    = require ('xcraft-core-busclient');
+var busClient    = require ('xcraft-core-busclient').global;
 var xcraftConfig = require ('xcraft-core-etc').load ('xcraft');
 var pacmanConfig = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
 
