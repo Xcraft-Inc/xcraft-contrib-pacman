@@ -454,14 +454,3 @@ exports.xcraftConfig = [{
   message: 'index file for wpkg repositories',
   default: 'index.tar.gz'
 }];
-
-/**
- * Publish commands for std module exports.
- */
-var main = function () {
-  Object.keys (cmd).forEach (function (action) {
-    exports[action] = cmd[action];
-  });
-};
-
-main ();
