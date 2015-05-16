@@ -248,28 +248,38 @@ cmd.make = function (msg) {
 
   xLog.info ('make the wpkg package for ' + (pkg.name || 'all') + ' on architecture: ' + pkg.arch);
 
-  /* TODO: make only when the source has changed (make-like behaviour) */
-  if (!pkg.name) {
-    var async = require ('async');
-    var xFs   = require ('xcraft-core-fs');
-
-    /* FIXME: use pacman.list */
-    var packages = xFs.lsdir (xcraftConfig.pkgProductsRoot);
-
-    /* Loop for each package available in the products directory. */
-    async.eachSeries (packages, function (packageName, callback) {
-      make.package (packageName, pkg.arch, callback);
-    }, function () {
+  busClient.command.send ('pacman.clean', {
+    packageName: pkg.name
+  }, function (err) {
+    if (err) {
+      xLog.err (err);
       busClient.events.send ('pacman.make.finished');
-    });
-  } else {
-    make.package (pkg.name, pkg.arch, function (err) {
-      if (err) {
-        xLog.err (err.stack ? err.stack : err);
-      }
-      busClient.events.send ('pacman.make.finished');
-    });
-  }
+      return;
+    }
+
+    /* TODO: make only when the source has changed (make-like behaviour) */
+    if (!pkg.name) {
+      var async = require ('async');
+      var xFs   = require ('xcraft-core-fs');
+
+      /* FIXME: use pacman.list */
+      var packages = xFs.lsdir (xcraftConfig.pkgProductsRoot);
+
+      /* Loop for each package available in the products directory. */
+      async.eachSeries (packages, function (packageName, callback) {
+        make.package (packageName, pkg.arch, callback);
+      }, function () {
+        busClient.events.send ('pacman.make.finished');
+      });
+    } else {
+      make.package (pkg.name, pkg.arch, function (err) {
+        if (err) {
+          xLog.err (err.stack ? err.stack : err);
+        }
+        busClient.events.send ('pacman.make.finished');
+      });
+    }
+  });
 };
 
 /**
