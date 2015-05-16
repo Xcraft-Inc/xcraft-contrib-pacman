@@ -358,28 +358,19 @@ cmd.remove = function (msg) {
 };
 
 /**
- * Remove all the generated files.
+ * Remove all the generated files from the temporary directory.
+ *
+ * @param {Object} msg
  */
-cmd.clean = function () {
-  var xFs = require ('xcraft-core-fs');
+cmd.clean = function (msg) {
+  var clean = require ('./lib/clean.js');
 
-  xLog.info ('clean all generated files');
-
-  xLog.verb ('delete ' + xcraftConfig.pkgTargetRoot);
-  xFs.rm (xcraftConfig.pkgTargetRoot);
-
-  xLog.verb ('delete ' + xcraftConfig.pkgDebRoot);
-  xFs.rm (xcraftConfig.pkgDebRoot);
-
-  xFs.ls (xcraftConfig.tempRoot, /^(?!.*\.gitignore)/).forEach (function (file) {
-    file = path.join (xcraftConfig.tempRoot, file);
-    xLog.verb ('delete ' + file);
-
-    xFs.rm (file);
+  clean.temp (msg.data.packageName, function (err) {
+    if (err) {
+      xLog.err (err);
+    }
+    busClient.events.send ('pacman.clean.finished');
   });
-
-  xPath.devrootUpdate ();
-  busClient.events.send ('pacman.clean.finished');
 };
 
 /**

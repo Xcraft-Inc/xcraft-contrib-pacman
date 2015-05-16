@@ -64,6 +64,11 @@
     }
   },
   "clean": {
-    "desc":"remove the devroot, the repository and the packages"
+    "desc":"remove the devroot, the repository and the packages",
+    "options": {
+      "params": {
+        "optional": "packageName"
+      }
+    }
   }
 }
