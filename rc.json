@@ -64,7 +64,7 @@
     }
   },
   "clean": {
-    "desc":"remove the devroot, the repository and the packages",
+    "desc":"remove the temporary package files",
     "options": {
       "params": {
         "optional": "packageName"
