@@ -52,6 +52,7 @@ cmd['edit.header'] = function (msg) {
     var def = definition.load (msg.data.packageName);
 
     wizard.version          = def.version;
+    wizard.tool             = def.distribution === pacmanConfig.pkgToolchainRepository;
     wizard.maintainerName   = def.maintainer.name;
     wizard.maintainerEmail  = def.maintainer.email;
     wizard.architecture     = def.architecture;
@@ -455,9 +456,14 @@ exports.xcraftConfig = [{
   default: 'WPKG'
 }, {
   type: 'input',
-  name: 'pkgRepository',
+  name: 'pkgToolchainRepository',
   message: 'toolchain repository path',
   default: 'toolchain/'
+}, {
+  type: 'input',
+  name: 'pkgProductsRepository',
+  message: 'products repository path',
+  default: 'products/'
 }, {
   type: 'input',
   name: 'pkgIndex',

@@ -56,6 +56,11 @@ exports.header = [{
     return true;
   }
 }, {
+  type: 'confirm',
+  name: 'tool',
+  message: 'Is it a tool (if yes, then it can only be installed in the toolchain)',
+  default: true
+}, {
   type: 'input',
   name: 'maintainerName',
   message: 'Maintainer\'s name',
