@@ -67,7 +67,7 @@ cmd['edit.header'] = function (msg) {
   /* Prepare for dependency wizard. */
   msg.data.idxDep   = 0;
   msg.data.idxRange = 0;
-  msg.data.depType  = 'runtime';
+  msg.data.depType  = 'install';
   msg.data.nextStep = 'edit.data';
 
   msg.data.nextCommand = 'pacman.edit.askdep';

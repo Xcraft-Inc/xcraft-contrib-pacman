@@ -173,7 +173,7 @@ var askdep = function (type) {
   }];
 };
 
-exports['askdep/runtime'] = askdep ('runtime');
+exports['askdep/install'] = askdep ('install');
 exports['askdep/build']   = askdep ('build');
 
 var dependency = function (type) {
@@ -196,7 +196,7 @@ var dependency = function (type) {
   }];
 };
 
-exports['dependency/runtime'] = dependency ('runtime');
+exports['dependency/install'] = dependency ('install');
 exports['dependency/build']   = dependency ('build');
 
 exports.data = [{
