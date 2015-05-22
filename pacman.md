@@ -11,18 +11,18 @@ List all packages definitions available in the `packages/` directory.
 
 ### pacman.edit
 
-Create or edit a package [definition](2). This function will start a wizard and
-generates a new directory in the `packages/` directory. The [definition](2) is
+Create or edit a package [definition][2]. This function will start a wizard and
+generates a new directory in the `packages/` directory. The [definition][2] is
 stored in a `.yml` file.
 
 ### pacman.make
 
-Generate a new package `.deb` accordingly to the [definitions](2). This package
-is saved in a local [repository](3).
+Generate a new package `.deb` accordingly to the [definitions][2]. This package
+is saved in a local [repository][3].
 
 ### pacman.install
 
-Install a package from the [repository](3) in the [`devroot/`](1). The list of
+Install a package from the [repository][3] in the [`devroot/`][1]. The list of
 available repositories depends of the current `devroot/` settings. If the
 package is already installed, nothing happens. If the currently installed
 package is older, then this action will upgrade with the new version.
@@ -55,7 +55,6 @@ The make command generates temporary files in `var/tmp/wpkg/`. Here, it's
 possible to remove these files. The make command is already using the clean
 command internally.
 
----
 
 [1]: pacman.devroot.md
 [2]: pacman.definition.md
