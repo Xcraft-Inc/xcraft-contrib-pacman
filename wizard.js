@@ -243,6 +243,13 @@ exports.data = [{
   }
 }, {
   type: 'input',
+  name: 'uriRef',
+  message: 'Branch, tag, commit or empty:',
+  when: function (answers) {
+    return answers.fileType === 'src';
+  }
+}, {
+  type: 'input',
   name: 'configureCmd',
   message: 'Configure step (commands, script, ...):'
 }, {
