@@ -290,9 +290,9 @@ cmd.make = function (msg) {
  * @param {Object} msg
  */
 cmd.install = function (msg) {
-  var cmd = require ('./lib/cmd.js');
+  var install = require ('./lib/install.js');
 
-  cmd.install (msg.data.packageRef, false, function (err) {
+  install.package (msg.data.packageRef, false, function (err) {
     if (err) {
       xLog.err (err);
     }
@@ -307,9 +307,9 @@ cmd.install = function (msg) {
  * @param {Object} msg
  */
 cmd.reinstall = function (msg) {
-  var cmd = require ('./lib/cmd.js');
+  var install = require ('./lib/install.js');
 
-  cmd.install (msg.data.packageRef, true, function (err) {
+  install.package (msg.data.packageRef, true, function (err) {
     if (err) {
       xLog.err (err);
     }
@@ -324,9 +324,9 @@ cmd.reinstall = function (msg) {
  * @param {Object} msg
  */
 cmd['install.status'] = function (msg) {
-  var cmd = require ('./lib/cmd.js');
+  var install = require ('./lib/install.js');
 
-  cmd.status (msg.data.packageRef, function (err, code) {
+  install.status (msg.data.packageRef, function (err, code) {
     if (err) {
       xLog.err (err);
     }
@@ -358,9 +358,9 @@ cmd.build = function (msg) {
  * @param {Object} msg
  */
 cmd.remove = function (msg) {
-  var cmd = require ('./lib/cmd.js');
+  var remove = require ('./lib/remove.js');
 
-  cmd.remove (msg.data.packageRef, function (err) {
+  remove.package (msg.data.packageRef, function (err) {
     if (err) {
       xLog.err (err);
     }
