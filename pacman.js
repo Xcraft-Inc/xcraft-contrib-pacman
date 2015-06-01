@@ -246,9 +246,28 @@ cmd.make = function (msg) {
   var utils = require ('./lib/utils.js');
   var make  = require ('./lib/make.js');
 
-  var pkg = utils.parsePkgRef (msg.data.packageRef);
+  var packageRef = null;
+  var packageArgs = {};
+
+  if (msg.data.packageArgs) {
+    /* Retrieve the packageRef if available. */
+    if (!/^p:/.test (msg.data.packageArgs[0])) {
+      packageRef = msg.data.packageArgs.shift ();
+    }
+
+    /* Transform all properties to a map. */
+    msg.data.packageArgs.forEach (function (arg) {
+      var match = arg.trim ().match (/^p:([^=]*)[=](.*)/);
+      if (match) {
+        packageArgs[match[1]] = match[2];
+      }
+    });
+  }
+
+  var pkg = utils.parsePkgRef (packageRef);
 
   xLog.info ('make the wpkg package for ' + (pkg.name || 'all') + ' on architecture: ' + pkg.arch);
+  xLog.verb ('list of overloaded properties: %s', JSON.stringify (packageArgs));
 
   busClient.command.send ('pacman.clean', {
     packageName: pkg.name
@@ -269,12 +288,12 @@ cmd.make = function (msg) {
 
       /* Loop for each package available in the products directory. */
       async.eachSeries (packages, function (packageName, callback) {
-        make.package (packageName, pkg.arch, callback);
+        make.package (packageName, pkg.arch, packageArgs, callback);
       }, function () {
         busClient.events.send ('pacman.make.finished');
       });
     } else {
-      make.package (pkg.name, pkg.arch, function (err) {
+      make.package (pkg.name, pkg.arch, packageArgs, function (err) {
         if (err) {
           xLog.err (err.stack ? err.stack : err);
         }
