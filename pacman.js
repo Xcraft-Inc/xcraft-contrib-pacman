@@ -489,4 +489,9 @@ exports.xcraftConfig = [{
   name: 'pkgIndex',
   message: 'index file for wpkg repositories',
   default: 'index.tar.gz'
+}, {
+  type: 'input',
+  name: 'stamps',
+  message: 'location for build stamps',
+  default: './var/xcraft-contrib-pacman/'
 }];
