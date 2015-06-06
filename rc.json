@@ -39,8 +39,8 @@
       }
     }
   },
-  "install.status": {
-    "desc": "test if a package is installed",
+  "status": {
+    "desc": "retrieve the status of a package",
     "options": {
       "params": {
         "required": "packageRef"

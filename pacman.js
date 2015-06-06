@@ -342,7 +342,7 @@ cmd.reinstall = function (msg) {
  *
  * @param {Object} msg
  */
-cmd['install.status'] = function (msg) {
+cmd.status = function (msg) {
   var install = require ('./lib/install.js');
 
   install.status (msg.data.packageRef, function (err, code) {
@@ -350,8 +350,12 @@ cmd['install.status'] = function (msg) {
       xLog.err (err);
     }
 
-    busClient.events.send ('pacman.install.status', !!code);
-    busClient.events.send ('pacman.install.status.finished');
+    var status = {
+      installed: !!code
+    };
+
+    busClient.events.send ('pacman.status', status);
+    busClient.events.send ('pacman.status.finished');
   });
 };
 

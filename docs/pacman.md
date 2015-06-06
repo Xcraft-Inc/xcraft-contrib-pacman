@@ -33,7 +33,7 @@ Unlike the install command, here it's possible to reinstall an already
 installed package. Excepted for this case, the behaviours are the same that
 the install command.
 
-### pacman.install.status
+### pacman.status
 
 It's possible to check if a package is already installed with this command.
 
