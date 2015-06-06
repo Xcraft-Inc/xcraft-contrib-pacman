@@ -278,7 +278,6 @@ cmd.make = function (msg) {
       return;
     }
 
-    /* TODO: make only when the source has changed (make-like behaviour) */
     if (!pkg.name) {
       var async = require ('async');
       var xFs   = require ('xcraft-core-fs');
