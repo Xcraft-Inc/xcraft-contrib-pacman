@@ -1,7 +1,4 @@
 {
-  "configure": {
-    "desc": "change settings"
-  },
   "list": {
     "parallelizable": "true",
     "desc": "list all available packages"
