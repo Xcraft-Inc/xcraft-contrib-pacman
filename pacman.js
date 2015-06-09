@@ -6,18 +6,29 @@ var path  = require ('path');
 var async = require ('async');
 
 var definition = require ('./lib/definition.js');
+var list       = require ('./lib/list.js');
 
 var xPath        = require ('xcraft-core-path');
 var xLog         = require ('xcraft-core-log') (moduleName);
 var busClient    = require ('xcraft-core-busclient').global;
-var xcraftConfig = require ('xcraft-core-etc').load ('xcraft');
 var pacmanConfig = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
 
 var cmd = {};
 
 
 var extractPackages = function (packageRefs) {
-  return packageRefs ? packageRefs.split (',') : [null];
+  if (packageRefs) {
+    return packageRefs.split (',');
+  }
+
+  var pkgs    = list.listProducts ();
+  var results = [];
+
+  pkgs.forEach (function (item) {
+    results.push (item.name);
+  });
+
+  return results;
 };
 
 cmd.list = function () {
