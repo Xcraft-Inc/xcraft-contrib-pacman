@@ -17,18 +17,29 @@ var cmd = {};
 
 
 var extractPackages = function (packageRefs) {
-  if (packageRefs) {
-    return packageRefs.split (',');
-  }
-
-  var pkgs    = list.listProducts ();
+  var all     = false;
   var results = [];
 
-  pkgs.forEach (function (item) {
-    results.push (item.name);
-  });
+  if (packageRefs) {
+    packageRefs = packageRefs.replace (/,{2,}/g, ',')
+                             .replace (/^,/, '')
+                             .replace (/,$/, '');
+  }
 
-  return results;
+  if (!packageRefs || !packageRefs.length) {
+    var pkgs = list.listProducts ();
+
+    pkgs.forEach (function (item) {
+      results.push (item.name);
+    });
+  } else {
+    results = packageRefs.split (',');
+  }
+
+  return {
+    list: results,
+    all:  all
+  };
 };
 
 cmd.list = function () {
@@ -283,7 +294,7 @@ cmd.make = function (msg) {
 
   xLog.verb ('list of overloaded properties: %s', JSON.stringify (packageArgs));
 
-  var pkgs = extractPackages (packageRefs);
+  var pkgs = extractPackages (packageRefs).list;
 
   var cleanArg = {};
   if (packageRefs) {
@@ -321,7 +332,7 @@ cmd.make = function (msg) {
 cmd.install = function (msg) {
   var install = require ('./lib/install.js');
 
-  var pkgs = extractPackages (msg.data.packageRefs);
+  var pkgs = extractPackages (msg.data.packageRefs).list;
 
   async.eachSeries (pkgs, function (packageRef, callback) {
     install.package (packageRef, false, function (err) {
@@ -344,7 +355,7 @@ cmd.install = function (msg) {
 cmd.reinstall = function (msg) {
   var install = require ('./lib/install.js');
 
-  var pkgs = extractPackages (msg.data.packageRefs);
+  var pkgs = extractPackages (msg.data.packageRefs).list;
 
   async.eachSeries (pkgs, function (packageRef, callback) {
     install.package (packageRef, true, function (err) {
@@ -367,7 +378,7 @@ cmd.reinstall = function (msg) {
 cmd.status = function (msg) {
   var install = require ('./lib/install.js');
 
-  var pkgs = extractPackages (msg.data.packageRefs);
+  var pkgs = extractPackages (msg.data.packageRefs).list;
 
   async.eachSeries (pkgs, function (packageRef, callback) {
     install.status (packageRef, function (err, code) {
@@ -397,8 +408,9 @@ cmd.build = function (msg) {
 
   var pkgs = [null];
 
-  if (msg.data.packageRefs) {
-    pkgs = extractPackages (msg.data.packageRefs);
+  var extractedPkgs = extractPackages (msg.data.packageRefs);
+  if (!extractedPkgs.all) {
+    pkgs = extractedPkgs.list;
   }
 
   async.eachSeries (pkgs, function (packageRef, callback) {
@@ -421,7 +433,7 @@ cmd.build = function (msg) {
 cmd.remove = function (msg) {
   var remove = require ('./lib/remove.js');
 
-  var pkgs = extractPackages (msg.data.packageRefs);
+  var pkgs = extractPackages (msg.data.packageRefs).list;
 
   async.eachSeries (pkgs, function (packageRef, callback) {
     remove.package (packageRef, function (err) {
@@ -444,7 +456,7 @@ cmd.remove = function (msg) {
 cmd.clean = function (msg) {
   var clean = require ('./lib/clean.js');
 
-  var pkgs = extractPackages (msg.data.packageNames);
+  var pkgs = extractPackages (msg.data.packageNames).list;
 
   async.eachSeries (pkgs, function (packageName, callback) {
     clean.temp (packageName, function (err) {
