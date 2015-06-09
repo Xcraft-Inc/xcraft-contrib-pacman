@@ -281,46 +281,35 @@ cmd.make = function (msg) {
     });
   }
 
+  xLog.verb ('list of overloaded properties: %s', JSON.stringify (packageArgs));
+
   var pkgs = extractPackages (packageRefs);
 
-  async.eachSeries (pkgs, function (packageRef, callback) {
-    var pkg = utils.parsePkgRef (packageRef);
+  var cleanArg = {};
+  if (packageRefs) {
+    cleanArg.packageNames = pkgs.join (',');
+  }
+  busClient.command.send ('pacman.clean', cleanArg, function (err) {
+    if (err) {
+      xLog.err (err);
+      busClient.events.send ('pacman.make.finished');
+      return;
+    }
 
-    xLog.info ('make the wpkg package for ' + (pkg.name || 'all') + ' on architecture: ' + pkg.arch);
-    xLog.verb ('list of overloaded properties: %s', JSON.stringify (packageArgs));
+    async.eachSeries (pkgs, function (packageRef, callback) {
+      var pkg = utils.parsePkgRef (packageRef);
 
-    busClient.command.send ('pacman.clean', {
-      packageNames: pkg.name
-    }, function (err) {
-      if (err) {
-        xLog.err (err);
-        busClient.events.send ('pacman.make.finished');
-        return;
-      }
+      xLog.info ('make the wpkg package for ' + pkg.name + ' on architecture: ' + pkg.arch);
 
-      if (!pkg.name) {
-        var xFs   = require ('xcraft-core-fs');
-
-        /* FIXME: use pacman.list */
-        var packages = xFs.lsdir (xcraftConfig.pkgProductsRoot);
-
-        /* Loop for each package available in the products directory. */
-        async.eachSeries (packages, function (packageName, callback) {
-          make.package (packageName, pkg.arch, packageArgs, callback);
-        }, function () {
-          busClient.events.send ('pacman.make.finished');
-        });
-      } else {
-        make.package (pkg.name, pkg.arch, packageArgs, function (err) {
-          if (err) {
-            xLog.err (err.stack ? err.stack : err);
-          }
-          callback ();
-        });
-      }
+      make.package (pkg.name, pkg.arch, packageArgs, function (err) {
+        if (err) {
+          xLog.err (err.stack ? err.stack : err);
+        }
+        callback ();
+      });
+    }, function () {
+      busClient.events.send ('pacman.make.finished');
     });
-  }, function () {
-    busClient.events.send ('pacman.make.finished');
   });
 };
 
