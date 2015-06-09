@@ -15,6 +15,11 @@ var pacmanConfig = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
 
 var cmd = {};
 
+
+var extractPackages = function (packageRefs) {
+  return packageRefs ? packageRefs.split (',') : [null];
+};
+
 cmd.list = function () {
   xLog.info ('list of all products');
 
@@ -265,7 +270,7 @@ cmd.make = function (msg) {
     });
   }
 
-  var pkgs = packageRefs ? packageRefs.split (',') : [null];
+  var pkgs = extractPackages (packageRefs);
 
   async.eachSeries (pkgs, function (packageRef, callback) {
     var pkg = utils.parsePkgRef (packageRef);
@@ -316,7 +321,7 @@ cmd.make = function (msg) {
 cmd.install = function (msg) {
   var install = require ('./lib/install.js');
 
-  var pkgs = msg.data.packageRefs ? msg.data.packageRefs.split (',') : [null];
+  var pkgs = extractPackages (msg.data.packageRefs);
 
   async.eachSeries (pkgs, function (packageRef, callback) {
     install.package (packageRef, false, function (err) {
@@ -339,7 +344,7 @@ cmd.install = function (msg) {
 cmd.reinstall = function (msg) {
   var install = require ('./lib/install.js');
 
-  var pkgs = msg.data.packageRefs ? msg.data.packageRefs.split (',') : [null];
+  var pkgs = extractPackages (msg.data.packageRefs);
 
   async.eachSeries (pkgs, function (packageRef, callback) {
     install.package (packageRef, true, function (err) {
@@ -362,7 +367,7 @@ cmd.reinstall = function (msg) {
 cmd.status = function (msg) {
   var install = require ('./lib/install.js');
 
-  var pkgs = msg.data.packageRefs ? msg.data.packageRefs.split (',') : [null];
+  var pkgs = extractPackages (msg.data.packageRefs);
 
   async.eachSeries (pkgs, function (packageRef, callback) {
     install.status (packageRef, function (err, code) {
@@ -390,7 +395,7 @@ cmd.status = function (msg) {
 cmd.build = function (msg) {
   var build = require ('./lib/build.js');
 
-  var pkgs = msg.data.packageRefs ? msg.data.packageRefs.split (',') : [null];
+  var pkgs = extractPackages (msg.data.packageRefs);
 
   async.eachSeries (pkgs, function (packageRef, callback) {
     build.package (packageRef, function (err) {
@@ -412,7 +417,7 @@ cmd.build = function (msg) {
 cmd.remove = function (msg) {
   var remove = require ('./lib/remove.js');
 
-  var pkgs = msg.data.packageRefs ? msg.data.packageRefs.split (',') : [null];
+  var pkgs = extractPackages (msg.data.packageRefs);
 
   async.eachSeries (pkgs, function (packageRef, callback) {
     remove.package (packageRef, function (err) {
@@ -435,7 +440,7 @@ cmd.remove = function (msg) {
 cmd.clean = function (msg) {
   var clean = require ('./lib/clean.js');
 
-  var pkgs = msg.data.packageNames ? msg.data.packageNames.split (',') : [null];
+  var pkgs = extractPackages (msg.data.packageNames);
 
   async.eachSeries (pkgs, function (packageName, callback) {
     clean.temp (packageName, function (err) {
