@@ -283,7 +283,6 @@ cmd.make = function (msg) {
       }
 
       if (!pkg.name) {
-        var async = require ('async');
         var xFs   = require ('xcraft-core-fs');
 
         /* FIXME: use pacman.list */
