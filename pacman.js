@@ -268,42 +268,42 @@ cmd.make = function (msg) {
   var pkgs = packageRefs.split (',');
 
   async.eachSeries (pkgs, function (packageRef, callback) {
-  var pkg = utils.parsePkgRef (packageRef);
+    var pkg = utils.parsePkgRef (packageRef);
 
-  xLog.info ('make the wpkg package for ' + (pkg.name || 'all') + ' on architecture: ' + pkg.arch);
-  xLog.verb ('list of overloaded properties: %s', JSON.stringify (packageArgs));
+    xLog.info ('make the wpkg package for ' + (pkg.name || 'all') + ' on architecture: ' + pkg.arch);
+    xLog.verb ('list of overloaded properties: %s', JSON.stringify (packageArgs));
 
-  busClient.command.send ('pacman.clean', {
-    packageNames: pkg.name
-  }, function (err) {
-    if (err) {
-      xLog.err (err);
-      busClient.events.send ('pacman.make.finished');
-      return;
-    }
-
-    if (!pkg.name) {
-      var async = require ('async');
-      var xFs   = require ('xcraft-core-fs');
-
-      /* FIXME: use pacman.list */
-      var packages = xFs.lsdir (xcraftConfig.pkgProductsRoot);
-
-      /* Loop for each package available in the products directory. */
-      async.eachSeries (packages, function (packageName, callback) {
-        make.package (packageName, pkg.arch, packageArgs, callback);
-      }, function () {
+    busClient.command.send ('pacman.clean', {
+      packageNames: pkg.name
+    }, function (err) {
+      if (err) {
+        xLog.err (err);
         busClient.events.send ('pacman.make.finished');
-      });
-    } else {
-      make.package (pkg.name, pkg.arch, packageArgs, function (err) {
-        if (err) {
-          xLog.err (err.stack ? err.stack : err);
-        }
-        callback ();
-      });
-    }
-  });
+        return;
+      }
+
+      if (!pkg.name) {
+        var async = require ('async');
+        var xFs   = require ('xcraft-core-fs');
+
+        /* FIXME: use pacman.list */
+        var packages = xFs.lsdir (xcraftConfig.pkgProductsRoot);
+
+        /* Loop for each package available in the products directory. */
+        async.eachSeries (packages, function (packageName, callback) {
+          make.package (packageName, pkg.arch, packageArgs, callback);
+        }, function () {
+          busClient.events.send ('pacman.make.finished');
+        });
+      } else {
+        make.package (pkg.name, pkg.arch, packageArgs, function (err) {
+          if (err) {
+            xLog.err (err.stack ? err.stack : err);
+          }
+          callback ();
+        });
+      }
+    });
   }, function () {
     busClient.events.send ('pacman.make.finished');
   });
@@ -320,13 +320,13 @@ cmd.install = function (msg) {
   var pkgs = msg.data.packageRefs.split (',');
 
   async.eachSeries (pkgs, function (packageRef, callback) {
-  install.package (packageRef, false, function (err) {
-    if (err) {
-      xLog.err (err);
-    }
-    xPath.devrootUpdate ();
-    callback ();
-  });
+    install.package (packageRef, false, function (err) {
+      if (err) {
+        xLog.err (err);
+      }
+      xPath.devrootUpdate ();
+      callback ();
+    });
   }, function () {
     busClient.events.send ('pacman.install.finished');
   });
@@ -343,13 +343,13 @@ cmd.reinstall = function (msg) {
   var pkgs = msg.data.packageRefs.split (',');
 
   async.eachSeries (pkgs, function (packageRef, callback) {
-  install.package (packageRef, true, function (err) {
-    if (err) {
-      xLog.err (err);
-    }
-    xPath.devrootUpdate ();
-    callback ();
-  });
+    install.package (packageRef, true, function (err) {
+      if (err) {
+        xLog.err (err);
+      }
+      xPath.devrootUpdate ();
+      callback ();
+    });
   }, function () {
     busClient.events.send ('pacman.reinstall.finished');
   });
@@ -366,18 +366,18 @@ cmd.status = function (msg) {
   var pkgs = msg.data.packageRefs.split (',');
 
   async.eachSeries (pkgs, function (packageRef, callback) {
-  install.status (packageRef, function (err, code) {
-    if (err) {
-      xLog.err (err);
-    }
+    install.status (packageRef, function (err, code) {
+      if (err) {
+        xLog.err (err);
+      }
 
-    var status = {
-      installed: !!code
-    };
+      var status = {
+        installed: !!code
+      };
 
-    busClient.events.send ('pacman.status', status);
-    callback ();
-  });
+      busClient.events.send ('pacman.status', status);
+      callback ();
+    });
   }, function () {
     busClient.events.send ('pacman.status.finished');
   });
@@ -394,12 +394,12 @@ cmd.build = function (msg) {
   var pkgs = msg.data.packageRefs.split (',');
 
   async.eachSeries (pkgs, function (packageRef, callback) {
-  build.package (packageRef, function (err) {
-    if (err) {
-      xLog.err (err);
-    }
-    callback ();
-  });
+    build.package (packageRef, function (err) {
+      if (err) {
+        xLog.err (err);
+      }
+      callback ();
+    });
   }, function () {
     busClient.events.send ('pacman.build.finished');
   });
@@ -416,13 +416,13 @@ cmd.remove = function (msg) {
   var pkgs = msg.data.packageRefs.split (',');
 
   async.eachSeries (pkgs, function (packageRef, callback) {
-  remove.package (packageRef, function (err) {
-    if (err) {
-      xLog.err (err);
-    }
-    xPath.devrootUpdate ();
-    callback ();
-  });
+    remove.package (packageRef, function (err) {
+      if (err) {
+        xLog.err (err);
+      }
+      xPath.devrootUpdate ();
+      callback ();
+    });
   }, function () {
     busClient.events.send ('pacman.remove.finished');
   });
@@ -439,12 +439,12 @@ cmd.clean = function (msg) {
   var pkgs = msg.data.packageNames.split (',');
 
   async.eachSeries (pkgs, function (packageName, callback) {
-  clean.temp (packageName, function (err) {
-    if (err) {
-      xLog.err (err);
-    }
-    callback ();
-  });
+    clean.temp (packageName, function (err) {
+      if (err) {
+        xLog.err (err);
+      }
+      callback ();
+    });
   }, function () {
     busClient.events.send ('pacman.clean.finished');
   });
