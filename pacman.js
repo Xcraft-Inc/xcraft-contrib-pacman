@@ -2,7 +2,8 @@
 
 var moduleName = 'pacman';
 
-var path = require ('path');
+var path  = require ('path');
+var async = require ('async');
 
 var definition = require ('./lib/definition.js');
 
@@ -246,13 +247,13 @@ cmd.make = function (msg) {
   var utils = require ('./lib/utils.js');
   var make  = require ('./lib/make.js');
 
-  var packageRef = null;
+  var packageRefs = null;
   var packageArgs = {};
 
   if (msg.data.packageArgs) {
     /* Retrieve the packageRef if available. */
     if (!/^p:/.test (msg.data.packageArgs[0])) {
-      packageRef = msg.data.packageArgs.shift ();
+      packageRefs = msg.data.packageArgs.shift ();
     }
 
     /* Transform all properties to a map. */
@@ -264,13 +265,16 @@ cmd.make = function (msg) {
     });
   }
 
+  var pkgs = packageRefs.split (',');
+
+  async.eachSeries (pkgs, function (packageRef, callback) {
   var pkg = utils.parsePkgRef (packageRef);
 
   xLog.info ('make the wpkg package for ' + (pkg.name || 'all') + ' on architecture: ' + pkg.arch);
   xLog.verb ('list of overloaded properties: %s', JSON.stringify (packageArgs));
 
   busClient.command.send ('pacman.clean', {
-    packageName: pkg.name
+    packageNames: pkg.name
   }, function (err) {
     if (err) {
       xLog.err (err);
@@ -296,9 +300,12 @@ cmd.make = function (msg) {
         if (err) {
           xLog.err (err.stack ? err.stack : err);
         }
-        busClient.events.send ('pacman.make.finished');
+        callback ();
       });
     }
+  });
+  }, function () {
+    busClient.events.send ('pacman.make.finished');
   });
 };
 
@@ -310,11 +317,17 @@ cmd.make = function (msg) {
 cmd.install = function (msg) {
   var install = require ('./lib/install.js');
 
-  install.package (msg.data.packageRef, false, function (err) {
+  var pkgs = msg.data.packageRefs.split (',');
+
+  async.eachSeries (pkgs, function (packageRef, callback) {
+  install.package (packageRef, false, function (err) {
     if (err) {
       xLog.err (err);
     }
     xPath.devrootUpdate ();
+    callback ();
+  });
+  }, function () {
     busClient.events.send ('pacman.install.finished');
   });
 };
@@ -327,11 +340,17 @@ cmd.install = function (msg) {
 cmd.reinstall = function (msg) {
   var install = require ('./lib/install.js');
 
-  install.package (msg.data.packageRef, true, function (err) {
+  var pkgs = msg.data.packageRefs.split (',');
+
+  async.eachSeries (pkgs, function (packageRef, callback) {
+  install.package (packageRef, true, function (err) {
     if (err) {
       xLog.err (err);
     }
     xPath.devrootUpdate ();
+    callback ();
+  });
+  }, function () {
     busClient.events.send ('pacman.reinstall.finished');
   });
 };
@@ -344,7 +363,10 @@ cmd.reinstall = function (msg) {
 cmd.status = function (msg) {
   var install = require ('./lib/install.js');
 
-  install.status (msg.data.packageRef, function (err, code) {
+  var pkgs = msg.data.packageRefs.split (',');
+
+  async.eachSeries (pkgs, function (packageRef, callback) {
+  install.status (packageRef, function (err, code) {
     if (err) {
       xLog.err (err);
     }
@@ -354,6 +376,9 @@ cmd.status = function (msg) {
     };
 
     busClient.events.send ('pacman.status', status);
+    callback ();
+  });
+  }, function () {
     busClient.events.send ('pacman.status.finished');
   });
 };
@@ -366,10 +391,16 @@ cmd.status = function (msg) {
 cmd.build = function (msg) {
   var build = require ('./lib/build.js');
 
-  build.package (msg.data.packageRef, function (err) {
+  var pkgs = msg.data.packageRefs.split (',');
+
+  async.eachSeries (pkgs, function (packageRef, callback) {
+  build.package (packageRef, function (err) {
     if (err) {
       xLog.err (err);
     }
+    callback ();
+  });
+  }, function () {
     busClient.events.send ('pacman.build.finished');
   });
 };
@@ -382,11 +413,17 @@ cmd.build = function (msg) {
 cmd.remove = function (msg) {
   var remove = require ('./lib/remove.js');
 
-  remove.package (msg.data.packageRef, function (err) {
+  var pkgs = msg.data.packageRefs.split (',');
+
+  async.eachSeries (pkgs, function (packageRef, callback) {
+  remove.package (packageRef, function (err) {
     if (err) {
       xLog.err (err);
     }
     xPath.devrootUpdate ();
+    callback ();
+  });
+  }, function () {
     busClient.events.send ('pacman.remove.finished');
   });
 };
@@ -399,10 +436,16 @@ cmd.remove = function (msg) {
 cmd.clean = function (msg) {
   var clean = require ('./lib/clean.js');
 
-  clean.temp (msg.data.packageName, function (err) {
+  var pkgs = msg.data.packageNames.split (',');
+
+  async.eachSeries (pkgs, function (packageName, callback) {
+  clean.temp (packageName, function (err) {
     if (err) {
       xLog.err (err);
     }
+    callback ();
+  });
+  }, function () {
     busClient.events.send ('pacman.clean.finished');
   });
 };

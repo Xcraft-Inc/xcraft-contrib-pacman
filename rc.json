@@ -27,7 +27,7 @@
     "desc": "install the package",
     "options": {
       "params": {
-        "optional": "packageRef"
+        "optional": "packageRefs"
       }
     }
   },
@@ -35,7 +35,7 @@
     "desc": "install or reinstall the package",
     "options": {
       "params": {
-        "optional": "packageRef"
+        "optional": "packageRefs"
       }
     }
   },
@@ -43,7 +43,7 @@
     "desc": "retrieve the status of a package",
     "options": {
       "params": {
-        "required": "packageRef"
+        "required": "packageRefs"
       }
     }
   },
@@ -51,7 +51,7 @@
     "desc": "compile a source package",
     "options": {
       "params": {
-        "optional": "packageRef"
+        "optional": "packageRefs"
       }
     }
   },
@@ -59,7 +59,7 @@
     "desc": "remove the package",
     "options": {
       "params": {
-        "optional": "packageRef"
+        "optional": "packageRefs"
       }
     }
   },
@@ -67,7 +67,7 @@
     "desc":"remove the temporary package files",
     "options": {
       "params": {
-        "optional": "packageName"
+        "optional": "packageNames"
       }
     }
   }
