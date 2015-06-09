@@ -395,7 +395,11 @@ cmd.status = function (msg) {
 cmd.build = function (msg) {
   var build = require ('./lib/build.js');
 
-  var pkgs = extractPackages (msg.data.packageRefs);
+  var pkgs = [null];
+
+  if (msg.data.packageRefs) {
+    pkgs = extractPackages (msg.data.packageRefs);
+  }
 
   async.eachSeries (pkgs, function (packageRef, callback) {
     build.package (packageRef, function (err) {
