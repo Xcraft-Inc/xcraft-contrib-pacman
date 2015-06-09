@@ -40,7 +40,7 @@
     "desc": "retrieve the status of a package",
     "options": {
       "params": {
-        "required": "packageRefs"
+        "optional": "packageRefs"
       }
     }
   },
