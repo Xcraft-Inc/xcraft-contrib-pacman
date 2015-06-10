@@ -17,7 +17,6 @@ var cmd = {};
 
 
 var extractPackages = function (packageRefs) {
-  var all     = false;
   var results = [];
 
   if (packageRefs) {
@@ -26,7 +25,8 @@ var extractPackages = function (packageRefs) {
                              .replace (/,$/, '');
   }
 
-  if (!packageRefs || !packageRefs.length) {
+  var all = !packageRefs || !packageRefs.length;
+  if (all) {
     var pkgs = list.listProducts ();
 
     pkgs.forEach (function (item) {
