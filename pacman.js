@@ -4,9 +4,11 @@ var moduleName = 'pacman';
 
 var path  = require ('path');
 var async = require ('async');
+var _     = require ('lodash');
 
 var definition = require ('./lib/definition.js');
 var list       = require ('./lib/list.js');
+var utils      = require ('./lib/utils.js');
 
 var xPath        = require ('xcraft-core-path');
 var xLog         = require ('xcraft-core-log') (moduleName);
@@ -16,8 +18,10 @@ var pacmanConfig = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
 var cmd = {};
 
 
+var depsPattern = '<-*';
 var extractPackages = function (packageRefs) {
   var results = [];
+  var pkgs    = [];
 
   if (packageRefs) {
     packageRefs = packageRefs.replace (/,{2,}/g, ',')
@@ -27,13 +31,40 @@ var extractPackages = function (packageRefs) {
 
   var all = !packageRefs || !packageRefs.length;
   if (all) {
-    var pkgs = list.listProducts ();
+    pkgs = list.listProducts ();
 
     pkgs.forEach (function (item) {
       results.push (item.name);
     });
   } else {
-    results = packageRefs.split (',');
+    pkgs = packageRefs.split (',');
+
+    var prev = null;
+    pkgs.forEach (function (item) {
+      if (!new RegExp (utils.toRegexp (depsPattern)).test (item)) {
+        prev = item;
+        results = _.union (results, [item]);
+        return;
+      }
+
+      /* Section to extract all dependencies for the current package. */
+      var def = definition.load (prev);
+      var deps = {
+        build:   [],
+        install: []
+      };
+
+      Object.keys (def.dependency).forEach (function (type) {
+        if (def.dependency[type]) {
+          var depsList = Object.keys (def.dependency[type]).join (',' + depsPattern + ',');
+          /* Continue recursively for the dependencies of this dependency. */
+          deps[type] = extractPackages (depsList);
+          results = _.union (results, deps[type].list);
+        }
+      });
+
+      prev = null;
+    });
   }
 
   return {
@@ -271,7 +302,6 @@ cmd['edit.upload'] = function (msg) {
  * @param {Object} msg
  */
 cmd.make = function (msg) {
-  var utils = require ('./lib/utils.js');
   var make  = require ('./lib/make.js');
 
   var packageRefs = null;
