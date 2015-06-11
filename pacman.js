@@ -301,8 +301,9 @@ cmd['edit.upload'] = function (msg) {
 cmd.make = function (msg) {
   var make  = require ('./lib/make.js');
 
-  var packageRefs = null;
-  var packageArgs = {};
+  var packageRefs      = null;
+  var packageArgs      = {};
+  var packageArgsOther = {};
 
   if (msg.data.packageArgs) {
     /* Retrieve the packageRef if available. */
@@ -312,9 +313,17 @@ cmd.make = function (msg) {
 
     /* Transform all properties to a map. */
     msg.data.packageArgs.forEach (function (arg) {
-      var match = arg.trim ().match (/^p:([^=]*)[=](.*)/);
+      var match = arg.trim ().match (/^p:(?:([^:]*):)?([^=]*)[=](.*)/);
       if (match) {
-        packageArgs[match[1]] = match[2];
+        if (match[1]) {
+          if (!packageArgs[match[1]]) {
+            packageArgs[match[1]] = {};
+          }
+          packageArgs[match[1]][match[2]] = match[3];
+        } else {
+          packageArgsOther = {};
+          packageArgsOther[match[2]] = match[3];
+        }
       }
     });
   }
@@ -339,7 +348,12 @@ cmd.make = function (msg) {
 
       xLog.info ('make the wpkg package for ' + pkg.name + ' on architecture: ' + pkg.arch);
 
-      make.package (pkg.name, pkg.arch, packageArgs, function (err) {
+      var pkgArgs = packageArgsOther;
+      if (packageArgs.hasOwnProperty (pkg.name)) {
+        pkgArgs = packageArgs[pkg.name];
+      }
+
+      make.package (pkg.name, pkg.arch, pkgArgs, function (err) {
         if (err) {
           xLog.err (err.stack ? err.stack : err);
         }
