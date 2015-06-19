@@ -214,7 +214,7 @@ cmd['edit.data'] = function (msg) {
     wizard.rulesArgsPostinst = def.data.rules.args[pacmanConfig.pkgPostinst];
     wizard.rulesArgsPrerm    = def.data.rules.args[pacmanConfig.pkgPrerm];
     wizard.rulesArgsMakeall  = def.data.rules.args[pacmanConfig.pkgMakeall];
-    wizard.registerPath      = def.data.path[0];
+    wizard.registerPath      = def.data.path.join (',');
     wizard.embedded          = def.data.embedded;
   } catch (err) {}
 
