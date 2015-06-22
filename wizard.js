@@ -294,6 +294,13 @@ exports.data = [{
   }
 }, {
   type: 'input',
+  name: 'deployCmd',
+  message: 'Deploy step (commands, script, ...):',
+  when: function (answers) {
+    return answers.fileType === 'src';
+  }
+}, {
+  type: 'input',
   name: 'registerPath',
   message: 'Register an unusual location for PATH (keep empty with default PATH):'
 }, {
