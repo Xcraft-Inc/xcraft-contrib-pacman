@@ -40,13 +40,13 @@ pacman.make package1,package2   # To make only two packages.
 ```
 
 Sometimes it is interesting to make a package will all its dependencies. The
-following pattern `<-*` will do the trick. Of course, you can add other
+following pattern `<-deps` will do the trick. Of course, you can add other
 packages.
 
 ```sh
-pacman.make package1,<-*            # To make package1 and its dependencies.
-pacman.make package1,<-*,package2   # To make package1, its dependencies and
-                                    # the package2.
+pacman.make package1,<-deps            # To make package1 and its dependencies.
+pacman.make package1,<-deps,package2   # To make package1, its dependencies and
+                                       # the package2.
 ```
 
 In some cases (like for Continuous Integration), you can overload some
@@ -72,7 +72,7 @@ pacman.make p:distribution=test/  # Like previous with all packages.
 An other example very useful with a CI (when a tag is pushed for example).
 
 ```sh
-pacman.make srcpackage,<-* \
+pacman.make srcpackage,<-deps \
             p:srcpackage:version=1.0.0 \
             p:srcpackage:data.get.ref=v1.0.0
 ```

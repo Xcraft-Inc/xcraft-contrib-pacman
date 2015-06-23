@@ -18,7 +18,7 @@ var pacmanConfig = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
 var cmd = {};
 
 
-var depsPattern = '<-*';
+var depsPattern = '<-deps';
 var extractPackages = function (packageRefs) {
   var results = [];
   var pkgs    = [];
