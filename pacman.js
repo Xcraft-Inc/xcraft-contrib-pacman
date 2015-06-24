@@ -599,6 +599,11 @@ exports.xcraftConfig = [{
   default: 'index.tar.gz'
 }, {
   type: 'input',
+  name: 'wpkgTemp',
+  message: 'temporary directory for wpkg (empty for user temp)',
+  default: './var/tmp/'
+}, {
+  type: 'input',
   name: 'stamps',
   message: 'location for build stamps',
   default: './var/xcraft-contrib-pacman/'
