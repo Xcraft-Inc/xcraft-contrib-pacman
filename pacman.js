@@ -47,6 +47,11 @@ var extractPackages = function (packageRefs) {
         return;
       }
 
+      /* Ignore the deps pattern if it's the first entry. */
+      if (!prev) {
+        return;
+      }
+
       /* Section to extract all dependencies for the current package. */
       var def = definition.load (prev);
       var deps = {};
