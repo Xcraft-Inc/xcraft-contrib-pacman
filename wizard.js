@@ -346,7 +346,6 @@ exports.xcraftCommands = function () {
     cmd[cmdName] = function (value) {
       /* execute function */
       var result = fieldDef[funcName] (value.data);
-      console.log (funcName + ': ' + result);
       busClient.events.send (evtName, result);
     };
   };
