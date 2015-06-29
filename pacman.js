@@ -6,7 +6,7 @@ var path  = require ('path');
 var async = require ('async');
 var _     = require ('lodash');
 
-var definition = require ('./lib/definition.js');
+var definition = require ('./lib/def.js');
 var list       = require ('./lib/list.js');
 var utils      = require ('./lib/utils.js');
 
