@@ -15,6 +15,8 @@ var xLog         = require ('xcraft-core-log') (moduleName);
 var busClient    = require ('xcraft-core-busclient').global;
 var pacmanConfig = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
 
+require ('xcraft-core-buslog') (xLog);
+
 var cmd = {};
 
 
