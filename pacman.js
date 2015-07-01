@@ -12,7 +12,7 @@ var utils      = require ('./lib/utils.js');
 
 var xPath        = require ('xcraft-core-path');
 var xLog         = require ('xcraft-core-log') (moduleName);
-var busClient    = require ('xcraft-core-busclient').global;
+var busClient    = require ('xcraft-core-busclient').getGlobal ();
 var pacmanConfig = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
 
 var cmd = {};
