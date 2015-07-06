@@ -337,6 +337,7 @@ cmd.make = function (msg) {
   xLog.verb ('list of overloaded properties: %s', JSON.stringify (packageArgs));
 
   var pkgs = extractPackages (packageRefs).list;
+  var status = busClient.events.status.succeeded;
 
   var cleanArg = {};
   if (packageRefs) {
@@ -362,11 +363,12 @@ cmd.make = function (msg) {
       make.package (pkg.name, pkg.arch, pkgArgs, function (err) {
         if (err) {
           xLog.err (err.stack ? err.stack : err);
+          status = busClient.events.status.failed;
         }
         callback ();
       });
     }, function () {
-      busClient.events.send ('pacman.make.finished');
+      busClient.events.send ('pacman.make.finished', status);
     });
   });
 };
@@ -380,17 +382,19 @@ cmd.install = function (msg) {
   var install = require ('./lib/install.js');
 
   var pkgs = extractPackages (msg.data.packageRefs).list;
+  var status = busClient.events.status.succeeded;
 
   async.eachSeries (pkgs, function (packageRef, callback) {
     install.package (packageRef, false, function (err) {
       if (err) {
         xLog.err (err);
+        status = busClient.events.status.failed;
       }
       xPath.devrootUpdate ();
       callback ();
     });
   }, function () {
-    busClient.events.send ('pacman.install.finished');
+    busClient.events.send ('pacman.install.finished', status);
   });
 };
 
@@ -403,17 +407,19 @@ cmd.reinstall = function (msg) {
   var install = require ('./lib/install.js');
 
   var pkgs = extractPackages (msg.data.packageRefs).list;
+  var status = busClient.events.status.succeeded;
 
   async.eachSeries (pkgs, function (packageRef, callback) {
     install.package (packageRef, true, function (err) {
       if (err) {
         xLog.err (err);
+        status = busClient.events.status.failed;
       }
       xPath.devrootUpdate ();
       callback ();
     });
   }, function () {
-    busClient.events.send ('pacman.reinstall.finished');
+    busClient.events.send ('pacman.reinstall.finished', status);
   });
 };
 
@@ -426,22 +432,24 @@ cmd.status = function (msg) {
   var install = require ('./lib/install.js');
 
   var pkgs = extractPackages (msg.data.packageRefs).list;
+  var status = busClient.events.status.succeeded;
 
   async.eachSeries (pkgs, function (packageRef, callback) {
     install.status (packageRef, function (err, code) {
       if (err) {
         xLog.err (err);
+        status = busClient.events.status.failed;
       }
 
-      var status = {
+      var result = {
         installed: !!code
       };
 
-      busClient.events.send ('pacman.status', status);
+      busClient.events.send ('pacman.status', result);
       callback ();
     });
   }, function () {
-    busClient.events.send ('pacman.status.finished');
+    busClient.events.send ('pacman.status.finished', status);
   });
 };
 
@@ -460,15 +468,18 @@ cmd.build = function (msg) {
     pkgs = extractedPkgs.list;
   }
 
+  var status = busClient.events.status.succeeded;
+
   async.eachSeries (pkgs, function (packageRef, callback) {
     build.package (packageRef, function (err) {
       if (err) {
         xLog.err (err);
+        status = busClient.events.status.failed;
       }
       callback ();
     });
   }, function () {
-    busClient.events.send ('pacman.build.finished');
+    busClient.events.send ('pacman.build.finished', status);
   });
 };
 
@@ -481,17 +492,19 @@ cmd.remove = function (msg) {
   var remove = require ('./lib/remove.js');
 
   var pkgs = extractPackages (msg.data.packageRefs).list;
+  var status = busClient.events.status.succeeded;
 
   async.eachSeries (pkgs, function (packageRef, callback) {
     remove.package (packageRef, function (err) {
       if (err) {
         xLog.err (err);
+        status = busClient.events.status.failed;
       }
       xPath.devrootUpdate ();
       callback ();
     });
   }, function () {
-    busClient.events.send ('pacman.remove.finished');
+    busClient.events.send ('pacman.remove.finished', status);
   });
 };
 
@@ -504,16 +517,18 @@ cmd.clean = function (msg) {
   var clean = require ('./lib/clean.js');
 
   var pkgs = extractPackages (msg.data.packageNames).list;
+  var status = busClient.events.status.succeeded;
 
   async.eachSeries (pkgs, function (packageName, callback) {
     clean.temp (packageName, function (err) {
       if (err) {
         xLog.err (err);
+        status = busClient.events.status.failed;
       }
       callback ();
     });
   }, function () {
-    busClient.events.send ('pacman.clean.finished');
+    busClient.events.send ('pacman.clean.finished', status);
   });
 };
 
