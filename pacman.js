@@ -442,7 +442,8 @@ cmd.status = function (msg) {
       }
 
       var result = {
-        installed: !!code
+        packageRef: packageRef,
+        installed:  !!code
       };
 
       busClient.events.send ('pacman.status', result);
