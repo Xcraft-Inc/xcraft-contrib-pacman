@@ -282,11 +282,10 @@ cmd['edit.upload'] = function (msg) {
     return;
   }
 
-  xLog.info ('upload %s to chest://%s:%d/%s',
+  xLog.info ('upload %s to chest://%s:%d',
                msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].localPath,
                chestConfig.host,
-               chestConfig.port,
-               msg.data.chestFile);
+               chestConfig.port);
 
   busClient.events.subscribe ('chest.send.finished', function () {
     busClient.events.unsubscribe ('chest.send.finished');
