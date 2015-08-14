@@ -11,6 +11,7 @@ var list       = require ('./lib/list.js');
 var utils      = require ('./lib/utils.js');
 
 var xPath        = require ('xcraft-core-path');
+var xEnv         = require ('xcraft-core-env');
 var xLog         = require ('xcraft-core-log') (moduleName);
 var busClient    = require ('xcraft-core-busclient').getGlobal ();
 var pacmanConfig = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
@@ -390,6 +391,7 @@ cmd.install = function (msg) {
         status = busClient.events.status.failed;
       }
       xPath.devrootUpdate ();
+      xEnv.devrootUpdate ();
       callback ();
     });
   }, function () {
@@ -415,6 +417,7 @@ cmd.reinstall = function (msg) {
         status = busClient.events.status.failed;
       }
       xPath.devrootUpdate ();
+      xEnv.devrootUpdate ();
       callback ();
     });
   }, function () {
@@ -501,6 +504,7 @@ cmd.remove = function (msg) {
         status = busClient.events.status.failed;
       }
       xPath.devrootUpdate ();
+      xEnv.devrootUpdate ();
       callback ();
     });
   }, function () {
