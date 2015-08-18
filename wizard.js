@@ -294,6 +294,13 @@ exports.data = [{
   }
 }, {
   type: 'input',
+  name: 'rulesArgsMakeinstall',
+  message: 'Arguments for `make install`:',
+  when: function (answers) {
+    return answers.fileType === 'src';
+  }
+}, {
+  type: 'input',
   name: 'deployCmd',
   message: 'Deploy step (commands, script, ...):',
   when: function (answers) {
