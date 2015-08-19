@@ -210,20 +210,20 @@ cmd['edit.data'] = function (msg) {
   try {
     var def = definition.load (msg.data.packageName);
 
-    wizard.uri               = def.data.get.uri;
-    wizard.uriRef            = def.data.get.ref;
-    wizard.uriOut            = def.data.get.out;
-    wizard.fileType          = def.data.type;
-    wizard.configureCmd      = def.data.configure;
-    wizard.rulesType         = def.data.rules.type;
-    wizard.rulesLocation     = def.data.rules.location;
-    wizard.rulesArgsPostinst = def.data.rules.args[pacmanConfig.pkgPostinst];
-    wizard.rulesArgsPrerm    = def.data.rules.args[pacmanConfig.pkgPrerm];
+    wizard.uri                  = def.data.get.uri;
+    wizard.uriRef               = def.data.get.ref;
+    wizard.uriOut               = def.data.get.out;
+    wizard.fileType             = def.data.type;
+    wizard.configureCmd         = def.data.configure;
+    wizard.rulesType            = def.data.rules.type;
+    wizard.rulesLocation        = def.data.rules.location;
+    wizard.rulesArgsPostinst    = def.data.rules.args[pacmanConfig.pkgPostinst];
+    wizard.rulesArgsPrerm       = def.data.rules.args[pacmanConfig.pkgPrerm];
     wizard.rulesArgsMakeall     = def.data.rules.args.makeall;
     wizard.rulesArgsMakeinstall = def.data.rules.args.makeinstall;
-    wizard.deployCmd         = def.data.deploy;
-    wizard.registerPath      = def.data.path.join (',');
-    wizard.embedded          = def.data.embedded;
+    wizard.deployCmd            = def.data.deploy;
+    wizard.registerPath         = def.data.path.join (',');
+    wizard.embedded             = def.data.embedded;
   } catch (err) {}
 
   msg.data.wizardName     = 'data';
