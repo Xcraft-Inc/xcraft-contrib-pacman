@@ -125,29 +125,6 @@ exports.header = [{
     return answer;
   }
 }, {
-  type: 'checkbox',
-  name: 'architectureHost',
-  message: 'Host architecture (keep emtpy if it builds for all)',
-  choices: function () {
-    var list = [];
-
-    pacmanConfig.architectures.forEach (function (arch) {
-      list.push ({name: arch});
-    });
-
-    return list;
-  },
-  filter: function (answer) {
-    if (answer.length === pacmanConfig.architectures.length) {
-      return [];
-    }
-
-    return answer;
-  },
-  when: function (answers) {
-    return answers.architecture.indexOf ('source') !== -1;
-  }
-}, {
   type: 'input',
   name: 'descriptionBrief',
   message: 'Brief description (max 70 characters):',

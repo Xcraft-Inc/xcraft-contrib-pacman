@@ -118,7 +118,6 @@ cmd['edit.header'] = function (msg) {
     wizard.maintainerName   = def.maintainer.name;
     wizard.maintainerEmail  = def.maintainer.email;
     wizard.architecture     = def.architecture;
-    wizard.architectureHost = def.architectureHost;
     wizard.descriptionBrief = def.description.brief;
     wizard.descriptionLong  = def.description.long;
   } catch (err) {}
