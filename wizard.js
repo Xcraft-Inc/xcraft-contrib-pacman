@@ -182,28 +182,6 @@ exports['dependency/install'] = dependency ('install');
 exports['dependency/build']   = dependency ('build');
 
 exports.data = [{
-  type: 'input',
-  name: 'uri',
-  message: 'URI'
-}, {
-  type: 'input',
-  name: 'uriOut',
-  message: 'Output basename (keep empty for current URI basename):',
-  when: function (answers) {
-    var url = require ('url');
-    var uriObj = url.parse (answers.uri);
-
-    switch (uriObj.protocol) {
-    case 'http:':
-    case 'https:':
-    case 'chest:': {
-      return true;
-    }
-    }
-
-    return false;
-  }
-}, {
   type: 'list',
   name: 'fileType',
   message: 'Type of data',
@@ -218,17 +196,6 @@ exports.data = [{
 
     return list;
   }
-}, {
-  type: 'input',
-  name: 'uriRef',
-  message: 'Branch, tag, commit or empty:',
-  when: function (answers) {
-    return answers.fileType === 'src';
-  }
-}, {
-  type: 'input',
-  name: 'configureCmd',
-  message: 'Configure step (commands, script, ...):'
 }, {
   type: 'list',
   name: 'rulesType',
@@ -246,8 +213,54 @@ exports.data = [{
   }
 }, {
   type: 'input',
+  name: 'uri',
+  message: 'URI',
+  when: function (answers) {
+    return answers.rulesType !== 'meta';
+  }
+}, {
+  type: 'input',
+  name: 'uriOut',
+  message: 'Output basename (keep empty for current URI basename):',
+  when: function (answers) {
+    if (!answers.uri) {
+      return false;
+    }
+
+    var url = require ('url');
+    var uriObj = url.parse (answers.uri);
+
+    switch (uriObj.protocol) {
+    case 'http:':
+    case 'https:':
+    case 'chest:': {
+      return true;
+    }
+    }
+
+    return false;
+  }
+}, {
+  type: 'input',
+  name: 'uriRef',
+  message: 'Branch, tag, commit or empty:',
+  when: function (answers) {
+    return answers.fileType === 'src';
+  }
+}, {
+  type: 'input',
+  name: 'configureCmd',
+  message: 'Configure step (commands, script, ...):',
+  when: function (answers) {
+    return answers.rulesType !== 'meta';
+  }
+}, {
+  type: 'input',
   name: 'rulesLocation',
-  message: 'Installer file name, source directory, executable, ...'
+  message: 'Installer file name, source directory, executable, ...',
+  when: function (answers) {
+    return answers.rulesType !== 'meta';
+  }
 }, {
   type: 'input',
   name: 'rulesArgsPostinst',
@@ -286,11 +299,21 @@ exports.data = [{
 }, {
   type: 'input',
   name: 'registerPath',
-  message: 'Register an unusual location for PATH (keep empty with default PATH):'
+  message: 'Register an unusual location for PATH (keep empty with default PATH):',
+  when: function (answers) {
+    if (answers.fileType === 'src') {
+      return false;
+    }
+
+    return answers.rulesType !== 'meta';
+  }
 }, {
   type: 'confirm',
   name: 'embedded',
-  message: 'Embed data in the package (only if less than 1GB)?'
+  message: 'Embed data in the package (only if less than 1GB)?',
+  when: function (answers) {
+    return answers.rulesType !== 'meta';
+  }
 }];
 
 exports.chest = [{
