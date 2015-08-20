@@ -175,6 +175,29 @@ var dependency = function (type) {
       var regex = new RegExp ('^(|' + rangeRegex.source + '[ ]{1}' + versionRegex.source + ')$');
       return regex.test (value);
     }
+  }, {
+    type: 'checkbox',
+    name: 'architecture',
+    message: 'Architectures where this dependency must be applied (or empty)',
+    choices: function () {
+      var list = [];
+
+      list.push ({name: 'all'});
+      list.push (new inquirer.Separator ('== Architectures =='));
+      pacmanConfig.architectures.forEach (function (arch) {
+        list.push ({name: arch});
+      });
+
+      return list;
+    },
+    filter: function (answer) {
+      if (answer.indexOf ('all') !== -1) {
+        return [];
+      }
+
+      return answer;
+    },
+    when: false /* WIP */
   }];
 };
 

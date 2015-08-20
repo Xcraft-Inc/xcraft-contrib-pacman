@@ -189,8 +189,9 @@ cmd['edit.dependency'] = function (msg) {
       var key = keys[msg.data.idxDep];
 
       if (def.dependency[msg.data.depType][key].length > msg.data.idxRange) {
-        wizard[wizardName] = key;
-        wizard.version     = def.dependency[msg.data.depType][key][msg.data.idxRange];
+        wizard[wizardName]  = key;
+        wizard.version      = def.dependency[msg.data.depType][key][msg.data.idxRange].version;
+        wizard.architecture = def.dependency[msg.data.depType][key][msg.data.idxRange].architecture;
         msg.data.idxRange++;
       } else {
         msg.data.idxDep++;
