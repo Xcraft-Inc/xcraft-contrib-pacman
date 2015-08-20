@@ -60,6 +60,8 @@ var extractPackages = function (packageRefs) {
       Object.keys (def.dependency).forEach (function (type) {
         if (def.dependency[type]) {
           var depsList = Object.keys (def.dependency[type]).join (',' + depsPattern + ',');
+          depsList += ',' + depsPattern;
+
           /* Continue recursively for the dependencies of this dependency. */
           deps[type] = extractPackages (depsList);
           results = _.union (results, deps[type].list);
