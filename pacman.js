@@ -54,8 +54,13 @@ var extractPackages = function (packageRefs) {
       }
 
       /* Section to extract all dependencies for the current package. */
-      var def = definition.load (prev);
+      var def = null;
       var deps = {};
+      try {
+        def = definition.load (prev);
+      } catch (ex) {
+        return;
+      }
 
       Object.keys (def.dependency).forEach (function (type) {
         if (def.dependency[type]) {
