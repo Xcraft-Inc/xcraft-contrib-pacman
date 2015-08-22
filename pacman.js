@@ -262,8 +262,6 @@ cmd['edit.save'] = function (msg) {
   var create = require ('./lib/edit.js');
 
   var wizardAnswers = msg.data.wizardAnswers;
-  xLog.verb ('JSON output for pre-package definition:\n' +
-             JSON.stringify (wizardAnswers, null, '  '));
 
   create.pkgTemplate (wizardAnswers, function (wizardName, file) {
     msg.data.wizardName     = wizardName;
