@@ -10,7 +10,6 @@ var definition = require ('./lib/def.js');
 var list       = require ('./lib/list.js');
 var utils      = require ('./lib/utils.js');
 
-var xPath        = require ('xcraft-core-path');
 var xEnv         = require ('xcraft-core-env');
 var xLog         = require ('xcraft-core-log') (moduleName);
 var busClient    = require ('xcraft-core-busclient').getGlobal ();
@@ -396,7 +395,6 @@ cmd.install = function (msg) {
         xLog.err (err);
         status = busClient.events.status.failed;
       }
-      xPath.devrootUpdate ();
       xEnv.devrootUpdate ();
       callback ();
     });
@@ -422,7 +420,6 @@ cmd.reinstall = function (msg) {
         xLog.err (err);
         status = busClient.events.status.failed;
       }
-      xPath.devrootUpdate ();
       xEnv.devrootUpdate ();
       callback ();
     });
@@ -509,7 +506,6 @@ cmd.remove = function (msg) {
         xLog.err (err);
         status = busClient.events.status.failed;
       }
-      xPath.devrootUpdate ();
       xEnv.devrootUpdate ();
       callback ();
     });
