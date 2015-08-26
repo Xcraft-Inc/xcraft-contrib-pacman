@@ -5,7 +5,7 @@ SHARE=<PACMAN.SHARE>
 ACTION=<PACMAN.ACTION>
 SYSROOT=<PACMAN.SYSROOT>
 CONFIG=<PACMAN.CONFIG>
-CMAKE_BINARY_DIR=$1
+[ "$1" = cmake ] && CMAKE_BINARY_DIR="$2" || CMAKE_BINARY_DIR=
 
 PEON=$(node -e "process.stdout.write (require ('path').resolve (__dirname, '$SYSROOT', require (require ('path').resolve (__dirname, '$SYSROOT', '$CONFIG')).bin));")
 
