@@ -337,6 +337,13 @@ exports.data = [{
   when: function (answers) {
     return answers.rulesType !== 'meta';
   }
+}, {
+  type: 'input',
+  name: 'runtimeConfigureCmd',
+  message: 'Configure step for binary runtime package (commands, script, ...):',
+  when: function (answers) {
+    return answers.fileType === 'src';
+  }
 }];
 
 exports.chest = [{

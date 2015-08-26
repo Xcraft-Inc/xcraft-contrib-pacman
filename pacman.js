@@ -230,6 +230,9 @@ cmd['edit.data'] = function (msg) {
     wizard.deployCmd            = def.data.deploy;
     wizard.registerPath         = def.data.path.join (',');
     wizard.embedded             = def.data.embedded;
+    if (def.data.runtime) {
+      wizard.runtimeConfigureCmd = def.data.runtime.configureCmd;
+    }
   } catch (err) {}
 
   msg.data.wizardName     = 'data';
