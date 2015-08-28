@@ -339,7 +339,9 @@ cmd.make = function (msg) {
     });
   }
 
-  xLog.verb ('list of overloaded properties: %s', JSON.stringify (packageArgs));
+  xLog.verb ('list of overloaded properties:\n%s\n%s',
+             JSON.stringify (packageArgsOther),
+             JSON.stringify (packageArgs));
 
   var pkgs = extractPackages (packageRefs).list;
   var status = busClient.events.status.succeeded;
