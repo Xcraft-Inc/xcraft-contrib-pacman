@@ -5,7 +5,8 @@ var moduleName = 'pacman';
 var path  = require ('path');
 var async = require ('async');
 var _     = require ('lodash');
-
+var clone = require ('clone');
+var traverse = require ('traverse');
 var definition = require ('./lib/def.js');
 var list       = require ('./lib/list.js');
 var utils      = require ('./lib/utils.js');
@@ -98,6 +99,26 @@ cmd.list = function () {
  * @param {Object} msg
  */
 cmd.edit = function (msg) {
+  var wizard = clone (require ('./wizard.js'), false);
+  // replace all func by a promess
+  traverse (wizard).forEach (function (value) {
+    if (this.key === 'xcraftCommands') {
+      return;
+    }
+    if (typeof value === 'function') {
+      this.update (function (arg) {
+        var done = this.async();
+        busClient.command.send (this.path.join ('.'), arg, function (err, res) {
+          done (res);
+        });
+      });
+    }
+  });
+
+  msg.data.wizardImpl = JSON.stringify (wizard, function(key, val) {
+    return (typeof val === 'function') ? '' + val : val;
+  });
+
   var packageName = msg.data.packageName || '';
   msg.data.wizardAnswers = [];
 
