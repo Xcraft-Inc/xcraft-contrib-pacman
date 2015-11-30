@@ -398,6 +398,7 @@ exports.xcraftCommands = function () {
     var evtName = 'wizard.' +
                   category + '.' +
                   fieldDef.name + '.' +
+                  funcName + '.' +
                   resultEventName;
 
     /* Indicate to lokthar that a command for validation is available
@@ -418,10 +419,10 @@ exports.xcraftCommands = function () {
       var fieldDef = fields[index];
       fieldDef.loktharCommands = {};
 
-      tryPushFunction (fieldDef, category, 'validate', 'validated');
-      tryPushFunction (fieldDef, category, 'choices',  'choices.loaded');
-      tryPushFunction (fieldDef, category, 'filter',   'filtered');
-      tryPushFunction (fieldDef, category, 'when',     'displayed');
+      tryPushFunction (fieldDef, category, 'validate', 'finished');
+      tryPushFunction (fieldDef, category, 'choices',  'finished');
+      tryPushFunction (fieldDef, category, 'filter',   'finished');
+      tryPushFunction (fieldDef, category, 'when',     'finished');
     });
   };
 

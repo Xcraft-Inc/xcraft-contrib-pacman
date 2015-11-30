@@ -106,18 +106,22 @@ cmd.edit = function (msg) {
       return;
     }
     if (typeof value === 'function') {
-      this.update (function (arg) {
-        var done = this.async();
-        busClient.command.send (this.path.join ('.'), arg, function (err, res) {
-          done (res);
+      var cmd = this.path.join ('.');
+      this.update (`__begin__function (arg) {
+        var done = this.async ();
+        busClient.command.send ('wizard.${this.path[0]}.${wizard[this.path[0]][this.path[1]].name}.${this.key}', arg, function (err, res) {
+          done (res.data);
         });
-      });
+      }__end__`);
     }
   });
 
-  msg.data.wizardImpl = JSON.stringify (wizard, function(key, val) {
-    return (typeof val === 'function') ? '' + val : val;
-  });
+  msg.data.wizardImpl = JSON.stringify (wizard);
+
+  msg.data.wizardImpl = msg.data.wizardImpl
+                          .replace (/"__begin__/g,'')
+                          .replace (/__end__"/g, '')
+                          .replace (/\\n/g, '\n');
 
   var packageName = msg.data.packageName || '';
   msg.data.wizardAnswers = [];
