@@ -2,11 +2,12 @@
 
 var moduleName = 'pacman';
 
-var path  = require ('path');
-var async = require ('async');
-var _     = require ('lodash');
-var clone = require ('clone');
+var path     = require ('path');
+var async    = require ('async');
+var _        = require ('lodash');
+var clone    = require ('clone');
 var traverse = require ('traverse');
+
 var definition = require ('./lib/def.js');
 var list       = require ('./lib/list.js');
 var utils      = require ('./lib/utils.js');
@@ -100,27 +101,28 @@ cmd.list = function () {
  */
 cmd.edit = function (msg) {
   var wizard = clone (require ('./wizard.js'), false);
-  // replace all func by a promess
+  /* replace all func by a promise */
   traverse (wizard).forEach (function (value) {
     if (this.key === 'xcraftCommands') {
       return;
     }
     if (typeof value === 'function') {
-      this.update (`__begin__function (arg) {
-        var done = this.async ();
-        busClient.command.send ('wizard.${this.path[0]}.${wizard[this.path[0]][this.path[1]].name}.${this.key}', arg, function (err, res) {
-          done (res.data);
-        });
-      }__end__`);
+      this.update (`__begin__
+        function (arg) {
+          var done = this.async ();
+          const cmd = 'wizard.${this.path[0]}.${wizard[this.path[0]][this.path[1]].name}.${this.key}';
+          busClient.command.send (cmd, arg, function (err, res) {
+            done (res.data);
+          });
+        }
+      __end__`);
     }
   });
 
-  msg.data.wizardImpl = JSON.stringify (wizard);
-
-  msg.data.wizardImpl = msg.data.wizardImpl
-                          .replace (/"__begin__/g,'')
-                          .replace (/__end__"/g, '')
-                          .replace (/\\n/g, '\n');
+  msg.data.wizardImpl = JSON.stringify (wizard)
+    .replace (/"__begin__/g, '')
+    .replace (/__end__"/g, '')
+    .replace (/\\n/g, '\n');
 
   var packageName = msg.data.packageName || '';
   msg.data.wizardAnswers = [];
