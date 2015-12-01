@@ -120,9 +120,8 @@ cmd.edit = function (msg) {
   });
 
   msg.data.wizardImpl = JSON.stringify (wizard)
-    .replace (/"__begin__/g, '')
-    .replace (/__end__"/g, '')
-    .replace (/\\n/g, '\n');
+    .replace (/("__begin__|__end__")/g, '')
+    .replace (/\\n[ ]*/g, '\n');
 
   var packageName = msg.data.packageName || '';
   msg.data.wizardAnswers = [];
