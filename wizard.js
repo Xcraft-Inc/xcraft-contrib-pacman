@@ -387,7 +387,7 @@ exports.chest = [{
 exports.xcraftCommands = function () {
   var cmd = {};
 
-  var tryPushFunction = function (fieldDef, category, funcName, resultEventName) {
+  var tryPushFunction = function (fieldDef, category, funcName) {
     if (!fieldDef.hasOwnProperty (funcName)) {
       return;
     }
@@ -395,11 +395,7 @@ exports.xcraftCommands = function () {
     /* generating cmd and result event name */
     var cmdName = category + '.' + fieldDef.name + '.' + funcName;
 
-    var evtName = 'wizard.' +
-                  category + '.' +
-                  fieldDef.name + '.' +
-                  funcName + '.' +
-                  resultEventName;
+    var evtName = `wizard.${category}.${fieldDef.name}.${funcName}.finished`;
 
     /* Indicate to lokthar that a command for validation is available
      * and corresponding result event.
@@ -419,10 +415,10 @@ exports.xcraftCommands = function () {
       var fieldDef = fields[index];
       fieldDef.loktharCommands = {};
 
-      tryPushFunction (fieldDef, category, 'validate', 'finished');
-      tryPushFunction (fieldDef, category, 'choices',  'finished');
-      tryPushFunction (fieldDef, category, 'filter',   'finished');
-      tryPushFunction (fieldDef, category, 'when',     'finished');
+      tryPushFunction (fieldDef, category, 'validate');
+      tryPushFunction (fieldDef, category, 'choices');
+      tryPushFunction (fieldDef, category, 'filter');
+      tryPushFunction (fieldDef, category, 'when');
     });
   };
 
