@@ -106,7 +106,6 @@ cmd.edit = function (msg) {
       return;
     }
     if (typeof value === 'function') {
-      var cmd = this.path.join ('.');
       this.update (`__begin__function (arg) {
         var done = this.async ();
         busClient.command.send ('wizard.${this.path[0]}.${wizard[this.path[0]][this.path[1]].name}.${this.key}', arg, function (err, res) {
