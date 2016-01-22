@@ -246,17 +246,48 @@ cmd['edit.data'] = function (msg) {
       });
     });
   })) {
-    /* Prepare for dependency wizard. */
+    /* Prepare for dependency and env wizards. */
     msg.data.idxDep   = 0;
     msg.data.idxRange = 0;
     msg.data.depType  = 'build';
-    msg.data.nextStep = 'edit.save';
+    msg.data.nextStep = 'edit.env';
+    msg.data.idxEnv   = 0;
 
     msg.data.nextCommand = 'pacman.edit.askdep';
   } else {
-    msg.data.nextCommand = 'pacman.edit.save';
+    msg.data.nextCommand = 'pacman.edit.env';
   }
 
+  busClient.events.send ('pacman.edit.added', msg.data);
+};
+
+cmd['edit.env'] = function (msg) {
+  var wizard = {};
+
+  /* Continue when the key is an empty string. */
+  if ( msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].hasOwnProperty ('key') &&
+      !msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].key.length) {
+    cmd[msg.data.nextStep] (msg);
+    return;
+  }
+
+  try {
+    var def  = definition.load (msg.data.packageName);
+    var keys = Object.keys (def.data.env.other);
+
+    if (keys.length > msg.data.idxEnv) {
+      var key = keys[msg.data.idxEnv];
+      wizard.key   = key;
+      wizard.value = def.data.env.other[key];
+      msg.data.idxEnv++;
+    }
+  } catch (err) {}
+
+  msg.data.wizardName     = 'env';
+  msg.data.wizardDefaults = wizard;
+  msg.data.nextStep       = 'edit.save';
+
+  msg.data.nextCommand = 'pacman.edit.env';
   busClient.events.send ('pacman.edit.added', msg.data);
 };
 

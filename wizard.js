@@ -320,17 +320,6 @@ exports.data = [{
     return answers.fileType === 'src';
   }
 }, {
-  type: 'input',
-  name: 'registerPath',
-  message: 'Register an unusual location for PATH (keep empty with default PATH):',
-  when: function (answers) {
-    if (answers.fileType === 'src') {
-      return false;
-    }
-
-    return answers.rulesType !== 'meta';
-  }
-}, {
   type: 'confirm',
   name: 'embedded',
   message: 'Embed data in the package (only if less than 1GB)?',
@@ -343,6 +332,30 @@ exports.data = [{
   message: 'Configure step for binary runtime package (commands, script, ...):',
   when: function (answers) {
     return answers.fileType === 'src';
+  }
+}, {
+  type: 'input',
+  name: 'registerPath',
+  message: 'Register an unusual location for PATH (keep empty with default PATH):',
+  when: function (answers) {
+    if (answers.fileType === 'src') {
+      return false;
+    }
+
+    return answers.rulesType !== 'meta';
+  }
+}];
+
+exports.env = [{
+  type: 'input',
+  name: 'key',
+  message: 'Insert the name of a specific environment variable (or nothing to continue):'
+}, {
+  type: 'name',
+  name: 'value',
+  message: 'Value of the environment variable:',
+  when: function (answers) {
+    return !!answers.key.trim ().length;
   }
 }];
 
