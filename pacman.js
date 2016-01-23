@@ -237,6 +237,7 @@ cmd['edit.data'] = function (msg) {
 
   msg.data.wizardName     = 'data';
   msg.data.wizardDefaults = wizard;
+  msg.data.idxEnv         = 0;
 
   /* Ask for build dependencies only with source packages. */
   if (msg.data.wizardAnswers.some (function (wizard) {
@@ -246,12 +247,11 @@ cmd['edit.data'] = function (msg) {
       });
     });
   })) {
-    /* Prepare for dependency and env wizards. */
+    /* Prepare for dependency wizards. */
     msg.data.idxDep   = 0;
     msg.data.idxRange = 0;
     msg.data.depType  = 'build';
     msg.data.nextStep = 'edit.env';
-    msg.data.idxEnv   = 0;
 
     msg.data.nextCommand = 'pacman.edit.askdep';
   } else {
