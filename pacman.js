@@ -116,17 +116,15 @@ cmd['edit.header'] = function (msg) {
     package: msg.data.packageName
   };
 
-  try {
-    var def = definition.load (msg.data.packageName);
+  var def = definition.load (msg.data.packageName);
 
-    wizard.version          = def.version;
-    wizard.tool             = def.distribution === pacmanConfig.pkgToolchainRepository;
-    wizard.maintainerName   = def.maintainer.name;
-    wizard.maintainerEmail  = def.maintainer.email;
-    wizard.architecture     = def.architecture;
-    wizard.descriptionBrief = def.description.brief;
-    wizard.descriptionLong  = def.description.long;
-  } catch (err) {}
+  wizard.version          = def.version;
+  wizard.tool             = def.distribution === pacmanConfig.pkgToolchainRepository;
+  wizard.maintainerName   = def.maintainer.name;
+  wizard.maintainerEmail  = def.maintainer.email;
+  wizard.architecture     = def.architecture;
+  wizard.descriptionBrief = def.description.brief;
+  wizard.descriptionLong  = def.description.long;
 
   msg.data.wizardPath     = path.join (__dirname, 'wizard.js');
   msg.data.wizardName     = 'header';
@@ -147,24 +145,22 @@ cmd['edit.askdep'] = function (msg) {
 
   var wizardName = 'askdep/' + msg.data.depType;
 
-  try {
-    var def  = definition.load (msg.data.packageName);
-    var keys = Object.keys (def.dependency[msg.data.depType]);
+  var def  = definition.load (msg.data.packageName);
+  var keys = Object.keys (def.dependency[msg.data.depType]);
 
-    if (keys.length > msg.data.idxDep) {
-      var key = keys[msg.data.idxDep];
+  if (keys.length > msg.data.idxDep) {
+    var key = keys[msg.data.idxDep];
 
-      if (def.dependency[msg.data.depType][key].length > msg.data.idxRange) {
-        wizard.hasDependency = true;
-      } else if (keys.length > msg.data.idxDep + 1) {
-        wizard.hasDependency = true;
-        msg.data.idxDep++;
-        msg.data.idxRange = 0;
-      } else {
-        wizard.hasDependency = false;
-      }
+    if (def.dependency[msg.data.depType][key].length > msg.data.idxRange) {
+      wizard.hasDependency = true;
+    } else if (keys.length > msg.data.idxDep + 1) {
+      wizard.hasDependency = true;
+      msg.data.idxDep++;
+      msg.data.idxRange = 0;
+    } else {
+      wizard.hasDependency = false;
     }
-  } catch (err) {}
+  }
 
   msg.data.wizardName     = wizardName;
   msg.data.wizardDefaults = wizard;
@@ -185,23 +181,21 @@ cmd['edit.dependency'] = function (msg) {
 
   var wizardName = 'dependency/' + msg.data.depType;
 
-  try {
-    var def  = definition.load (msg.data.packageName);
-    var keys = Object.keys (def.dependency[msg.data.depType]);
+  var def  = definition.load (msg.data.packageName);
+  var keys = Object.keys (def.dependency[msg.data.depType]);
 
-    if (keys.length > msg.data.idxDep) {
-      var key = keys[msg.data.idxDep];
+  if (keys.length > msg.data.idxDep) {
+    var key = keys[msg.data.idxDep];
 
-      if (def.dependency[msg.data.depType][key].length > msg.data.idxRange) {
-        wizard[wizardName]  = key;
-        wizard.version      = def.dependency[msg.data.depType][key][msg.data.idxRange].version;
-        wizard.architecture = def.dependency[msg.data.depType][key][msg.data.idxRange].architecture;
-        msg.data.idxRange++;
-      } else {
-        msg.data.idxDep++;
-      }
+    if (def.dependency[msg.data.depType][key].length > msg.data.idxRange) {
+      wizard[wizardName]  = key;
+      wizard.version      = def.dependency[msg.data.depType][key][msg.data.idxRange].version;
+      wizard.architecture = def.dependency[msg.data.depType][key][msg.data.idxRange].architecture;
+      msg.data.idxRange++;
+    } else {
+      msg.data.idxDep++;
     }
-  } catch (err) {}
+  }
 
   msg.data.wizardName     = wizardName;
   msg.data.wizardDefaults = wizard;
@@ -213,28 +207,26 @@ cmd['edit.dependency'] = function (msg) {
 cmd['edit.data'] = function (msg) {
   var wizard = {};
 
-  try {
-    var def = definition.load (msg.data.packageName);
+  var def = definition.load (msg.data.packageName);
 
-    wizard.uri                  = def.data.get.uri;
-    wizard.uriRef               = def.data.get.ref;
-    wizard.uriOut               = def.data.get.out;
-    wizard.fileType             = def.data.type;
-    wizard.configureCmd         = def.data.configure;
-    wizard.rulesType            = def.data.rules.type;
-    wizard.rulesLocation        = def.data.rules.location;
-    wizard.rulesArgsPostinst    = def.data.rules.args.postinst;
-    wizard.rulesArgsPrerm       = def.data.rules.args.prerm;
-    wizard.rulesArgsMakeall     = def.data.rules.args.makeall;
-    wizard.rulesArgsMakeinstall = def.data.rules.args.makeinstall;
-    wizard.deployCmd            = def.data.deploy;
-    wizard.registerPath         = def.data.env.path.join (',');
-    wizard.registerLDPath       = def.data.env.ldpath.join (',');
-    wizard.embedded             = def.data.embedded;
-    if (def.data.runtime) {
-      wizard.runtimeConfigureCmd = def.data.runtime.configureCmd;
-    }
-  } catch (err) {}
+  wizard.uri                  = def.data.get.uri;
+  wizard.uriRef               = def.data.get.ref;
+  wizard.uriOut               = def.data.get.out;
+  wizard.fileType             = def.data.type;
+  wizard.configureCmd         = def.data.configure;
+  wizard.rulesType            = def.data.rules.type;
+  wizard.rulesLocation        = def.data.rules.location;
+  wizard.rulesArgsPostinst    = def.data.rules.args.postinst;
+  wizard.rulesArgsPrerm       = def.data.rules.args.prerm;
+  wizard.rulesArgsMakeall     = def.data.rules.args.makeall;
+  wizard.rulesArgsMakeinstall = def.data.rules.args.makeinstall;
+  wizard.deployCmd            = def.data.deploy;
+  wizard.registerPath         = def.data.env.path.join (',');
+  wizard.registerLDPath       = def.data.env.ldpath.join (',');
+  wizard.embedded             = def.data.embedded;
+  if (def.data.runtime) {
+    wizard.runtimeConfigureCmd = def.data.runtime.configureCmd;
+  }
 
   msg.data.wizardName     = 'data';
   msg.data.wizardDefaults = wizard;
@@ -272,17 +264,15 @@ cmd['edit.env'] = function (msg) {
     return;
   }
 
-  try {
-    var def  = definition.load (msg.data.packageName);
-    var keys = Object.keys (def.data.env.other);
+  var def  = definition.load (msg.data.packageName);
+  var keys = Object.keys (def.data.env.other);
 
-    if (keys.length > msg.data.idxEnv) {
-      var key = keys[msg.data.idxEnv];
-      wizard.key   = key;
-      wizard.value = def.data.env.other[key];
-      msg.data.idxEnv++;
-    }
-  } catch (err) {}
+  if (keys.length > msg.data.idxEnv) {
+    var key = keys[msg.data.idxEnv];
+    wizard.key   = key;
+    wizard.value = def.data.env.other[key];
+    msg.data.idxEnv++;
+  }
 
   msg.data.wizardName     = 'env';
   msg.data.wizardDefaults = wizard;
