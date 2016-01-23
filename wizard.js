@@ -344,6 +344,17 @@ exports.data = [{
 
     return answers.rulesType !== 'meta';
   }
+}, {
+  type: 'input',
+  name: 'registerLDPath',
+  message: 'Register an unusual location for (DY)LD_LIBARY_PATH (or nothing to continue):',
+  when: function (answers) {
+    if (answers.fileType === 'src') {
+      return false;
+    }
+
+    return answers.rulesType !== 'meta';
+  }
 }];
 
 exports.env = [{
