@@ -40,16 +40,6 @@ module.exports = [{
   default: 'script'
 }, {
   type: 'input',
-  name: 'pkgPostinst',
-  message: 'postinst wpkg script name',
-  default: 'postinst'
-}, {
-  type: 'input',
-  name: 'pkgPrerm',
-  message: 'prerm wpkg script name',
-  default: 'prerm'
-}, {
-  type: 'input',
   name: 'pkgMakeall',
   message: 'make all script name',
   default: 'makeall'
