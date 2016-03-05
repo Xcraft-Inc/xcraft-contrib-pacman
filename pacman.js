@@ -225,7 +225,7 @@ cmd['edit.data'] = function (msg) {
   wizard.registerLDPath       = def.data.env.ldpath.join (',');
   wizard.embedded             = def.data.embedded;
   if (def.data.runtime) {
-    wizard.runtimeConfigureCmd = def.data.runtime.configureCmd;
+    wizard.runtimeConfigureCmd = def.data.runtime.configure;
   }
 
   msg.data.wizardName     = 'data';
