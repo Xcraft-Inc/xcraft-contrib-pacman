@@ -209,30 +209,14 @@ exports.data = [{
   name: 'fileType',
   message: 'Type of data',
   choices: function () {
-    var list = [];
-
-    Object.keys (xPeon).forEach (function (type) {
-      list.push ({
-        name: type
-      });
-    });
-
-    return list;
+    return Object.keys (xPeon);
   }
 }, {
   type: 'list',
   name: 'rulesType',
   message: 'How to install (to build)',
   choices: function (answers) {
-    var list = [];
-
-    Object.keys (xPeon[answers.fileType]).forEach (function (type) {
-      list.push ({
-        name: type
-      });
-    });
-
-    return list;
+    return Object.keys (xPeon[answers.fileType]);
   }
 }, {
   type: 'input',
