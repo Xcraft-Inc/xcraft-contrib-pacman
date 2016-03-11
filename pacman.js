@@ -12,6 +12,7 @@ var definition = require ('./lib/def.js');
 var list       = require ('./lib/list.js');
 var utils      = require ('./lib/utils.js');
 
+var xUtils       = require ('xcraft-core-utils');
 var xEnv         = require ('xcraft-core-env');
 var xLog         = require ('xcraft-core-log') (moduleName);
 var busClient    = require ('xcraft-core-busclient').getGlobal ();
@@ -43,7 +44,7 @@ var extractPackages = function (packageRefs) {
 
     var prev = null;
     pkgs.forEach (function (item) {
-      if (!new RegExp (utils.toRegexp (depsPattern)).test (item)) {
+      if (!new RegExp (xUtils.regex.toRegexp (depsPattern)).test (item)) {
         prev = item;
         results = _.union (results, [item]);
         return;
