@@ -52,6 +52,15 @@
       }
     }
   },
+  "publish": {
+    "desc": "publish the package",
+    "options": {
+      "params": {
+        "required": "outputRepository",
+        "optional": "packageRefs"
+      }
+    }
+  },
   "remove": {
     "desc": "remove the package",
     "options": {

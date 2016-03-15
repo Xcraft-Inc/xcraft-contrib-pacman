@@ -592,6 +592,30 @@ cmd.clean = function (msg) {
 };
 
 /**
+ * Publish a package in a specified repository.
+ *
+ * @param {Object} msg
+ */
+cmd.publish = function (msg) {
+  const publish = require ('./lib/publish.js');
+
+  const pkgs = extractPackages (msg.data.packageRefs).list;
+  let status = busClient.events.status.succeeded;
+
+  async.eachSeries (pkgs, function (packageRef, callback) {
+    publish.package (packageRef, msg.data.outputRepository, function (err) {
+      if (err) {
+        xLog.err (err);
+        status = busClient.events.status.failed;
+      }
+      callback ();
+    });
+  }, function () {
+    busClient.events.send ('pacman.publish.finished', status);
+  });
+};
+
+/**
  * Retrieve the list of available commands.
  *
  * @returns {Object} The list and definitions of commands.
