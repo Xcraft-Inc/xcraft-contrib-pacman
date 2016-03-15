@@ -1,6 +1,8 @@
 #!/bin/sh
 set -e
 
+NAME=<PACMAN.NAME>
+VERSION=<PACMAN.VERSION>
 SHARE=<PACMAN.SHARE>
 ACTION=<PACMAN.ACTION>
 SYSROOT=<PACMAN.SYSROOT>
@@ -9,4 +11,4 @@ CONFIG=<PACMAN.CONFIG>
 
 PEON=$(node -e "process.stdout.write (require ('path').resolve (__dirname, '$SYSROOT', require (require ('path').resolve (__dirname, '$SYSROOT', '$CONFIG')).bin));")
 
-node "$PEON" "$(pwd)" "$SHARE" $ACTION "$CMAKE_BINARY_DIR"
+node "$PEON" "$(pwd)" "$SHARE" $ACTION "$CMAKE_BINARY_DIR" "$NAME" "$VERSION"
