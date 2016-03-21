@@ -482,29 +482,53 @@ cmd.reinstall = function (msg) {
 };
 
 /**
- * Test if a package is installed.
+ * Test if a package is installed or published.
  *
  * @param {Object} msg
  */
 cmd.status = function (msg) {
-  var install = require ('./lib/install.js');
+  const install = require ('./lib/install.js');
+  const publish = require ('./lib/publish.js');
 
   var pkgs = extractPackages (msg.data.packageRefs).list;
   var status = busClient.events.status.succeeded;
 
   async.eachSeries (pkgs, function (packageRef, callback) {
-    install.status (packageRef, function (err, code) {
+    async.series ([
+      callback => {
+        install.status (packageRef, function (err, code) {
+          if (err) {
+            callback (err);
+            return;
+          }
+
+          callback (null, {
+            packageRef: packageRef,
+            installed:  !!code
+          });
+        });
+      },
+
+      callback => {
+        publish.status (packageRef, null, function (err, deb) {
+          if (err) {
+            callback (err);
+            return;
+          }
+
+          callback (null, {
+            packageRef: packageRef,
+            published:  deb
+          });
+        });
+      }
+    ], (err, results) => {
       if (err) {
         xLog.err (err);
         status = busClient.events.status.failed;
       }
-
-      var result = {
-        packageRef: packageRef,
-        installed:  !!code
-      };
-
-      busClient.events.send ('pacman.status', result);
+      const res = _.merge (results[0], results[1]);
+      busClient.events.send ('pacman.status', res);
       callback ();
     });
   }, function () {
