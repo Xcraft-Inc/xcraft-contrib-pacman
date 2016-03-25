@@ -417,7 +417,7 @@ cmd.make = function (msg) {
         pkgArgs = packageArgs[pkg.name];
       }
 
-      make.package (pkg.name, pkg.arch, pkgArgs, function (err) {
+      make.package (pkg.name, pkg.arch, pkgArgs, null, function (err) {
         if (err) {
           xLog.err (err.stack ? err.stack : err);
           status = busClient.events.status.failed;
