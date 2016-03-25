@@ -383,7 +383,6 @@ cmd.make = function (msg) {
           }
           packageArgs[match[1]][match[2]] = match[3];
         } else {
-          packageArgsOther = {};
           packageArgsOther[match[2]] = match[3];
         }
       }
