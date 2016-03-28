@@ -626,7 +626,7 @@ cmd.publish = function (msg) {
   let status = busClient.events.status.succeeded;
 
   async.eachSeries (pkgs, function (packageRef, callback) {
-    publish.package (packageRef, null, msg.data.outputRepository, function (err) {
+    publish.add (packageRef, null, msg.data.outputRepository, function (err) {
       if (err) {
         xLog.err (err);
         status = busClient.events.status.failed;
