@@ -16,7 +16,7 @@ var xUtils       = require ('xcraft-core-utils');
 var xEnv         = require ('xcraft-core-env');
 var xLog         = require ('xcraft-core-log') (moduleName);
 var busClient    = require ('xcraft-core-busclient').getGlobal ();
-var pacmanConfig = require ('xcraft-core-etc').load ('xcraft-contrib-pacman');
+var pacmanConfig = require ('xcraft-core-etc') ().load ('xcraft-contrib-pacman');
 
 var cmd = {};
 
@@ -332,7 +332,7 @@ cmd['edit.save'] = function (msg) {
 };
 
 cmd['edit.upload'] = function (msg) {
-  var chestConfig = require ('xcraft-core-etc').load ('xcraft-contrib-chest');
+  var chestConfig = require ('xcraft-core-etc') ().load ('xcraft-contrib-chest');
 
   if (!chestConfig || !msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].mustUpload) {
     busClient.events.send ('pacman.edit.finished');
