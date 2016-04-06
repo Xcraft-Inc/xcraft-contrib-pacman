@@ -1,6 +1,6 @@
 {
   "list": {
-    "parallelizable": "true",
+    "parallel": true,
     "desc": "list all available packages"
   },
   "edit": {
@@ -11,6 +11,27 @@
         "optional": "packageName"
       }
     }
+  },
+  "edit.header": {
+    "parallel": true
+  },
+  "edit.askdep": {
+    "parallel": true
+  },
+  "edit.dependency": {
+    "parallel": true
+  },
+  "edit.data": {
+    "parallel": true
+  },
+  "edit.env": {
+    "parallel": true
+  },
+  "edit.save": {
+    "parallel": true
+  },
+  "edit.upload": {
+    "parallel": true
   },
   "make": {
     "desc": "make all or only the specified package",

@@ -1,7 +1,5 @@
 'use strict';
 
-var moduleName = 'pacman';
-
 var path     = require ('path');
 var async    = require ('async');
 var _        = require ('lodash');
@@ -14,15 +12,12 @@ var utils      = require ('./lib/utils.js');
 
 var xUtils       = require ('xcraft-core-utils');
 var xEnv         = require ('xcraft-core-env');
-var xLog         = require ('xcraft-core-log') (moduleName);
-var busClient    = require ('xcraft-core-busclient').getGlobal ();
-var pacmanConfig = require ('xcraft-core-etc') ().load ('xcraft-contrib-pacman');
 
 var cmd = {};
 
 
 var depsPattern = '<-deps';
-var extractPackages = function (packageRefs) {
+var extractPackages = function (packageRefs, response) {
   var results = [];
   var pkgs    = [];
 
@@ -59,7 +54,7 @@ var extractPackages = function (packageRefs) {
       var def = null;
       var deps = {};
       try {
-        def = definition.load (prev);
+        def = definition.load (prev, null, response);
       } catch (ex) {
         return;
       }
@@ -70,7 +65,7 @@ var extractPackages = function (packageRefs) {
           depsList += ',' + depsPattern;
 
           /* Continue recursively for the dependencies of this dependency. */
-          deps[type] = extractPackages (depsList);
+          deps[type] = extractPackages (depsList, response);
           results = _.union (results, deps[type].list);
         }
       });
@@ -85,14 +80,14 @@ var extractPackages = function (packageRefs) {
   };
 };
 
-cmd.list = function () {
-  xLog.info ('list of all products');
+cmd.list = function (msg, response) {
+  response.log.info ('list of all products');
 
   var list = require ('./lib/list.js');
 
-  var results = list.listProducts ();
-  busClient.events.send ('pacman.list', results);
-  busClient.events.send ('pacman.list.finished');
+  var results = list.listProducts (response);
+  response.events.send ('pacman.list', results);
+  response.events.send ('pacman.list.finished');
 };
 
 /**
@@ -100,7 +95,7 @@ cmd.list = function () {
  *
  * @param {Object} msg
  */
-cmd.edit = function (msg) {
+cmd.edit = function (msg, response) {
   var wizard = clone (require ('./wizard.js'), false);
   /* replace all func by a promise */
   traverse (wizard).forEach (function (value) {
@@ -112,7 +107,7 @@ cmd.edit = function (msg) {
         function (arg) {
           var done = this.async ();
           const cmd = 'wizard.${this.path[0]}.${wizard[this.path[0]][this.path[1]].name}.${this.key}';
-          busClient.command.send (cmd, arg, function (err, res) {
+          busClient.command.send (cmd, arg, null, function (err, res) {
             done (res.data);
           });
         }
@@ -127,22 +122,24 @@ cmd.edit = function (msg) {
   var packageName = msg.data.packageName || '';
   msg.data.wizardAnswers = [];
 
-  xLog.info ('create a new package: ' + packageName);
+  response.log.info ('create a new package: ' + packageName);
 
   try {
-    busClient.command.send ('pacman.edit.header', msg.data);
+    response.command.send ('pacman.edit.header', msg.data);
   } catch (err) {
-    xLog.err (err);
+    response.log.err (err);
   }
 };
 
-cmd['edit.header'] = function (msg) {
+cmd['edit.header'] = function (msg, response) {
+  const pacmanConfig = require ('xcraft-core-etc') (null, response).load ('xcraft-contrib-pacman');
+
   /* The first question is the package's name, then we set the default value. */
   var wizard = {
     package: msg.data.packageName
   };
 
-  var def = definition.load (msg.data.packageName);
+  var def = definition.load (msg.data.packageName, null, response);
 
   wizard.version          = def.version;
   wizard.tool             = def.distribution === pacmanConfig.pkgToolchainRepository;
@@ -163,15 +160,15 @@ cmd['edit.header'] = function (msg) {
   msg.data.nextStep = 'edit.data';
 
   msg.data.nextCommand = 'pacman.edit.askdep';
-  busClient.events.send ('pacman.edit.added', msg.data);
+  response.events.send ('pacman.edit.added', msg.data);
 };
 
-cmd['edit.askdep'] = function (msg) {
+cmd['edit.askdep'] = function (msg, response) {
   var wizard = {};
 
   var wizardName = 'askdep/' + msg.data.depType;
 
-  var def  = definition.load (msg.data.packageName);
+  var def  = definition.load (msg.data.packageName, null, response);
   var keys = Object.keys (def.dependency[msg.data.depType]);
 
   if (keys.length > msg.data.idxDep) {
@@ -192,22 +189,22 @@ cmd['edit.askdep'] = function (msg) {
   msg.data.wizardDefaults = wizard;
 
   msg.data.nextCommand = 'pacman.edit.dependency';
-  busClient.events.send ('pacman.edit.added', msg.data);
+  response.events.send ('pacman.edit.added', msg.data);
 };
 
-cmd['edit.dependency'] = function (msg) {
+cmd['edit.dependency'] = function (msg, response) {
   var wizard = {
     version: ''
   };
 
   if (msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].hasDependency === false) {
-    cmd[msg.data.nextStep] (msg);
+    cmd[msg.data.nextStep] (msg, response);
     return;
   }
 
   var wizardName = 'dependency/' + msg.data.depType;
 
-  var def  = definition.load (msg.data.packageName);
+  var def  = definition.load (msg.data.packageName, null, response);
   var keys = Object.keys (def.dependency[msg.data.depType]);
 
   if (keys.length > msg.data.idxDep) {
@@ -227,13 +224,13 @@ cmd['edit.dependency'] = function (msg) {
   msg.data.wizardDefaults = wizard;
 
   msg.data.nextCommand = 'pacman.edit.askdep';
-  busClient.events.send ('pacman.edit.added', msg.data);
+  response.events.send ('pacman.edit.added', msg.data);
 };
 
-cmd['edit.data'] = function (msg) {
+cmd['edit.data'] = function (msg, response) {
   var wizard = {};
 
-  var def = definition.load (msg.data.packageName);
+  var def = definition.load (msg.data.packageName, null, response);
 
   wizard.uri                  = def.data.get.uri;
   wizard.uriRef               = def.data.get.ref;
@@ -277,20 +274,20 @@ cmd['edit.data'] = function (msg) {
     msg.data.nextCommand = 'pacman.edit.env';
   }
 
-  busClient.events.send ('pacman.edit.added', msg.data);
+  response.events.send ('pacman.edit.added', msg.data);
 };
 
-cmd['edit.env'] = function (msg) {
+cmd['edit.env'] = function (msg, response) {
   var wizard = {};
 
   /* Continue when the key is an empty string. */
   if ( msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].hasOwnProperty ('key') &&
       !msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].key.length) {
-    cmd[msg.data.nextStep] (msg);
+    cmd[msg.data.nextStep] (msg, response);
     return;
   }
 
-  var def  = definition.load (msg.data.packageName);
+  var def  = definition.load (msg.data.packageName, null, response);
   var keys = Object.keys (def.data.env.other);
 
   if (keys.length > msg.data.idxEnv) {
@@ -305,54 +302,54 @@ cmd['edit.env'] = function (msg) {
   msg.data.nextStep       = 'edit.save';
 
   msg.data.nextCommand = 'pacman.edit.env';
-  busClient.events.send ('pacman.edit.added', msg.data);
+  response.events.send ('pacman.edit.added', msg.data);
 };
 
-cmd['edit.save'] = function (msg) {
+cmd['edit.save'] = function (msg, response) {
   var create = require ('./lib/edit.js');
 
   var wizardAnswers = msg.data.wizardAnswers;
 
-  create.pkgTemplate (wizardAnswers, function (wizardName, file) {
+  create.pkgTemplate (wizardAnswers, response, function (wizardName, file) {
     msg.data.wizardName     = wizardName;
     msg.data.wizardDefaults = {};
 
     msg.data.chestFile = file;
 
     msg.data.nextCommand = 'pacman.edit.upload';
-    busClient.events.send ('pacman.edit.added', msg.data);
+    response.events.send ('pacman.edit.added', msg.data);
   }, function (err, useChest) {
     if (err) {
-      xLog.err (err);
+      response.log.err (err);
     }
     if (!useChest) {
-      busClient.events.send ('pacman.edit.finished');
+      response.events.send ('pacman.edit.finished');
     }
   });
 };
 
-cmd['edit.upload'] = function (msg) {
-  var chestConfig = require ('xcraft-core-etc') ().load ('xcraft-contrib-chest');
+cmd['edit.upload'] = function (msg, response) {
+  const chestConfig = require ('xcraft-core-etc') (null, response).load ('xcraft-contrib-chest');
 
   if (!chestConfig || !msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].mustUpload) {
-    busClient.events.send ('pacman.edit.finished');
+    response.events.send ('pacman.edit.finished');
     return;
   }
 
-  xLog.info ('upload %s to chest://%s:%d',
-               msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].localPath,
-               chestConfig.host,
-               chestConfig.port);
+  response.log.info ('upload %s to chest://%s:%d',
+                     msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].localPath,
+                     chestConfig.host,
+                     chestConfig.port);
 
-  busClient.events.subscribe ('chest.send.finished', function () {
-    busClient.events.unsubscribe ('chest.send.finished');
-    busClient.events.send ('pacman.edit.finished');
+  response.events.subscribe ('chest.send.finished', function () {
+    response.events.unsubscribe ('chest.send.finished');
+    response.events.send ('pacman.edit.finished');
   });
 
   var chestMsg = {
     file: msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].localPath
   };
-  busClient.command.send ('chest.send', chestMsg);
+  response.command.send ('chest.send', chestMsg);
 };
 
 /**
@@ -360,7 +357,7 @@ cmd['edit.upload'] = function (msg) {
  *
  * @param {Object} msg
  */
-cmd.make = function (msg) {
+cmd.make = function (msg, response) {
   var make  = require ('./lib/make.js');
 
   var packageRefs      = null;
@@ -389,43 +386,43 @@ cmd.make = function (msg) {
     });
   }
 
-  xLog.verb ('list of overloaded properties: %s %s',
-             JSON.stringify (packageArgsOther, null, 2),
-             JSON.stringify (packageArgs, null, 2));
+  response.log.verb ('list of overloaded properties: %s %s',
+                     JSON.stringify (packageArgsOther, null, 2),
+                     JSON.stringify (packageArgs, null, 2));
 
-  var pkgs = extractPackages (packageRefs).list;
-  var status = busClient.events.status.succeeded;
+  var pkgs = extractPackages (packageRefs, response).list;
+  var status = response.events.status.succeeded;
 
   var cleanArg = {};
   if (packageRefs) {
     cleanArg.packageNames = pkgs.join (',');
   }
-  busClient.command.send ('pacman.clean', cleanArg, function (err) {
+  response.command.send ('pacman.clean', cleanArg, function (err) {
     if (err) {
-      xLog.err (err);
-      busClient.events.send ('pacman.make.finished');
+      response.log.err (err);
+      response.events.send ('pacman.make.finished');
       return;
     }
 
     async.eachSeries (pkgs, function (packageRef, callback) {
       var pkg = utils.parsePkgRef (packageRef);
 
-      xLog.info ('make the wpkg package for ' + pkg.name + ' on architecture: ' + pkg.arch);
+      response.log.info ('make the wpkg package for ' + pkg.name + ' on architecture: ' + pkg.arch);
 
       var pkgArgs = packageArgsOther;
       if (packageArgs.hasOwnProperty (pkg.name)) {
         pkgArgs = packageArgs[pkg.name];
       }
 
-      make.package (pkg.name, pkg.arch, pkgArgs, null, function (err) {
+      make.package (pkg.name, pkg.arch, pkgArgs, null, response, function (err) {
         if (err) {
-          xLog.err (err.stack ? err.stack : err);
-          status = busClient.events.status.failed;
+          response.log.err (err.stack ? err.stack : err);
+          status = response.events.status.failed;
         }
         callback ();
       });
     }, function () {
-      busClient.events.send ('pacman.make.finished', status);
+      response.events.send ('pacman.make.finished', status);
     });
   });
 };
@@ -435,23 +432,23 @@ cmd.make = function (msg) {
  *
  * @param {Object} msg
  */
-cmd.install = function (msg) {
+cmd.install = function (msg, response) {
   var install = require ('./lib/install.js');
 
-  var pkgs = extractPackages (msg.data.packageRefs).list;
-  var status = busClient.events.status.succeeded;
+  var pkgs = extractPackages (msg.data.packageRefs, response).list;
+  var status = response.events.status.succeeded;
 
   async.eachSeries (pkgs, function (packageRef, callback) {
-    install.package (packageRef, false, function (err) {
+    install.package (packageRef, false, response, function (err) {
       if (err) {
-        xLog.err (err);
-        status = busClient.events.status.failed;
+        response.log.err (err);
+        status = response.events.status.failed;
       }
       xEnv.devrootUpdate ();
       callback ();
     });
   }, function () {
-    busClient.events.send ('pacman.install.finished', status);
+    response.events.send ('pacman.install.finished', status);
   });
 };
 
@@ -460,23 +457,23 @@ cmd.install = function (msg) {
  *
  * @param {Object} msg
  */
-cmd.reinstall = function (msg) {
+cmd.reinstall = function (msg, response) {
   var install = require ('./lib/install.js');
 
-  var pkgs = extractPackages (msg.data.packageRefs).list;
-  var status = busClient.events.status.succeeded;
+  var pkgs = extractPackages (msg.data.packageRefs, response).list;
+  var status = response.events.status.succeeded;
 
   async.eachSeries (pkgs, function (packageRef, callback) {
-    install.package (packageRef, true, function (err) {
+    install.package (packageRef, true, response, function (err) {
       if (err) {
-        xLog.err (err);
-        status = busClient.events.status.failed;
+        response.log.err (err);
+        status = response.events.status.failed;
       }
       xEnv.devrootUpdate ();
       callback ();
     });
   }, function () {
-    busClient.events.send ('pacman.reinstall.finished', status);
+    response.events.send ('pacman.reinstall.finished', status);
   });
 };
 
@@ -485,17 +482,17 @@ cmd.reinstall = function (msg) {
  *
  * @param {Object} msg
  */
-cmd.status = function (msg) {
+cmd.status = function (msg, response) {
   const install = require ('./lib/install.js');
   const publish = require ('./lib/publish.js');
 
-  var pkgs = extractPackages (msg.data.packageRefs).list;
-  var status = busClient.events.status.succeeded;
+  var pkgs = extractPackages (msg.data.packageRefs, response).list;
+  var status = response.events.status.succeeded;
 
   async.eachSeries (pkgs, function (packageRef, callback) {
     async.series ([
       callback => {
-        install.status (packageRef, function (err, code) {
+        install.status (packageRef, response, function (err, code) {
           if (err) {
             callback (err);
             return;
@@ -509,7 +506,7 @@ cmd.status = function (msg) {
       },
 
       callback => {
-        publish.status (packageRef, null, function (err, deb) {
+        publish.status (packageRef, null, response, function (err, deb) {
           if (err) {
             callback (err);
             return;
@@ -523,15 +520,15 @@ cmd.status = function (msg) {
       }
     ], (err, results) => {
       if (err) {
-        xLog.err (err);
-        status = busClient.events.status.failed;
+        response.log.err (err);
+        status = response.events.status.failed;
       }
       const res = _.merge (results[0], results[1]);
-      busClient.events.send ('pacman.status', res);
+      response.events.send ('pacman.status', res);
       callback ();
     });
   }, function () {
-    busClient.events.send ('pacman.status.finished', status);
+    response.events.send ('pacman.status.finished', status);
   });
 };
 
@@ -540,28 +537,28 @@ cmd.status = function (msg) {
  *
  * @param {Object} msg
  */
-cmd.build = function (msg) {
+cmd.build = function (msg, response) {
   var build = require ('./lib/build.js');
 
   var pkgs = [null];
 
-  var extractedPkgs = extractPackages (msg.data.packageRefs);
+  var extractedPkgs = extractPackages (msg.data.packageRefs, response);
   if (!extractedPkgs.all) {
     pkgs = extractedPkgs.list;
   }
 
-  var status = busClient.events.status.succeeded;
+  var status = response.events.status.succeeded;
 
   async.eachSeries (pkgs, function (packageRef, callback) {
-    build.package (packageRef, function (err) {
+    build.package (packageRef, response, function (err) {
       if (err) {
-        xLog.err (err);
-        status = busClient.events.status.failed;
+        response.log.err (err);
+        status = response.events.status.failed;
       }
       callback ();
     });
   }, function () {
-    busClient.events.send ('pacman.build.finished', status);
+    response.events.send ('pacman.build.finished', status);
   });
 };
 
@@ -570,23 +567,23 @@ cmd.build = function (msg) {
  *
  * @param {Object} msg
  */
-cmd.remove = function (msg) {
+cmd.remove = function (msg, response) {
   var remove = require ('./lib/remove.js');
 
-  var pkgs = extractPackages (msg.data.packageRefs).list;
-  var status = busClient.events.status.succeeded;
+  var pkgs = extractPackages (msg.data.packageRefs, response).list;
+  var status = response.events.status.succeeded;
 
   async.eachSeries (pkgs, function (packageRef, callback) {
-    remove.package (packageRef, function (err) {
+    remove.package (packageRef, response, function (err) {
       if (err) {
-        xLog.err (err);
-        status = busClient.events.status.failed;
+        response.log.err (err);
+        status = response.events.status.failed;
       }
       xEnv.devrootUpdate ();
       callback ();
     });
   }, function () {
-    busClient.events.send ('pacman.remove.finished', status);
+    response.events.send ('pacman.remove.finished', status);
   });
 };
 
@@ -595,22 +592,22 @@ cmd.remove = function (msg) {
  *
  * @param {Object} msg
  */
-cmd.clean = function (msg) {
+cmd.clean = function (msg, response) {
   var clean = require ('./lib/clean.js');
 
-  var pkgs = extractPackages (msg.data.packageNames).list;
-  var status = busClient.events.status.succeeded;
+  var pkgs = extractPackages (msg.data.packageNames, response).list;
+  var status = response.events.status.succeeded;
 
   async.eachSeries (pkgs, function (packageName, callback) {
-    clean.temp (packageName, function (err) {
+    clean.temp (packageName, response, function (err) {
       if (err) {
-        xLog.err (err);
-        status = busClient.events.status.failed;
+        response.log.err (err);
+        status = response.events.status.failed;
       }
       callback ();
     });
   }, function () {
-    busClient.events.send ('pacman.clean.finished', status);
+    response.events.send ('pacman.clean.finished', status);
   });
 };
 
@@ -619,22 +616,22 @@ cmd.clean = function (msg) {
  *
  * @param {Object} msg
  */
-cmd.publish = function (msg) {
+cmd.publish = function (msg, response) {
   const publish = require ('./lib/publish.js');
 
-  const pkgs = extractPackages (msg.data.packageRefs).list;
-  let status = busClient.events.status.succeeded;
+  const pkgs = extractPackages (msg.data.packageRefs, response).list;
+  let status = response.events.status.succeeded;
 
   async.eachSeries (pkgs, function (packageRef, callback) {
-    publish.add (packageRef, null, msg.data.outputRepository, function (err) {
+    publish.add (packageRef, null, msg.data.outputRepository, response, function (err) {
       if (err) {
-        xLog.err (err);
-        status = busClient.events.status.failed;
+        response.log.err (err);
+        status = response.events.status.failed;
       }
       callback ();
     });
   }, function () {
-    busClient.events.send ('pacman.publish.finished', status);
+    response.events.send ('pacman.publish.finished', status);
   });
 };
 
@@ -644,8 +641,9 @@ cmd.publish = function (msg) {
  * @returns {Object} The list and definitions of commands.
  */
 exports.xcraftCommands = function () {
+  const xUtils = require ('xcraft-core-utils');
   return {
     handlers: cmd,
-    rc: path.join (__dirname, './rc.json')
+    rc: xUtils.json.fromFile (path.join (__dirname, './rc.json'))
   };
 };

@@ -4,7 +4,6 @@ var inquirer = require ('inquirer');
 
 var xFs          = require ('xcraft-core-fs');
 var xPeon        = require ('xcraft-contrib-peon');
-var busClient    = require ('xcraft-core-busclient').getGlobal ();
 var xcraftConfig = require ('xcraft-core-etc') ().load ('xcraft');
 var pacmanConfig = require ('xcraft-core-etc') ().load ('xcraft-contrib-pacman');
 
@@ -370,6 +369,7 @@ exports.chest = [{
 
 exports.xcraftCommands = function () {
   var cmd = {};
+  const rc = {};
 
   var tryPushFunction = function (fieldDef, category, funcName) {
     if (!fieldDef.hasOwnProperty (funcName)) {
@@ -385,10 +385,13 @@ exports.xcraftCommands = function () {
      * and corresponding result event.
      */
     fieldDef.loktharCommands['wizard.' + cmdName] = evtName;
-    cmd[cmdName] = function (value) {
+    cmd[cmdName] = function (msg, response) {
       /* execute function */
-      var result = fieldDef[funcName] (value.data);
-      busClient.events.send (evtName, result);
+      var result = fieldDef[funcName] (msg.data);
+      response.events.send (evtName, result);
+    };
+    rc[cmdName] = {
+      parallel: true
     };
   };
 
@@ -415,6 +418,6 @@ exports.xcraftCommands = function () {
 
   return {
     handlers: cmd,
-    rc: null
+    rc: rc
   };
 };
