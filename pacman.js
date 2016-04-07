@@ -160,7 +160,9 @@ cmd['edit.header'] = function (msg, response) {
   msg.data.nextStep = 'edit.data';
 
   msg.data.nextCommand = 'pacman.edit.askdep';
+
   response.events.send ('pacman.edit.added', msg.data);
+  response.events.send ('pacman.edit.header.finished');
 };
 
 cmd['edit.askdep'] = function (msg, response) {
@@ -189,7 +191,9 @@ cmd['edit.askdep'] = function (msg, response) {
   msg.data.wizardDefaults = wizard;
 
   msg.data.nextCommand = 'pacman.edit.dependency';
+
   response.events.send ('pacman.edit.added', msg.data);
+  response.events.send ('pacman.edit.askdep.finished');
 };
 
 cmd['edit.dependency'] = function (msg, response) {
@@ -199,6 +203,7 @@ cmd['edit.dependency'] = function (msg, response) {
 
   if (msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].hasDependency === false) {
     cmd[msg.data.nextStep] (msg, response);
+    response.events.send ('pacman.edit.dependency.finished');
     return;
   }
 
@@ -224,7 +229,9 @@ cmd['edit.dependency'] = function (msg, response) {
   msg.data.wizardDefaults = wizard;
 
   msg.data.nextCommand = 'pacman.edit.askdep';
+
   response.events.send ('pacman.edit.added', msg.data);
+  response.events.send ('pacman.edit.dependency.finished');
 };
 
 cmd['edit.data'] = function (msg, response) {
@@ -275,6 +282,7 @@ cmd['edit.data'] = function (msg, response) {
   }
 
   response.events.send ('pacman.edit.added', msg.data);
+  response.events.send ('pacman.edit.data.finished');
 };
 
 cmd['edit.env'] = function (msg, response) {
@@ -284,6 +292,7 @@ cmd['edit.env'] = function (msg, response) {
   if ( msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].hasOwnProperty ('key') &&
       !msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].key.length) {
     cmd[msg.data.nextStep] (msg, response);
+    response.events.send ('pacman.edit.env.finished');
     return;
   }
 
@@ -302,7 +311,9 @@ cmd['edit.env'] = function (msg, response) {
   msg.data.nextStep       = 'edit.save';
 
   msg.data.nextCommand = 'pacman.edit.env';
+
   response.events.send ('pacman.edit.added', msg.data);
+  response.events.send ('pacman.edit.env.finished');
 };
 
 cmd['edit.save'] = function (msg, response) {
@@ -317,11 +328,13 @@ cmd['edit.save'] = function (msg, response) {
     msg.data.chestFile = file;
 
     msg.data.nextCommand = 'pacman.edit.upload';
+
     response.events.send ('pacman.edit.added', msg.data);
   }, function (err, useChest) {
     if (err) {
       response.log.err (err);
     }
+    response.events.send ('pacman.edit.save.finished');
     if (!useChest) {
       response.events.send ('pacman.edit.finished');
     }
@@ -332,6 +345,7 @@ cmd['edit.upload'] = function (msg, response) {
   const chestConfig = require ('xcraft-core-etc') (null, response).load ('xcraft-contrib-chest');
 
   if (!chestConfig || !msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].mustUpload) {
+    response.events.send ('pacman.edit.upload.finished');
     response.events.send ('pacman.edit.finished');
     return;
   }
@@ -343,6 +357,7 @@ cmd['edit.upload'] = function (msg, response) {
 
   response.events.subscribe ('chest.send.finished', function () {
     response.events.unsubscribe ('chest.send.finished');
+    response.events.send ('pacman.edit.upload.finished');
     response.events.send ('pacman.edit.finished');
   });
 
