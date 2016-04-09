@@ -565,7 +565,7 @@ cmd.build = function (msg, response) {
   var status = response.events.status.succeeded;
 
   async.eachSeries (pkgs, function (packageRef, callback) {
-    build.package (packageRef, response, function (err) {
+    build.package (packageRef, function (err) {
       if (err) {
         response.log.err (err);
         status = response.events.status.failed;
