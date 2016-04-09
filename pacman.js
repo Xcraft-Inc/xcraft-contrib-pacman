@@ -553,7 +553,7 @@ cmd.status = function (msg, response) {
  * @param {Object} msg
  */
 cmd.build = function (msg, response) {
-  var build = require ('./lib/build.js');
+  var build = require ('./lib/build.js') (response);
 
   var pkgs = [null];
 
