@@ -495,7 +495,7 @@ cmd.reinstall = function * (msg, response) {
  *
  * @param {Object} msg
  */
-cmd.status = function * (msg, response, next) {
+cmd.status = function * (msg, response) {
   const install = require ('./lib/install.js') (response);
   const publish = require ('./lib/publish.js') (response);
 
@@ -513,7 +513,7 @@ cmd.status = function * (msg, response, next) {
         installed:  !!code
       };
 
-      const deb = yield publish.status (packageRef, null, next);
+      const deb = yield publish.status (packageRef);
       publishStatus = {
         packageRef: packageRef,
         published:  deb
