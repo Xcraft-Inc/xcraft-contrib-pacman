@@ -373,7 +373,7 @@ cmd['edit.upload'] = function (msg, response) {
  * @param {Object} msg
  */
 cmd.make = function (msg, response) {
-  var make  = require ('./lib/make.js');
+  const make = require ('./lib/make.js') (response);
 
   var packageRefs      = null;
   var packageArgs      = {};
@@ -429,7 +429,7 @@ cmd.make = function (msg, response) {
         pkgArgs = packageArgs[pkg.name];
       }
 
-      make.package (pkg.name, pkg.arch, pkgArgs, null, response, function (err) {
+      make.package (pkg.name, pkg.arch, pkgArgs, null, function (err) {
         if (err) {
           response.log.err (err.stack ? err.stack : err);
           status = response.events.status.failed;
