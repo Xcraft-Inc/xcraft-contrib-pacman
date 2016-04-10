@@ -565,24 +565,23 @@ cmd.build = function * (msg, response) {
  *
  * @param {Object} msg
  */
-cmd.remove = function (msg, response) {
-  var remove = require ('./lib/remove.js');
+cmd.remove = function * (msg, response, next) {
+  const remove = require ('./lib/remove.js') (response);
 
-  var pkgs = extractPackages (msg.data.packageRefs, response).list;
-  var status = response.events.status.succeeded;
+  const pkgs = extractPackages (msg.data.packageRefs, response).list;
+  let status = response.events.status.succeeded;
 
-  async.eachSeries (pkgs, function (packageRef, callback) {
-    remove.package (packageRef, response, function (err) {
-      if (err) {
-        response.log.err (err);
-        status = response.events.status.failed;
-      }
+  for (const packageRef of pkgs) {
+    try {
+      yield remove.package (packageRef, next);
       xEnv.devrootUpdate ();
-      callback ();
-    });
-  }, function () {
-    response.events.send ('pacman.remove.finished', status);
-  });
+    } catch (ex) {
+      response.log.err (ex.stack || ex);
+      status = response.events.status.failed;
+    }
+  }
+
+  response.events.send ('pacman.remove.finished', status);
 };
 
 /**
