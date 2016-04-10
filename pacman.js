@@ -497,7 +497,7 @@ cmd.reinstall = function * (msg, response) {
  */
 cmd.status = function * (msg, response, next) {
   const install = require ('./lib/install.js') (response);
-  const publish = require ('./lib/publish.js');
+  const publish = require ('./lib/publish.js') (response);
 
   var pkgs = extractPackages (msg.data.packageRefs, response).list;
   var status = response.events.status.succeeded;
@@ -513,7 +513,7 @@ cmd.status = function * (msg, response, next) {
         installed:  !!code
       };
 
-      const deb = yield publish.status (packageRef, null, response, next);
+      const deb = yield publish.status (packageRef, null, next);
       publishStatus = {
         packageRef: packageRef,
         published:  deb
@@ -615,13 +615,13 @@ cmd.clean = function (msg, response) {
  * @param {Object} msg
  */
 cmd.publish = function (msg, response) {
-  const publish = require ('./lib/publish.js');
+  const publish = require ('./lib/publish.js') (response);
 
   const pkgs = extractPackages (msg.data.packageRefs, response).list;
   let status = response.events.status.succeeded;
 
   async.eachSeries (pkgs, function (packageRef, callback) {
-    publish.add (packageRef, null, msg.data.outputRepository, response, function (err) {
+    publish.add (packageRef, null, msg.data.outputRepository, function (err) {
       if (err) {
         response.log.err (err);
         status = response.events.status.failed;
