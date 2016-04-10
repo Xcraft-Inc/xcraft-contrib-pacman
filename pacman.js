@@ -535,29 +535,29 @@ cmd.status = function * (msg, response, next) {
  *
  * @param {Object} msg
  */
-cmd.build = function (msg, response) {
-  var build = require ('./lib/build.js') (response);
+cmd.build = function * (msg, response) {
+  const build = require ('./lib/build.js') (response);
 
-  var pkgs = [null];
+  let pkgs = [null];
 
-  var extractedPkgs = extractPackages (msg.data.packageRefs, response);
+  const extractedPkgs = extractPackages (msg.data.packageRefs, response);
   if (!extractedPkgs.all) {
     pkgs = extractedPkgs.list;
   }
 
-  var status = response.events.status.succeeded;
+  let status = response.events.status.succeeded;
 
-  async.eachSeries (pkgs, function (packageRef, callback) {
-    build.package (packageRef, function (err) {
-      if (err) {
-        response.log.err (err);
-        status = response.events.status.failed;
-      }
-      callback ();
-    });
-  }, function () {
-    response.events.send ('pacman.build.finished', status);
-  });
+  /* Try to build most of packages; continue with the next on error. */
+  for (const packageRef of pkgs) {
+    try {
+      yield build.package (packageRef);
+    } catch (ex) {
+      response.log.err (ex.stack || ex);
+      status = response.events.status.failed;
+    }
+  }
+
+  response.events.send ('pacman.build.finished', status);
 };
 
 /**
