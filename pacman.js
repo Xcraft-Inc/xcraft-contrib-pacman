@@ -591,22 +591,21 @@ cmd.remove = function (msg, response) {
  * @param {Object} msg
  */
 cmd.clean = function (msg, response) {
-  var clean = require ('./lib/clean.js');
+  const clean = require ('./lib/clean.js') (response);
 
-  var pkgs = extractPackages (msg.data.packageNames, response).list;
-  var status = response.events.status.succeeded;
+  const pkgs = extractPackages (msg.data.packageNames, response).list;
+  let status = response.events.status.succeeded;
 
-  async.eachSeries (pkgs, function (packageName, callback) {
-    clean.temp (packageName, response, function (err) {
-      if (err) {
-        response.log.err (err);
-        status = response.events.status.failed;
-      }
-      callback ();
-    });
-  }, function () {
-    response.events.send ('pacman.clean.finished', status);
-  });
+  for (const packageName of pkgs) {
+    try {
+      clean.temp (packageName);
+    } catch (ex) {
+      response.log.err (ex.stack || ex);
+      status = response.events.status.failed;
+    }
+  }
+
+  response.events.send ('pacman.clean.finished', status);
 };
 
 /**
