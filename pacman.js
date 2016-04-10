@@ -565,7 +565,7 @@ cmd.build = function * (msg, response) {
  *
  * @param {Object} msg
  */
-cmd.remove = function * (msg, response, next) {
+cmd.remove = function * (msg, response) {
   const remove = require ('./lib/remove.js') (response);
 
   const pkgs = extractPackages (msg.data.packageRefs, response).list;
@@ -573,7 +573,7 @@ cmd.remove = function * (msg, response, next) {
 
   for (const packageRef of pkgs) {
     try {
-      yield remove.package (packageRef, next);
+      yield remove.package (packageRef);
       xEnv.devrootUpdate ();
     } catch (ex) {
       response.log.err (ex.stack || ex);
