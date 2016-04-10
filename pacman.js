@@ -448,13 +448,13 @@ cmd.make = function (msg, response) {
  * @param {Object} msg
  */
 cmd.install = function (msg, response) {
-  var install = require ('./lib/install.js');
+  const install = require ('./lib/install.js') (response);
 
   var pkgs = extractPackages (msg.data.packageRefs, response).list;
   var status = response.events.status.succeeded;
 
   async.eachSeries (pkgs, function (packageRef, callback) {
-    install.package (packageRef, false, response, function (err) {
+    install.package (packageRef, false, function (err) {
       if (err) {
         response.log.err (err);
         status = response.events.status.failed;
@@ -473,13 +473,13 @@ cmd.install = function (msg, response) {
  * @param {Object} msg
  */
 cmd.reinstall = function (msg, response) {
-  var install = require ('./lib/install.js');
+  const install = require ('./lib/install.js') (response);
 
   var pkgs = extractPackages (msg.data.packageRefs, response).list;
   var status = response.events.status.succeeded;
 
   async.eachSeries (pkgs, function (packageRef, callback) {
-    install.package (packageRef, true, response, function (err) {
+    install.package (packageRef, true, function (err) {
       if (err) {
         response.log.err (err);
         status = response.events.status.failed;
@@ -498,7 +498,7 @@ cmd.reinstall = function (msg, response) {
  * @param {Object} msg
  */
 cmd.status = function (msg, response) {
-  const install = require ('./lib/install.js');
+  const install = require ('./lib/install.js') (response);
   const publish = require ('./lib/publish.js');
 
   var pkgs = extractPackages (msg.data.packageRefs, response).list;
@@ -507,7 +507,7 @@ cmd.status = function (msg, response) {
   async.eachSeries (pkgs, function (packageRef, callback) {
     async.series ([
       callback => {
-        install.status (packageRef, response, function (err, code) {
+        install.status (packageRef, function (err, code) {
           if (err) {
             callback (err);
             return;
