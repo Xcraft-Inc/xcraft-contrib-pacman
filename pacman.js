@@ -513,7 +513,7 @@ cmd.status = function * (msg, response) {
         installed:  !!code
       };
 
-      const deb = yield publish.status (packageRef);
+      const deb = yield publish.status (packageRef, null);
       publishStatus = {
         packageRef: packageRef,
         published:  deb
