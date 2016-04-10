@@ -614,23 +614,23 @@ cmd.clean = function (msg, response) {
  *
  * @param {Object} msg
  */
-cmd.publish = function (msg, response) {
+cmd.publish = function * (msg, response) {
   const publish = require ('./lib/publish.js') (response);
 
   const pkgs = extractPackages (msg.data.packageRefs, response).list;
   let status = response.events.status.succeeded;
 
-  async.eachSeries (pkgs, function (packageRef, callback) {
-    publish.add (packageRef, null, msg.data.outputRepository, function (err) {
-      if (err) {
-        response.log.err (err);
-        status = response.events.status.failed;
-      }
-      callback ();
-    });
-  }, function () {
-    response.events.send ('pacman.publish.finished', status);
-  });
+  /* Try to publish most of packages; continue with the next on error. */
+  for (const packageRef of pkgs) {
+    try {
+      yield publish.add (packageRef, null, msg.data.outputRepository);
+    } catch (ex) {
+      response.log.err (ex.stack || ex);
+      status = response.events.status.failed;
+    }
+  }
+
+  response.events.send ('pacman.publish.finished', status);
 };
 
 /**
