@@ -447,24 +447,23 @@ cmd.make = function (msg, response) {
  *
  * @param {Object} msg
  */
-cmd.install = function (msg, response) {
+cmd.install = function * (msg, response) {
   const install = require ('./lib/install.js') (response);
 
   var pkgs = extractPackages (msg.data.packageRefs, response).list;
   var status = response.events.status.succeeded;
 
-  async.eachSeries (pkgs, function (packageRef, callback) {
-    install.package (packageRef, false, function (err) {
-      if (err) {
-        response.log.err (err);
-        status = response.events.status.failed;
-      }
+  for (const packageRef of pkgs) {
+    try {
+      yield install.package (packageRef, false);
       xEnv.devrootUpdate ();
-      callback ();
-    });
-  }, function () {
-    response.events.send ('pacman.install.finished', status);
-  });
+    } catch (ex) {
+      response.log.err (ex.stack || ex);
+      status = response.events.status.failed;
+    } finally {
+      response.events.send ('pacman.install.finished', status);
+    }
+  }
 };
 
 /**
@@ -472,24 +471,23 @@ cmd.install = function (msg, response) {
  *
  * @param {Object} msg
  */
-cmd.reinstall = function (msg, response) {
+cmd.reinstall = function * (msg, response) {
   const install = require ('./lib/install.js') (response);
 
   var pkgs = extractPackages (msg.data.packageRefs, response).list;
   var status = response.events.status.succeeded;
 
-  async.eachSeries (pkgs, function (packageRef, callback) {
-    install.package (packageRef, true, function (err) {
-      if (err) {
-        response.log.err (err);
-        status = response.events.status.failed;
-      }
+  for (const packageRef of pkgs) {
+    try {
+      yield install.package (packageRef, true);
       xEnv.devrootUpdate ();
-      callback ();
-    });
-  }, function () {
-    response.events.send ('pacman.reinstall.finished', status);
-  });
+    } catch (ex) {
+      response.log.err (ex.stack || ex);
+      status = response.events.status.failed;
+    } finally {
+      response.events.send ('pacman.reinstall.finished', status);
+    }
+  }
 };
 
 /**
@@ -497,54 +495,39 @@ cmd.reinstall = function (msg, response) {
  *
  * @param {Object} msg
  */
-cmd.status = function (msg, response) {
+cmd.status = function * (msg, response, next) {
   const install = require ('./lib/install.js') (response);
   const publish = require ('./lib/publish.js');
 
   var pkgs = extractPackages (msg.data.packageRefs, response).list;
   var status = response.events.status.succeeded;
 
-  async.eachSeries (pkgs, function (packageRef, callback) {
-    async.series ([
-      callback => {
-        install.status (packageRef, function (err, code) {
-          if (err) {
-            callback (err);
-            return;
-          }
+  try {
+    let installStatus;
+    let publishStatus;
 
-          callback (null, {
-            packageRef: packageRef,
-            installed:  !!code
-          });
-        });
-      },
+    for (const packageRef of pkgs) {
+      const code = yield install.status (packageRef);
+      installStatus = {
+        packageRef: packageRef,
+        installed:  !!code
+      };
 
-      callback => {
-        publish.status (packageRef, null, response, function (err, deb) {
-          if (err) {
-            callback (err);
-            return;
-          }
+      const deb = yield publish.status (packageRef, null, response, next);
+      publishStatus = {
+        packageRef: packageRef,
+        published:  deb
+      };
+    }
 
-          callback (null, {
-            packageRef: packageRef,
-            published:  deb
-          });
-        });
-      }
-    ], (err, results) => {
-      if (err) {
-        response.log.err (err);
-        status = response.events.status.failed;
-      }
-      const res = _.merge (results[0], results[1]);
-      response.events.send ('pacman.status', res);
-      callback ();
-    });
-  }, function () {
+    const res = _.merge (installStatus, publishStatus);
+    response.events.send ('pacman.status', res);
+  } catch (ex) {
+    response.log.err (ex.stack || ex);
+    status = response.events.status.failed;
+  } finally {
     response.events.send ('pacman.status.finished', status);
-  });
+  }
 };
 
 /**
