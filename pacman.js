@@ -1,7 +1,6 @@
 'use strict';
 
 var path     = require ('path');
-var async    = require ('async');
 var _        = require ('lodash');
 var clone    = require ('clone');
 var traverse = require ('traverse');
@@ -372,12 +371,12 @@ cmd['edit.upload'] = function (msg, response) {
  *
  * @param {Object} msg
  */
-cmd.make = function (msg, response) {
+cmd.make = function * (msg, response, next) {
   const make = require ('./lib/make.js') (response);
 
-  var packageRefs      = null;
-  var packageArgs      = {};
-  var packageArgsOther = {};
+  let   packageRefs      = null;
+  const packageArgs      = {};
+  const packageArgsOther = {};
 
   if (msg.data.packageArgs) {
     /* Retrieve the packageRef if available. */
@@ -386,7 +385,7 @@ cmd.make = function (msg, response) {
     }
 
     /* Transform all properties to a map. */
-    msg.data.packageArgs.forEach (function (arg) {
+    msg.data.packageArgs.forEach ((arg) => {
       var match = arg.trim ().match (/^p:(?:([^:]*):)?([^=]*)[=](.*)/);
       if (match) {
         if (match[1]) {
@@ -405,41 +404,41 @@ cmd.make = function (msg, response) {
                      JSON.stringify (packageArgsOther, null, 2),
                      JSON.stringify (packageArgs, null, 2));
 
-  var pkgs = extractPackages (packageRefs, response).list;
-  var status = response.events.status.succeeded;
+  const pkgs = extractPackages (packageRefs, response).list;
+  let status = response.events.status.succeeded;
 
-  var cleanArg = {};
+  const cleanArg = {};
   if (packageRefs) {
     cleanArg.packageNames = pkgs.join (',');
   }
-  response.command.send ('pacman.clean', cleanArg, function (err) {
-    if (err) {
-      response.log.err (err);
-      response.events.send ('pacman.make.finished');
-      return;
+
+  try {
+    yield response.command.send ('pacman.clean', cleanArg, next);
+  } catch (ex) {
+    response.log.err (ex.stack || ex);
+    response.events.send ('pacman.make.finished');
+    return;
+  }
+
+  for (const packageRef of pkgs) {
+    const pkg = utils.parsePkgRef (packageRef);
+
+    response.log.info ('make the wpkg package for ' + pkg.name + ' on architecture: ' + pkg.arch);
+
+    let pkgArgs = packageArgsOther;
+    if (packageArgs.hasOwnProperty (pkg.name)) {
+      pkgArgs = packageArgs[pkg.name];
     }
 
-    async.eachSeries (pkgs, function (packageRef, callback) {
-      var pkg = utils.parsePkgRef (packageRef);
+    try {
+      yield make.package (pkg.name, pkg.arch, pkgArgs, null);
+    } catch (ex) {
+      response.log.err (ex.stack || ex);
+      status = response.events.status.failed;
+    }
+  }
 
-      response.log.info ('make the wpkg package for ' + pkg.name + ' on architecture: ' + pkg.arch);
-
-      var pkgArgs = packageArgsOther;
-      if (packageArgs.hasOwnProperty (pkg.name)) {
-        pkgArgs = packageArgs[pkg.name];
-      }
-
-      make.package (pkg.name, pkg.arch, pkgArgs, null, function (err) {
-        if (err) {
-          response.log.err (err.stack ? err.stack : err);
-          status = response.events.status.failed;
-        }
-        callback ();
-      });
-    }, function () {
-      response.events.send ('pacman.make.finished', status);
-    });
-  });
+  response.events.send ('pacman.make.finished', status);
 };
 
 /**
