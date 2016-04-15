@@ -15,7 +15,7 @@ var xEnv         = require ('xcraft-core-env');
 var cmd = {};
 
 
-var depsPattern = '<-deps';
+var depsPattern = '@deps';
 var extractPackages = function (packageRefs, response) {
   var results = [];
   var pkgs    = [];
