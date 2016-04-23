@@ -4,6 +4,7 @@ set -e
 NAME=<PACMAN.NAME>
 VERSION=<PACMAN.VERSION>
 SHARE=<PACMAN.SHARE>
+HOOK=<PACMAN.HOOK>
 ACTION=<PACMAN.ACTION>
 SYSROOT=<PACMAN.SYSROOT>
 CONFIG=<PACMAN.CONFIG>
@@ -15,4 +16,4 @@ PEON=$(node -e "process.stdout.write (require ('path').resolve (__dirname, '$SYS
 [ -z "$NAME" ] && NAME="$2"
 [ -z "$VERSION" ] && VERSION="$3"
 
-node "$PEON" "$(pwd)" "$SHARE" $ACTION "$WPKGACT" "$CMAKE_BINARY_DIR" "$NAME" "$VERSION"
+node "$PEON" "$(pwd)" "$SHARE" "$HOOK" $ACTION "$WPKGACT" "$CMAKE_BINARY_DIR" "$NAME" "$VERSION"
