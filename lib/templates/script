@@ -11,4 +11,7 @@ CONFIG=<PACMAN.CONFIG>
 
 PEON=$(node -e "process.stdout.write (require ('path').resolve (__dirname, '$SYSROOT', require (require ('path').resolve (__dirname, '$SYSROOT', '$CONFIG')).bin));")
 
+[ -z "$NAME" ] && NAME="$2"
+[ -z "$VERSION" ] && VERSION="$3"
+
 node "$PEON" "$(pwd)" "$SHARE" $ACTION "$CMAKE_BINARY_DIR" "$NAME" "$VERSION"

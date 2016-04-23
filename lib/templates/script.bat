@@ -14,4 +14,7 @@ if [%1]==[cmake] (
 
 for /f "delims=" %%i in ('node -e "process.stdout.write (require ('path').resolve (__dirname, '%SYSROOT%', require (require ('path').resolve (__dirname, '%SYSROOT%', '%CONFIG%')).bin));"') do set PEON=%%i
 
+if [%NAME%]==[] set NAME="%2"
+if [%VERSION%]==[] set VERSION="%3"
+
 node "%PEON%" "%CD%" "%SHARE%" %ACTION% "%CMAKE_BINARY_DIR%" "%NAME%" "%VERSION%"
