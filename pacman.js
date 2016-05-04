@@ -2,8 +2,6 @@
 
 var path     = require ('path');
 var _        = require ('lodash');
-var clone    = require ('clone');
-var traverse = require ('traverse');
 
 var definition = require ('./lib/def.js');
 var list       = require ('./lib/list.js');
@@ -11,6 +9,7 @@ var utils      = require ('./lib/utils.js');
 
 var xUtils       = require ('xcraft-core-utils');
 var xEnv         = require ('xcraft-core-env');
+const xWizard = require ('xcraft-core-wizard');
 
 var cmd = {};
 
@@ -95,30 +94,9 @@ cmd.list = function (msg, response) {
  * @param {Object} msg
  */
 cmd.edit = function (msg, response) {
-  var wizard = clone (require ('./wizard.js'), false);
-  /* replace all func by a promise */
-  traverse (wizard).forEach (function (value) {
-    if (this.key === 'xcraftCommands') {
-      return;
-    }
-    if (typeof value === 'function') {
-      this.update (`__begin__
-        function (arg) {
-          var done = this.async ();
-          const cmd = 'wizard.${this.path[0]}.${wizard[this.path[0]][this.path[1]].name}.${this.key}';
-          busClient.command.send (cmd, arg, null, function (err, res) {
-            done (res.data);
-          });
-        }
-      __end__`);
-    }
-  });
-
-  msg.data.wizardImpl = JSON.stringify (wizard)
-    .replace (/("__begin__|__end__")/g, '')
-    .replace (/\\n[ ]*/g, '\n');
-
   var packageName = msg.data.packageName || '';
+
+  msg.data.wizardImpl    = xWizard.stringify (path.join (__dirname, './wizard.js'));
   msg.data.wizardAnswers = [];
 
   response.log.info ('create a new package: ' + packageName);
