@@ -367,6 +367,7 @@ exports.chest = [{
   }
 }];
 
+// FIXME: factorize
 exports.xcraftCommands = function () {
   var cmd = {};
   const rc = {};
