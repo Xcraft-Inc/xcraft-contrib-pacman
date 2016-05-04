@@ -126,7 +126,6 @@ cmd['edit.header'] = function (msg, response) {
   wizard.descriptionBrief = def.description.brief;
   wizard.descriptionLong  = def.description.long;
 
-  msg.data.wizardPath     = path.join (__dirname, 'wizard.js');
   msg.data.wizardName     = 'header';
   msg.data.wizardDefaults = wizard;
 
