@@ -4,6 +4,7 @@ var inquirer = require ('inquirer');
 
 var xFs          = require ('xcraft-core-fs');
 var xPeon        = require ('xcraft-contrib-peon');
+const xWizard    = require ('xcraft-core-wizard');
 var xcraftConfig = require ('xcraft-core-etc') ().load ('xcraft');
 var pacmanConfig = require ('xcraft-core-etc') ().load ('xcraft-contrib-pacman');
 
@@ -367,58 +368,4 @@ exports.chest = [{
   }
 }];
 
-// FIXME: factorize
-exports.xcraftCommands = function () {
-  var cmd = {};
-  const rc = {};
-
-  var tryPushFunction = function (fieldDef, category, funcName) {
-    if (!fieldDef.hasOwnProperty (funcName)) {
-      return;
-    }
-
-    /* generating cmd and result event name */
-    var cmdName = category + '.' + fieldDef.name + '.' + funcName;
-
-    var evtName = `wizard.${category}.${fieldDef.name}.${funcName}.finished`;
-
-    /* Indicate to lokthar that a command for validation is available
-     * and corresponding result event.
-     */
-    fieldDef.loktharCommands['wizard.' + cmdName] = evtName;
-    cmd[cmdName] = function (msg, response) {
-      /* execute function */
-      var result = fieldDef[funcName] (msg.data);
-      response.events.send (evtName, result);
-    };
-    rc[cmdName] = {
-      parallel: true
-    };
-  };
-
-  var extractCommandsHandlers = function (category) {
-    var fields = exports[category];
-
-    Object.keys (fields).forEach (function (index) {
-      var fieldDef = fields[index];
-      fieldDef.loktharCommands = {};
-
-      tryPushFunction (fieldDef, category, 'validate');
-      tryPushFunction (fieldDef, category, 'choices');
-      tryPushFunction (fieldDef, category, 'filter');
-      tryPushFunction (fieldDef, category, 'when');
-    });
-  };
-
-  /* extacts cmds handlers for each category */
-  Object.keys (exports).forEach (function (exp) {
-    if (exp !== 'xcraftCommands') {
-      extractCommandsHandlers (exp);
-    }
-  });
-
-  return {
-    handlers: cmd,
-    rc: rc
-  };
-};
+exports.xcraftCommands = () => xWizard.commandify (exports);
