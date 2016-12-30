@@ -24,7 +24,7 @@
     "watt": "^3.2.2",
     "xcraft-contrib-bootwpkg": "0.1.0",
     "xcraft-core-busclient": "^1.0.0",
-    "xcraft-core-env": "^1.0.0",
+    "xcraft-core-env": "^2.0.0",
     "xcraft-core-etc": "^1.0.0",
     "xcraft-core-fs": "^1.0.0",
     "xcraft-core-log": "^1.0.0",
