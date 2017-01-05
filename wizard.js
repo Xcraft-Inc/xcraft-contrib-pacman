@@ -298,6 +298,13 @@ exports.data = [{
   }
 }, {
   type: 'input',
+  name: 'testCmd',
+  message: 'Test step (commands, script, ...):',
+  when: function (answers) {
+    return answers.fileType === 'src';
+  }
+}, {
+  type: 'input',
   name: 'deployCmd',
   message: 'Deploy step (commands, script, ...):',
   when: function (answers) {
