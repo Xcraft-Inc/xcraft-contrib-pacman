@@ -228,7 +228,6 @@ cmd['edit.data'] = function (msg, response) {
   wizard.rulesArgsMakeinstall = def.data.rules.args.makeinstall;
   wizard.deployCmd            = def.data.deploy;
   wizard.registerPath         = def.data.env.path.join (',');
-  wizard.registerLDPath       = def.data.env.ldpath.join (',');
   wizard.embedded             = def.data.embedded;
   if (def.data.runtime) {
     wizard.runtimeConfigureCmd = def.data.runtime.configure;
