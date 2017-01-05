@@ -238,11 +238,11 @@ exports.data = [{
     var uriObj = url.parse (answers.uri);
 
     switch (uriObj.protocol) {
-    case 'http:':
-    case 'https:':
-    case 'chest:': {
-      return true;
-    }
+      case 'http:':
+      case 'https:':
+      case 'chest:': {
+        return true;
+      }
     }
 
     return false;
