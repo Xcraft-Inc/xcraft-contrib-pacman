@@ -9,6 +9,4 @@ add_custom_target(peonMake
                   ALL ./<PACKAGE.MAKEALL> cmake "${CMAKE_BINARY_DIR}"
                   WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
 
-add_custom_target(run_unit_tests
-                  COMMAND ./<PACKAGE.MAKETEST> cmake "${CMAKE_BINARY_DIR}"
-                  WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+add_custom_target(run_unit_tests COMMAND echo "...")
