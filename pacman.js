@@ -221,13 +221,14 @@ cmd['edit.data'] = function (msg, response) {
   wizard.fileType             = def.data.type;
   wizard.configureCmd         = def.data.configure;
   wizard.rulesType            = def.data.rules.type;
+  wizard.rulesTest            = def.data.rules.test;
   wizard.rulesLocation        = def.data.rules.location;
   wizard.rulesArgsPostinst    = def.data.rules.args.postinst;
   wizard.rulesArgsPrerm       = def.data.rules.args.prerm;
   wizard.rulesArgsMakeall     = def.data.rules.args.makeall;
+  wizard.rulesArgsMaketest    = def.data.rules.args.maketest;
   wizard.rulesArgsMakeinstall = def.data.rules.args.makeinstall;
   wizard.deployCmd            = def.data.deploy;
-  wizard.testCmd              = def.data.test;
   wizard.registerPath         = def.data.env.path.join (',');
   wizard.embedded             = def.data.embedded;
   if (def.data.runtime) {

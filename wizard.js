@@ -209,7 +209,7 @@ exports.data = [{
   name: 'fileType',
   message: 'Type of data',
   choices: function () {
-    return Object.keys (xPeon);
+    return Object.keys (xPeon).filter ((type) => typeof (v) === 'function');
   }
 }, {
   type: 'list',
@@ -262,6 +262,16 @@ exports.data = [{
     return answers.rulesType !== 'meta';
   }
 }, {
+  type: 'list',
+  name: 'rulesTest',
+  message: 'How to test the build',
+  choices: function (answers) {
+    return Object.keys (xPeon[answers.fileType].test);
+  },
+  when: (answers) => {
+    return answers.fileType === 'src' && xPeon[answers.fileType].test;
+  }
+}, {
   type: 'input',
   name: 'rulesLocation',
   message: 'Installer file name, source directory, executable, ...',
@@ -291,15 +301,15 @@ exports.data = [{
   }
 }, {
   type: 'input',
-  name: 'rulesArgsMakeinstall',
-  message: 'Arguments for `make install`:',
+  name: 'rulesArgsMaketest',
+  message: 'Arguments for `make test`:',
   when: function (answers) {
     return answers.fileType === 'src';
   }
 }, {
   type: 'input',
-  name: 'testCmd',
-  message: 'Test step (commands, script, ...):',
+  name: 'rulesArgsMakeinstall',
+  message: 'Arguments for `make install`:',
   when: function (answers) {
     return answers.fileType === 'src';
   }
