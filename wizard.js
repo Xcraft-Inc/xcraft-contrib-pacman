@@ -209,7 +209,7 @@ exports.data = [{
   name: 'fileType',
   message: 'Type of data',
   choices: function () {
-    return Object.keys (xPeon).filter ((type) => typeof (v) === 'function');
+    return Object.keys (xPeon).filter ((type) => typeof (type) === 'function');
   }
 }, {
   type: 'list',
