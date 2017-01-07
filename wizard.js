@@ -209,14 +209,16 @@ exports.data = [{
   name: 'fileType',
   message: 'Type of data',
   choices: function () {
-    return Object.keys (xPeon).filter ((type) => typeof (xPeon[type]) === 'function');
+    return Object.keys (xPeon);
   }
 }, {
   type: 'list',
   name: 'rulesType',
   message: 'How to install (to build)',
   choices: function (answers) {
-    return Object.keys (xPeon[answers.fileType]);
+    return Object
+      .keys (xPeon[answers.fileType])
+      .filter ((type) => typeof (xPeon[answers.fileType][type]) === 'function');
   }
 }, {
   type: 'input',
