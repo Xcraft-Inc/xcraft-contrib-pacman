@@ -1,28 +1,28 @@
 'use strict';
 
-var path     = require ('path');
-var _        = require ('lodash');
+var path = require ('path');
+var _ = require ('lodash');
 
 var definition = require ('./lib/def.js');
-var list       = require ('./lib/list.js');
-var utils      = require ('./lib/utils.js');
+var list = require ('./lib/list.js');
+var utils = require ('./lib/utils.js');
 
-var xUtils       = require ('xcraft-core-utils');
-var xEnv         = require ('xcraft-core-env');
+var xUtils = require ('xcraft-core-utils');
+var xEnv = require ('xcraft-core-env');
 const xWizard = require ('xcraft-core-wizard');
 
 var cmd = {};
 
-
 var depsPattern = '@deps';
 var extractPackages = function (packageRefs, response) {
   var results = [];
-  var pkgs    = [];
+  var pkgs = [];
 
   if (packageRefs) {
-    packageRefs = packageRefs.replace (/,{2,}/g, ',')
-                             .replace (/^,/, '')
-                             .replace (/,$/, '');
+    packageRefs = packageRefs
+      .replace (/,{2,}/g, ',')
+      .replace (/^,/, '')
+      .replace (/,$/, '');
   }
 
   var all = !packageRefs || !packageRefs.length;
@@ -59,7 +59,9 @@ var extractPackages = function (packageRefs, response) {
 
       Object.keys (def.dependency).forEach (function (type) {
         if (def.dependency[type]) {
-          var depsList = Object.keys (def.dependency[type]).join (',' + depsPattern + ',');
+          var depsList = Object.keys (def.dependency[type]).join (
+            ',' + depsPattern + ','
+          );
           depsList += ',' + depsPattern;
 
           /* Continue recursively for the dependencies of this dependency. */
@@ -74,7 +76,7 @@ var extractPackages = function (packageRefs, response) {
 
   return {
     list: results,
-    all:  all
+    all: all,
   };
 };
 
@@ -96,7 +98,9 @@ cmd.list = function (msg, response) {
 cmd.edit = function (msg, response) {
   var packageName = msg.data.packageName || '';
 
-  msg.data.wizardImpl    = xWizard.stringify (path.join (__dirname, './wizard.js'));
+  msg.data.wizardImpl = xWizard.stringify (
+    path.join (__dirname, './wizard.js')
+  );
   msg.data.wizardAnswers = [];
 
   response.log.info ('create a new package: ' + packageName);
@@ -109,30 +113,32 @@ cmd.edit = function (msg, response) {
 };
 
 cmd['edit.header'] = function (msg, response) {
-  const pacmanConfig = require ('xcraft-core-etc') (null, response).load ('xcraft-contrib-pacman');
+  const pacmanConfig = require ('xcraft-core-etc') (null, response).load (
+    'xcraft-contrib-pacman'
+  );
 
   /* The first question is the package's name, then we set the default value. */
   var wizard = {
-    package: msg.data.packageName
+    package: msg.data.packageName,
   };
 
   var def = definition.load (msg.data.packageName, null, response);
 
-  wizard.version          = def.version;
-  wizard.tool             = def.distribution === pacmanConfig.pkgToolchainRepository;
-  wizard.maintainerName   = def.maintainer.name;
-  wizard.maintainerEmail  = def.maintainer.email;
-  wizard.architecture     = def.architecture;
+  wizard.version = def.version;
+  wizard.tool = def.distribution === pacmanConfig.pkgToolchainRepository;
+  wizard.maintainerName = def.maintainer.name;
+  wizard.maintainerEmail = def.maintainer.email;
+  wizard.architecture = def.architecture;
   wizard.descriptionBrief = def.description.brief;
-  wizard.descriptionLong  = def.description.long;
+  wizard.descriptionLong = def.description.long;
 
-  msg.data.wizardName     = 'header';
+  msg.data.wizardName = 'header';
   msg.data.wizardDefaults = wizard;
 
   /* Prepare for dependency wizard. */
-  msg.data.idxDep   = 0;
+  msg.data.idxDep = 0;
   msg.data.idxRange = 0;
-  msg.data.depType  = 'install';
+  msg.data.depType = 'install';
   msg.data.nextStep = 'edit.data';
 
   msg.data.nextCommand = 'pacman.edit.askdep';
@@ -146,7 +152,7 @@ cmd['edit.askdep'] = function (msg, response) {
 
   var wizardName = 'askdep/' + msg.data.depType;
 
-  var def  = definition.load (msg.data.packageName, null, response);
+  var def = definition.load (msg.data.packageName, null, response);
   var keys = Object.keys (def.dependency[msg.data.depType]);
 
   if (keys.length > msg.data.idxDep) {
@@ -163,7 +169,7 @@ cmd['edit.askdep'] = function (msg, response) {
     }
   }
 
-  msg.data.wizardName     = wizardName;
+  msg.data.wizardName = wizardName;
   msg.data.wizardDefaults = wizard;
 
   msg.data.nextCommand = 'pacman.edit.dependency';
@@ -174,10 +180,13 @@ cmd['edit.askdep'] = function (msg, response) {
 
 cmd['edit.dependency'] = function (msg, response) {
   var wizard = {
-    version: ''
+    version: '',
   };
 
-  if (msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].hasDependency === false) {
+  if (
+    msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].hasDependency ===
+    false
+  ) {
     cmd[msg.data.nextStep] (msg, response);
     response.events.send ('pacman.edit.dependency.finished');
     return;
@@ -185,23 +194,25 @@ cmd['edit.dependency'] = function (msg, response) {
 
   var wizardName = 'dependency/' + msg.data.depType;
 
-  var def  = definition.load (msg.data.packageName, null, response);
+  var def = definition.load (msg.data.packageName, null, response);
   var keys = Object.keys (def.dependency[msg.data.depType]);
 
   if (keys.length > msg.data.idxDep) {
     var key = keys[msg.data.idxDep];
 
     if (def.dependency[msg.data.depType][key].length > msg.data.idxRange) {
-      wizard[wizardName]  = key;
-      wizard.version      = def.dependency[msg.data.depType][key][msg.data.idxRange].version;
-      wizard.architecture = def.dependency[msg.data.depType][key][msg.data.idxRange].architecture;
+      wizard[wizardName] = key;
+      wizard.version =
+        def.dependency[msg.data.depType][key][msg.data.idxRange].version;
+      wizard.architecture =
+        def.dependency[msg.data.depType][key][msg.data.idxRange].architecture;
       msg.data.idxRange++;
     } else {
       msg.data.idxDep++;
     }
   }
 
-  msg.data.wizardName     = wizardName;
+  msg.data.wizardName = wizardName;
   msg.data.wizardDefaults = wizard;
 
   msg.data.nextCommand = 'pacman.edit.askdep';
@@ -215,42 +226,47 @@ cmd['edit.data'] = function (msg, response) {
 
   var def = definition.load (msg.data.packageName, null, response);
 
-  wizard.uri                  = def.data.get.uri;
-  wizard.uriRef               = def.data.get.ref;
-  wizard.uriOut               = def.data.get.out;
-  wizard.fileType             = def.data.type;
-  wizard.configureCmd         = def.data.configure;
-  wizard.rulesType            = def.data.rules.type;
-  wizard.rulesTest            = def.data.rules.test;
-  wizard.rulesLocation        = def.data.rules.location;
-  wizard.rulesArgsPostinst    = def.data.rules.args.postinst;
-  wizard.rulesArgsPrerm       = def.data.rules.args.prerm;
-  wizard.rulesArgsMakeall     = def.data.rules.args.makeall;
-  wizard.rulesArgsMaketest    = def.data.rules.args.maketest;
+  wizard.uri = def.data.get.uri;
+  wizard.uriRef = def.data.get.ref;
+  wizard.uriOut = def.data.get.out;
+  wizard.fileType = def.data.type;
+  wizard.configureCmd = def.data.configure;
+  wizard.rulesType = def.data.rules.type;
+  wizard.rulesTest = def.data.rules.test;
+  wizard.rulesLocation = def.data.rules.location;
+  wizard.rulesArgsPostinst = def.data.rules.args.postinst;
+  wizard.rulesArgsPrerm = def.data.rules.args.prerm;
+  wizard.rulesArgsMakeall = def.data.rules.args.makeall;
+  wizard.rulesArgsMaketest = def.data.rules.args.maketest;
   wizard.rulesArgsMakeinstall = def.data.rules.args.makeinstall;
-  wizard.deployCmd            = def.data.deploy;
-  wizard.registerPath         = def.data.env.path.join (',');
-  wizard.embedded             = def.data.embedded;
+  wizard.deployCmd = def.data.deploy;
+  wizard.registerPath = def.data.env.path.join (',');
+  wizard.embedded = def.data.embedded;
   if (def.data.runtime) {
     wizard.runtimeConfigureCmd = def.data.runtime.configure;
   }
 
-  msg.data.wizardName     = 'data';
+  msg.data.wizardName = 'data';
   msg.data.wizardDefaults = wizard;
-  msg.data.idxEnv         = 0;
+  msg.data.idxEnv = 0;
 
   /* Ask for build dependencies only with source packages. */
-  if (msg.data.wizardAnswers.some (function (wizard) {
-    return Object.keys (wizard).some (function (it) {
-      return it === 'architecture' && wizard[it].some (function (arch) {
-        return arch === 'source';
+  if (
+    msg.data.wizardAnswers.some (function (wizard) {
+      return Object.keys (wizard).some (function (it) {
+        return (
+          it === 'architecture' &&
+          wizard[it].some (function (arch) {
+            return arch === 'source';
+          })
+        );
       });
-    });
-  })) {
+    })
+  ) {
     /* Prepare for dependency wizards. */
-    msg.data.idxDep   = 0;
+    msg.data.idxDep = 0;
     msg.data.idxRange = 0;
-    msg.data.depType  = 'build';
+    msg.data.depType = 'build';
     msg.data.nextStep = 'edit.env';
 
     msg.data.nextCommand = 'pacman.edit.askdep';
@@ -266,26 +282,30 @@ cmd['edit.env'] = function (msg, response) {
   var wizard = {};
 
   /* Continue when the key is an empty string. */
-  if ( msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].hasOwnProperty ('key') &&
-      !msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].key.length) {
+  if (
+    msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].hasOwnProperty (
+      'key'
+    ) &&
+    !msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].key.length
+  ) {
     cmd[msg.data.nextStep] (msg, response);
     response.events.send ('pacman.edit.env.finished');
     return;
   }
 
-  var def  = definition.load (msg.data.packageName, null, response);
+  var def = definition.load (msg.data.packageName, null, response);
   var keys = Object.keys (def.data.env.other);
 
   if (keys.length > msg.data.idxEnv) {
     var key = keys[msg.data.idxEnv];
-    wizard.key   = key;
+    wizard.key = key;
     wizard.value = def.data.env.other[key];
     msg.data.idxEnv++;
   }
 
-  msg.data.wizardName     = 'env';
+  msg.data.wizardName = 'env';
   msg.data.wizardDefaults = wizard;
-  msg.data.nextStep       = 'edit.save';
+  msg.data.nextStep = 'edit.save';
 
   msg.data.nextCommand = 'pacman.edit.env';
 
@@ -298,39 +318,51 @@ cmd['edit.save'] = function (msg, response) {
 
   var wizardAnswers = msg.data.wizardAnswers;
 
-  create.pkgTemplate (wizardAnswers, response, function (wizardName, file) {
-    msg.data.wizardName     = wizardName;
-    msg.data.wizardDefaults = {};
+  create.pkgTemplate (
+    wizardAnswers,
+    response,
+    function (wizardName, file) {
+      msg.data.wizardName = wizardName;
+      msg.data.wizardDefaults = {};
 
-    msg.data.chestFile = file;
+      msg.data.chestFile = file;
 
-    msg.data.nextCommand = 'pacman.edit.upload';
+      msg.data.nextCommand = 'pacman.edit.upload';
 
-    response.events.send ('pacman.edit.added', msg.data);
-  }, function (err, useChest) {
-    if (err) {
-      response.log.err (err);
+      response.events.send ('pacman.edit.added', msg.data);
+    },
+    function (err, useChest) {
+      if (err) {
+        response.log.err (err);
+      }
+      response.events.send ('pacman.edit.save.finished');
+      if (!useChest) {
+        response.events.send ('pacman.edit.finished');
+      }
     }
-    response.events.send ('pacman.edit.save.finished');
-    if (!useChest) {
-      response.events.send ('pacman.edit.finished');
-    }
-  });
+  );
 };
 
 cmd['edit.upload'] = function (msg, response) {
-  const chestConfig = require ('xcraft-core-etc') (null, response).load ('xcraft-contrib-chest');
+  const chestConfig = require ('xcraft-core-etc') (null, response).load (
+    'xcraft-contrib-chest'
+  );
 
-  if (!chestConfig || !msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].mustUpload) {
+  if (
+    !chestConfig ||
+    !msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].mustUpload
+  ) {
     response.events.send ('pacman.edit.upload.finished');
     response.events.send ('pacman.edit.finished');
     return;
   }
 
-  response.log.info ('upload %s to chest://%s:%d',
-                     msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].localPath,
-                     chestConfig.host,
-                     chestConfig.port);
+  response.log.info (
+    'upload %s to chest://%s:%d',
+    msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].localPath,
+    chestConfig.host,
+    chestConfig.port
+  );
 
   response.events.subscribe ('chest.send.finished', function () {
     response.events.unsubscribe ('chest.send.finished');
@@ -339,7 +371,7 @@ cmd['edit.upload'] = function (msg, response) {
   });
 
   var chestMsg = {
-    file: msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].localPath
+    file: msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].localPath,
   };
   response.command.send ('chest.send', chestMsg);
 };
@@ -349,11 +381,11 @@ cmd['edit.upload'] = function (msg, response) {
  *
  * @param {Object} msg
  */
-cmd.make = function * (msg, response, next) {
+cmd.make = function* (msg, response, next) {
   const make = require ('./lib/make.js') (response);
 
-  let   packageRefs      = null;
-  const packageArgs      = {};
+  let packageRefs = null;
+  const packageArgs = {};
   const packageArgsOther = {};
 
   if (msg.data.packageArgs) {
@@ -363,7 +395,7 @@ cmd.make = function * (msg, response, next) {
     }
 
     /* Transform all properties to a map. */
-    msg.data.packageArgs.forEach ((arg) => {
+    msg.data.packageArgs.forEach (arg => {
       var match = arg.trim ().match (/^p:(?:([^:]*):)?([^=]*)[=](.*)/);
       if (match) {
         if (match[1]) {
@@ -378,9 +410,11 @@ cmd.make = function * (msg, response, next) {
     });
   }
 
-  response.log.verb ('list of overloaded properties: %s %s',
-                     JSON.stringify (packageArgsOther, null, 2),
-                     JSON.stringify (packageArgs, null, 2));
+  response.log.verb (
+    'list of overloaded properties: %s %s',
+    JSON.stringify (packageArgsOther, null, 2),
+    JSON.stringify (packageArgs, null, 2)
+  );
 
   const pkgs = extractPackages (packageRefs, response).list;
   let status = response.events.status.succeeded;
@@ -401,7 +435,9 @@ cmd.make = function * (msg, response, next) {
   for (const packageRef of pkgs) {
     const pkg = utils.parsePkgRef (packageRef);
 
-    response.log.info ('make the wpkg package for ' + pkg.name + ' on architecture: ' + pkg.arch);
+    response.log.info (
+      'make the wpkg package for ' + pkg.name + ' on architecture: ' + pkg.arch
+    );
 
     let pkgArgs = packageArgsOther;
     if (packageArgs.hasOwnProperty (pkg.name)) {
@@ -424,7 +460,7 @@ cmd.make = function * (msg, response, next) {
  *
  * @param {Object} msg
  */
-cmd.install = function * (msg, response) {
+cmd.install = function* (msg, response) {
   const install = require ('./lib/install.js') (response);
 
   var pkgs = extractPackages (msg.data.packageRefs, response).list;
@@ -448,7 +484,7 @@ cmd.install = function * (msg, response) {
  *
  * @param {Object} msg
  */
-cmd.reinstall = function * (msg, response) {
+cmd.reinstall = function* (msg, response) {
   const install = require ('./lib/install.js') (response);
 
   var pkgs = extractPackages (msg.data.packageRefs, response).list;
@@ -472,7 +508,7 @@ cmd.reinstall = function * (msg, response) {
  *
  * @param {Object} msg
  */
-cmd.status = function * (msg, response) {
+cmd.status = function* (msg, response) {
   const install = require ('./lib/install.js') (response);
   const publish = require ('./lib/publish.js') (response);
 
@@ -487,13 +523,13 @@ cmd.status = function * (msg, response) {
       const code = yield install.status (packageRef);
       installStatus = {
         packageRef: packageRef,
-        installed:  !!code
+        installed: !!code,
       };
 
       const deb = yield publish.status (packageRef, null);
       publishStatus = {
         packageRef: packageRef,
-        published:  deb
+        published: deb,
       };
     }
 
@@ -512,7 +548,7 @@ cmd.status = function * (msg, response) {
  *
  * @param {Object} msg
  */
-cmd.build = function * (msg, response) {
+cmd.build = function* (msg, response) {
   const build = require ('./lib/build.js') (response);
 
   let pkgs = [null];
@@ -542,7 +578,7 @@ cmd.build = function * (msg, response) {
  *
  * @param {Object} msg
  */
-cmd.remove = function * (msg, response) {
+cmd.remove = function* (msg, response) {
   const remove = require ('./lib/remove.js') (response);
 
   const pkgs = extractPackages (msg.data.packageRefs, response).list;
@@ -589,7 +625,7 @@ cmd.clean = function (msg, response) {
  *
  * @param {Object} msg
  */
-cmd.publish = function * (msg, response) {
+cmd.publish = function* (msg, response) {
   const publish = require ('./lib/publish.js') (response);
 
   const pkgs = extractPackages (msg.data.packageRefs, response).list;
@@ -617,6 +653,6 @@ exports.xcraftCommands = function () {
   const xUtils = require ('xcraft-core-utils');
   return {
     handlers: cmd,
-    rc: xUtils.json.fromFile (path.join (__dirname, './rc.json'))
+    rc: xUtils.json.fromFile (path.join (__dirname, './rc.json')),
   };
 };
