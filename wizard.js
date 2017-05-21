@@ -300,7 +300,7 @@ exports.data = [
     name: 'rulesTest',
     message: 'How to test the build',
     choices: function (answers) {
-      return Object.keys (xPeon[answers.fileType].test);
+      return ['none'].concat (Object.keys (xPeon[answers.fileType].test));
     },
     when: answers => {
       return answers.fileType === 'src' && xPeon[answers.fileType].test;
@@ -343,7 +343,7 @@ exports.data = [
     name: 'rulesArgsMaketest',
     message: 'Arguments for `make test`:',
     when: function (answers) {
-      return answers.fileType === 'src';
+      return answers.fileType === 'src' && answers.rulesTest !== 'none';
     },
   },
   {
