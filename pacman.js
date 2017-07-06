@@ -87,7 +87,7 @@ cmd.list = function (msg, response) {
 
   var results = list.listProducts (response);
   response.events.send ('pacman.list', results);
-  response.events.send ('pacman.list.finished');
+  response.events.send (`pacman.list.${msg.id}.finished`);
 };
 
 /**
@@ -144,7 +144,7 @@ cmd['edit.header'] = function (msg, response) {
   msg.data.nextCommand = 'pacman.edit.askdep';
 
   response.events.send ('pacman.edit.added', msg.data);
-  response.events.send ('pacman.edit.header.finished');
+  response.events.send (`pacman.edit.header.${msg.id}.finished`);
 };
 
 cmd['edit.askdep'] = function (msg, response) {
@@ -175,7 +175,7 @@ cmd['edit.askdep'] = function (msg, response) {
   msg.data.nextCommand = 'pacman.edit.dependency';
 
   response.events.send ('pacman.edit.added', msg.data);
-  response.events.send ('pacman.edit.askdep.finished');
+  response.events.send (`pacman.edit.askdep.${msg.id}.finished`);
 };
 
 cmd['edit.dependency'] = function (msg, response) {
@@ -188,7 +188,7 @@ cmd['edit.dependency'] = function (msg, response) {
     false
   ) {
     cmd[msg.data.nextStep] (msg, response);
-    response.events.send ('pacman.edit.dependency.finished');
+    response.events.send (`pacman.edit.dependency.${msg.id}.finished`);
     return;
   }
 
@@ -218,7 +218,7 @@ cmd['edit.dependency'] = function (msg, response) {
   msg.data.nextCommand = 'pacman.edit.askdep';
 
   response.events.send ('pacman.edit.added', msg.data);
-  response.events.send ('pacman.edit.dependency.finished');
+  response.events.send (`pacman.edit.dependency.${msg.id}.finished`);
 };
 
 cmd['edit.data'] = function (msg, response) {
@@ -275,7 +275,7 @@ cmd['edit.data'] = function (msg, response) {
   }
 
   response.events.send ('pacman.edit.added', msg.data);
-  response.events.send ('pacman.edit.data.finished');
+  response.events.send (`pacman.edit.data.${msg.id}.finished`);
 };
 
 cmd['edit.env'] = function (msg, response) {
@@ -289,7 +289,7 @@ cmd['edit.env'] = function (msg, response) {
     !msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].key.length
   ) {
     cmd[msg.data.nextStep] (msg, response);
-    response.events.send ('pacman.edit.env.finished');
+    response.events.send (`pacman.edit.env.${msg.id}.finished`);
     return;
   }
 
@@ -310,7 +310,7 @@ cmd['edit.env'] = function (msg, response) {
   msg.data.nextCommand = 'pacman.edit.env';
 
   response.events.send ('pacman.edit.added', msg.data);
-  response.events.send ('pacman.edit.env.finished');
+  response.events.send (`pacman.edit.env.${msg.id}.finished`);
 };
 
 cmd['edit.save'] = function (msg, response) {
@@ -335,9 +335,9 @@ cmd['edit.save'] = function (msg, response) {
       if (err) {
         response.log.err (err);
       }
-      response.events.send ('pacman.edit.save.finished');
+      response.events.send (`pacman.edit.save.${msg.id}.finished`);
       if (!useChest) {
-        response.events.send ('pacman.edit.finished');
+        response.events.send (`pacman.edit.${msg.id}.finished`);
       }
     }
   );
@@ -352,8 +352,8 @@ cmd['edit.upload'] = function (msg, response) {
     !chestConfig ||
     !msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].mustUpload
   ) {
-    response.events.send ('pacman.edit.upload.finished');
-    response.events.send ('pacman.edit.finished');
+    response.events.send (`pacman.edit.upload.${msg.id}.finished`);
+    response.events.send (`pacman.edit.${msg.id}.finished`);
     return;
   }
 
@@ -364,10 +364,10 @@ cmd['edit.upload'] = function (msg, response) {
     chestConfig.port
   );
 
-  response.events.subscribe ('chest.send.finished', function () {
-    response.events.unsubscribe ('chest.send.finished');
-    response.events.send ('pacman.edit.upload.finished');
-    response.events.send ('pacman.edit.finished');
+  response.events.subscribe (`chest.send.${msg.id}.finished`, function () {
+    response.events.unsubscribe (`chest.send.${msg.id}.finished`);
+    response.events.send (`pacman.edit.upload.${msg.id}.finished`);
+    response.events.send (`pacman.edit.${msg.id}.finished`);
   });
 
   var chestMsg = {
@@ -428,7 +428,7 @@ cmd.make = function* (msg, response, next) {
     yield response.command.send ('pacman.clean', cleanArg, next);
   } catch (ex) {
     response.log.err (ex.stack || ex);
-    response.events.send ('pacman.make.finished');
+    response.events.send (`pacman.make.${msg.id}.finished`);
     return;
   }
 
@@ -452,7 +452,7 @@ cmd.make = function* (msg, response, next) {
     }
   }
 
-  response.events.send ('pacman.make.finished', status);
+  response.events.send (`pacman.make.${msg.id}.finished`, status);
 };
 
 /**
@@ -474,7 +474,7 @@ cmd.install = function* (msg, response) {
       response.log.err (ex.stack || ex);
       status = response.events.status.failed;
     } finally {
-      response.events.send ('pacman.install.finished', status);
+      response.events.send (`pacman.install.${msg.id}.finished`, status);
     }
   }
 };
@@ -498,7 +498,7 @@ cmd.reinstall = function* (msg, response) {
       response.log.err (ex.stack || ex);
       status = response.events.status.failed;
     } finally {
-      response.events.send ('pacman.reinstall.finished', status);
+      response.events.send (`pacman.reinstall.${msg.id}.finished`, status);
     }
   }
 };
@@ -539,7 +539,7 @@ cmd.status = function* (msg, response) {
     response.log.err (ex.stack || ex);
     status = response.events.status.failed;
   } finally {
-    response.events.send ('pacman.status.finished', status);
+    response.events.send (`pacman.status.${msg.id}.finished`, status);
   }
 };
 
@@ -570,7 +570,7 @@ cmd.build = function* (msg, response) {
     }
   }
 
-  response.events.send ('pacman.build.finished', status);
+  response.events.send (`pacman.build.${msg.id}.finished`, status);
 };
 
 /**
@@ -594,7 +594,7 @@ cmd.remove = function* (msg, response) {
     }
   }
 
-  response.events.send ('pacman.remove.finished', status);
+  response.events.send (`pacman.remove.${msg.id}.finished`, status);
 };
 
 /**
@@ -617,7 +617,7 @@ cmd.clean = function (msg, response) {
     }
   }
 
-  response.events.send ('pacman.clean.finished', status);
+  response.events.send (`pacman.clean.${msg.id}.finished`, status);
 };
 
 /**
@@ -641,7 +641,7 @@ cmd.publish = function* (msg, response) {
     }
   }
 
-  response.events.send ('pacman.publish.finished', status);
+  response.events.send (`pacman.publish.${msg.id}.finished`, status);
 };
 
 /**
