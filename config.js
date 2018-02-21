@@ -5,11 +5,11 @@ module.exports = [
     type: 'checkbox',
     name: 'architectures',
     message: 'supported architectures',
-    choices: function () {
+    choices: function() {
       var list = [];
 
-      module.exports[0].default.forEach (function (arch) {
-        list.push ({
+      module.exports[0].default.forEach(function(arch) {
+        list.push({
           name: arch,
           checked: true,
         });

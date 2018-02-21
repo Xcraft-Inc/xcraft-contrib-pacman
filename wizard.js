@@ -1,14 +1,12 @@
 'use strict';
 
-var inquirer = require ('inquirer');
+var inquirer = require('inquirer');
 
-var xFs = require ('xcraft-core-fs');
-var xPeon = require ('xcraft-contrib-peon');
-const xWizard = require ('xcraft-core-wizard');
-var xcraftConfig = require ('xcraft-core-etc') ().load ('xcraft');
-var pacmanConfig = require ('xcraft-core-etc') ().load (
-  'xcraft-contrib-pacman'
-);
+var xFs = require('xcraft-core-fs');
+var xPeon = require('xcraft-contrib-peon');
+const xWizard = require('xcraft-core-wizard');
+var xcraftConfig = require('xcraft-core-etc')().load('xcraft');
+var pacmanConfig = require('xcraft-core-etc')().load('xcraft-contrib-pacman');
 
 /* Version rules by Debian:
  * http://windowspackager.org/documentation/implementation-details/debian-version
@@ -20,13 +18,13 @@ exports.header = [
     type: 'input',
     name: 'package',
     message: 'Package name',
-    validate: function (value) {
+    validate: function(value) {
       /* Naming rules by Debian:
        * Must consist only of lower case letters (a-z), digits (0-9), plus (+)
        * and minus (-) signs, and periods (.). They must be at least two
        * characters long and must start with an alphanumeric character.
        */
-      if (!/^[a-z0-9]{1}[a-z0-9+-.]{1,}$/.test (value)) {
+      if (!/^[a-z0-9]{1}[a-z0-9+-.]{1,}$/.test(value)) {
         return (
           'Must consist only of lower case letters (a-z), digits (0-9), ' +
           'plus (+) and minus (-) signs, and periods (.). ' +
@@ -35,7 +33,7 @@ exports.header = [
         );
       }
 
-      if (/-src$/.test (value)) {
+      if (/-src$/.test(value)) {
         return (
           "A package name can not be terminated by '-src' which is " +
           'a reserved word.'
@@ -49,14 +47,14 @@ exports.header = [
     type: 'input',
     name: 'version',
     message: 'Package version',
-    validate: function (value) {
-      var regex = new RegExp ('^' + versionRegex.source + '$');
+    validate: function(value) {
+      var regex = new RegExp('^' + versionRegex.source + '$');
 
-      if (!value.toString ().trim ()) {
+      if (!value.toString().trim()) {
         return 'Version is mandatory.';
       }
 
-      if (!regex.test (value)) {
+      if (!regex.test(value)) {
         return 'Invalid version';
       }
 
@@ -66,15 +64,16 @@ exports.header = [
   {
     type: 'confirm',
     name: 'tool',
-    message: 'Is it a tool (if yes, then it can only be installed in the toolchain)',
+    message:
+      'Is it a tool (if yes, then it can only be installed in the toolchain)',
     default: true,
   },
   {
     type: 'input',
     name: 'maintainerName',
     message: "Maintainer's name",
-    validate: function (value) {
-      if (!value.trim ()) {
+    validate: function(value) {
+      if (!value.trim()) {
         return "The maintainer's name is mandatory.";
       }
 
@@ -85,14 +84,14 @@ exports.header = [
     type: 'input',
     name: 'maintainerEmail',
     message: "Maintainer's email",
-    validate: function (value) {
+    validate: function(value) {
       var mailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
-      if (!value.trim ()) {
+      if (!value.trim()) {
         return 'Email is mandatory.';
       }
 
-      if (!mailRegex.test (value)) {
+      if (!mailRegex.test(value)) {
         return 'Invalid email';
       }
 
@@ -103,26 +102,26 @@ exports.header = [
     type: 'checkbox',
     name: 'architecture',
     message: 'Package architecture',
-    choices: function () {
+    choices: function() {
       var list = [];
 
-      list.push ({name: 'all'});
-      list.push ({name: 'source'});
-      list.push (new inquirer.Separator ('== Architectures =='));
-      pacmanConfig.architectures.forEach (function (arch) {
-        list.push ({name: arch});
+      list.push({name: 'all'});
+      list.push({name: 'source'});
+      list.push(new inquirer.Separator('== Architectures =='));
+      pacmanConfig.architectures.forEach(function(arch) {
+        list.push({name: arch});
       });
 
       return list;
     },
-    validate: function (value) {
+    validate: function(value) {
       if (value.length < 1) {
         return 'You must choose at least one topping.';
       }
 
       if (
         value.length > 1 &&
-        value.some (function (arch) {
+        value.some(function(arch) {
           return arch === 'source';
         })
       ) {
@@ -131,8 +130,8 @@ exports.header = [
 
       return true;
     },
-    filter: function (answer) {
-      if (answer.indexOf ('all') !== -1) {
+    filter: function(answer) {
+      if (answer.indexOf('all') !== -1) {
         return ['all'];
       }
 
@@ -143,12 +142,12 @@ exports.header = [
     type: 'input',
     name: 'descriptionBrief',
     message: 'Brief description (max 70 characters):',
-    validate: function (value) {
+    validate: function(value) {
       if (value.length > 70) {
         return 'The brief description must not be longer than 70 characters.';
       }
 
-      if (!value.trim ()) {
+      if (!value.trim()) {
         return 'The brief description is mandatory.';
       }
 
@@ -163,7 +162,7 @@ exports.header = [
   },
 ];
 
-var askdep = function (type) {
+var askdep = function(type) {
   return [
     {
       type: 'confirm',
@@ -174,48 +173,49 @@ var askdep = function (type) {
   ];
 };
 
-exports['askdep/install'] = askdep ('install');
-exports['askdep/build'] = askdep ('build');
+exports['askdep/install'] = askdep('install');
+exports['askdep/build'] = askdep('build');
 
-var dependency = function (type) {
+var dependency = function(type) {
   return [
     {
       type: 'list',
       name: 'dependency/' + type,
       message: "Package's name",
-      choices: function () {
-        return xFs.lsdir (xcraftConfig.pkgProductsRoot);
+      choices: function() {
+        return xFs.lsdir(xcraftConfig.pkgProductsRoot);
       },
     },
     {
       type: 'input',
       name: 'version',
-      message: 'Empty string or range operator (>>, >=, =, <= or <<) with version (like >= 1.0):',
-      validate: function (value) {
+      message:
+        'Empty string or range operator (>>, >=, =, <= or <<) with version (like >= 1.0):',
+      validate: function(value) {
         var rangeRegex = /((<[<=]|>[>=])|=)/;
-        var regex = new RegExp (
+        var regex = new RegExp(
           '^(|' + rangeRegex.source + '[ ]{1}' + versionRegex.source + ')$'
         );
-        return regex.test (value);
+        return regex.test(value);
       },
     },
     {
       type: 'checkbox',
       name: 'architecture',
       message: 'Architectures where this dependency must be applied (or empty)',
-      choices: function () {
+      choices: function() {
         var list = [];
 
-        list.push ({name: 'all'});
-        list.push (new inquirer.Separator ('== Architectures =='));
-        pacmanConfig.architectures.forEach (function (arch) {
-          list.push ({name: arch});
+        list.push({name: 'all'});
+        list.push(new inquirer.Separator('== Architectures =='));
+        pacmanConfig.architectures.forEach(function(arch) {
+          list.push({name: arch});
         });
 
         return list;
       },
-      filter: function (answer) {
-        if (answer.indexOf ('all') !== -1) {
+      filter: function(answer) {
+        if (answer.indexOf('all') !== -1) {
           return [];
         }
 
@@ -226,24 +226,24 @@ var dependency = function (type) {
   ];
 };
 
-exports['dependency/install'] = dependency ('install');
-exports['dependency/build'] = dependency ('build');
+exports['dependency/install'] = dependency('install');
+exports['dependency/build'] = dependency('build');
 
 exports.data = [
   {
     type: 'list',
     name: 'fileType',
     message: 'Type of data',
-    choices: function () {
-      return Object.keys (xPeon);
+    choices: function() {
+      return Object.keys(xPeon);
     },
   },
   {
     type: 'list',
     name: 'rulesType',
     message: 'How to install (to build)',
-    choices: function (answers) {
-      return Object.keys (xPeon[answers.fileType]).filter (
+    choices: function(answers) {
+      return Object.keys(xPeon[answers.fileType]).filter(
         type => typeof xPeon[answers.fileType][type] === 'function'
       );
     },
@@ -252,7 +252,7 @@ exports.data = [
     type: 'input',
     name: 'uri',
     message: 'URI',
-    when: function (answers) {
+    when: function(answers) {
       return answers.rulesType !== 'meta';
     },
   },
@@ -260,13 +260,13 @@ exports.data = [
     type: 'input',
     name: 'uriOut',
     message: 'Output basename (keep empty for current URI basename):',
-    when: function (answers) {
+    when: function(answers) {
       if (!answers.uri) {
         return false;
       }
 
-      var url = require ('url');
-      var uriObj = url.parse (answers.uri);
+      var url = require('url');
+      var uriObj = url.parse(answers.uri);
 
       switch (uriObj.protocol) {
         case 'http:':
@@ -283,7 +283,7 @@ exports.data = [
     type: 'input',
     name: 'uriRef',
     message: 'Branch, tag, commit or empty:',
-    when: function (answers) {
+    when: function(answers) {
       return answers.fileType === 'src';
     },
   },
@@ -291,7 +291,7 @@ exports.data = [
     type: 'input',
     name: 'configureCmd',
     message: 'Configure step (commands, script, ...):',
-    when: function (answers) {
+    when: function(answers) {
       return answers.rulesType !== 'meta';
     },
   },
@@ -299,8 +299,8 @@ exports.data = [
     type: 'list',
     name: 'rulesTest',
     message: 'How to test the build',
-    choices: function (answers) {
-      return ['none'].concat (Object.keys (xPeon[answers.fileType].test));
+    choices: function(answers) {
+      return ['none'].concat(Object.keys(xPeon[answers.fileType].test));
     },
     when: answers => {
       return answers.fileType === 'src' && xPeon[answers.fileType].test;
@@ -310,7 +310,7 @@ exports.data = [
     type: 'input',
     name: 'rulesLocation',
     message: 'Installer file name, source directory, executable, ...',
-    when: function (answers) {
+    when: function(answers) {
       return answers.rulesType !== 'meta';
     },
   },
@@ -318,7 +318,7 @@ exports.data = [
     type: 'input',
     name: 'rulesArgsPostinst',
     message: 'Arguments for the installer (to install):',
-    when: function (answers) {
+    when: function(answers) {
       return answers.rulesType === 'exec';
     },
   },
@@ -326,7 +326,7 @@ exports.data = [
     type: 'input',
     name: 'rulesArgsPrerm',
     message: 'Arguments for the installer (to remove):',
-    when: function (answers) {
+    when: function(answers) {
       return answers.rulesType === 'exec';
     },
   },
@@ -334,7 +334,7 @@ exports.data = [
     type: 'input',
     name: 'rulesArgsMakeall',
     message: 'Arguments for `make all`:',
-    when: function (answers) {
+    when: function(answers) {
       return answers.fileType === 'src';
     },
   },
@@ -342,7 +342,7 @@ exports.data = [
     type: 'input',
     name: 'rulesArgsMaketest',
     message: 'Arguments for `make test`:',
-    when: function (answers) {
+    when: function(answers) {
       return answers.fileType === 'src' && answers.rulesTest !== 'none';
     },
   },
@@ -350,7 +350,7 @@ exports.data = [
     type: 'input',
     name: 'rulesArgsMakeinstall',
     message: 'Arguments for `make install`:',
-    when: function (answers) {
+    when: function(answers) {
       return answers.fileType === 'src';
     },
   },
@@ -358,7 +358,7 @@ exports.data = [
     type: 'input',
     name: 'deployCmd',
     message: 'Deploy step (commands, script, ...):',
-    when: function (answers) {
+    when: function(answers) {
       return answers.fileType === 'src';
     },
   },
@@ -366,23 +366,25 @@ exports.data = [
     type: 'confirm',
     name: 'embedded',
     message: 'Embed data in the package (only if less than 1GB)?',
-    when: function (answers) {
+    when: function(answers) {
       return answers.rulesType !== 'meta';
     },
   },
   {
     type: 'input',
     name: 'runtimeConfigureCmd',
-    message: 'Configure step for binary runtime package (commands, script, ...):',
-    when: function (answers) {
+    message:
+      'Configure step for binary runtime package (commands, script, ...):',
+    when: function(answers) {
       return answers.fileType === 'src';
     },
   },
   {
     type: 'input',
     name: 'registerPath',
-    message: 'Register an unusual location for PATH (keep empty with default PATH):',
-    when: function (answers) {
+    message:
+      'Register an unusual location for PATH (keep empty with default PATH):',
+    when: function(answers) {
       if (answers.fileType === 'src') {
         return false;
       }
@@ -396,14 +398,15 @@ exports.env = [
   {
     type: 'input',
     name: 'key',
-    message: 'Insert the name of a specific environment variable (or nothing to continue):',
+    message:
+      'Insert the name of a specific environment variable (or nothing to continue):',
   },
   {
     type: 'name',
     name: 'value',
     message: 'Value of the environment variable:',
-    when: function (answers) {
-      return !!answers.key.trim ().length;
+    when: function(answers) {
+      return !!answers.key.trim().length;
     },
   },
 ];
@@ -419,10 +422,10 @@ exports.chest = [
     type: 'input',
     name: 'localPath',
     message: 'Location on the file to upload',
-    when: function (answers) {
+    when: function(answers) {
       return answers.mustUpload;
     },
   },
 ];
 
-exports.xcraftCommands = () => xWizard.commandify (exports);
+exports.xcraftCommands = () => xWizard.commandify(exports);
