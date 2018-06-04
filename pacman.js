@@ -100,6 +100,7 @@ cmd.edit = function(msg, response) {
 
   msg.data.wizardImpl = xWizard.stringify(path.join(__dirname, './wizard.js'));
   msg.data.wizardAnswers = [];
+  msg.data.wizardEditId = msg.id;
 
   response.log.info('create a new package: ' + packageName);
 
@@ -335,7 +336,7 @@ cmd['edit.save'] = function(msg, response) {
       }
       response.events.send(`pacman.edit.save.${msg.id}.finished`);
       if (!useChest) {
-        response.events.send(`pacman.edit.${msg.id}.finished`);
+        response.events.send(`pacman.edit.${msg.data.wizardEditId}.finished`);
       }
     }
   );
