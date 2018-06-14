@@ -352,7 +352,7 @@ cmd['edit.upload'] = function(msg, response) {
     !msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].mustUpload
   ) {
     response.events.send(`pacman.edit.upload.${msg.id}.finished`);
-    response.events.send(`pacman.edit.${msg.id}.finished`);
+    response.events.send(`pacman.edit.${msg.data.wizardEditId}.finished`);
     return;
   }
 
@@ -366,7 +366,7 @@ cmd['edit.upload'] = function(msg, response) {
   response.events.subscribe(`chest.send.${msg.id}.finished`, function() {
     response.events.unsubscribe(`chest.send.${msg.id}.finished`);
     response.events.send(`pacman.edit.upload.${msg.id}.finished`);
-    response.events.send(`pacman.edit.${msg.id}.finished`);
+    response.events.send(`pacman.edit.${msg.data.wizardEditId}.finished`);
   });
 
   var chestMsg = {
