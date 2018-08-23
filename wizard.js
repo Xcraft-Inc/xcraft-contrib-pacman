@@ -365,7 +365,7 @@ exports.data = [
   {
     type: 'confirm',
     name: 'embedded',
-    message: 'Embed data in the package (only if less than 1GB)?',
+    message: 'Embed data in the package (only if less than 2GB)?',
     when: function(answers) {
       return answers.rulesType !== 'meta';
     },
