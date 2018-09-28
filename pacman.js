@@ -248,6 +248,7 @@ cmd['edit.data'] = function(msg, response) {
   msg.data.wizardName = 'data';
   msg.data.wizardDefaults = wizard;
   msg.data.idxEnv = 0;
+  msg.data.envType = 'standard';
 
   /* Ask for build dependencies only with source packages. */
   if (
@@ -280,29 +281,64 @@ cmd['edit.data'] = function(msg, response) {
 cmd['edit.env'] = function(msg, response) {
   var wizard = {};
 
-  /* Continue when the key is an empty string. */
-  if (
+  /* Check if source package */
+  const isSrc = msg.data.wizardAnswers.some(function(wizard) {
+    return Object.keys(wizard).some(function(it) {
+      return (
+        it === 'architecture' &&
+        wizard[it].some(function(arch) {
+          return arch === 'source';
+        })
+      );
+    });
+  });
+
+  /* When the answered is empty */
+  const isEmpty =
     msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].hasOwnProperty(
-      'key'
+      `env/${msg.data.envType}`
     ) &&
-    !msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].key.length
-  ) {
+    !msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1][
+      `env/${msg.data.envType}`
+    ].length;
+
+  if (isEmpty && isSrc && msg.data.envType === 'standard') {
+    /* Continue with runtime env variables */
+    msg.data.idxEnv = 0;
+    msg.data.envType = 'runtime';
+  } else if (isEmpty && (!isSrc || (isSrc && msg.data.envType === 'runtime'))) {
+    /* Continue when the key is an empty string. */
     cmd[msg.data.nextStep](msg, response);
     response.events.send(`pacman.edit.env.${msg.id}.finished`);
     return;
   }
 
+  const wizardName = 'env/' + msg.data.envType;
+
   var def = definition.load(msg.data.packageName, null, response);
-  var keys = Object.keys(def.data.env.other);
+
+  let keys;
+  let other;
+  switch (msg.data.envType) {
+    case 'standard': {
+      keys = Object.keys(def.data.env.other);
+      other = def.data.env.other;
+      break;
+    }
+    case 'runtime': {
+      keys = Object.keys(def.data.runtime.env.other);
+      other = def.data.runtime.env.other;
+    }
+  }
 
   if (keys.length > msg.data.idxEnv) {
     var key = keys[msg.data.idxEnv];
-    wizard.key = key;
-    wizard.value = def.data.env.other[key];
+    wizard[wizardName] = key;
+    wizard.value = other[key];
     msg.data.idxEnv++;
   }
 
-  msg.data.wizardName = 'env';
+  msg.data.wizardName = wizardName;
   msg.data.wizardDefaults = wizard;
   msg.data.nextStep = 'edit.save';
 

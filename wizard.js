@@ -394,22 +394,26 @@ exports.data = [
   },
 ];
 
-exports.env = [
-  {
-    type: 'input',
-    name: 'key',
-    message:
-      'Insert the name of a specific environment variable (or nothing to continue):',
-  },
-  {
-    type: 'name',
-    name: 'value',
-    message: 'Value of the environment variable:',
-    when: function(answers) {
-      return !!answers.key.trim().length;
+var env = function(type) {
+  return [
+    {
+      type: 'input',
+      name: `env/${type}`,
+      message: `Insert the name of a specific (${type}) environment variable (or nothing to continue):`,
     },
-  },
-];
+    {
+      type: 'name',
+      name: 'value',
+      message: 'Value of the environment variable:',
+      when: function(answers) {
+        return !!answers[`env/${type}`].trim().length;
+      },
+    },
+  ];
+};
+
+exports['env/standard'] = env('standard');
+exports['env/runtime'] = env('runtime');
 
 exports.chest = [
   {
