@@ -284,7 +284,7 @@ exports.data = [
     name: 'uriRef',
     message: 'Branch, tag, commit or empty:',
     when: function(answers) {
-      return answers.fileType === 'src';
+      return !!answers.uri;
     },
   },
   {
