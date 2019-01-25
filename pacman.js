@@ -228,6 +228,7 @@ cmd['edit.data'] = function(msg, response) {
   wizard.uri = def.data.get.uri;
   wizard.uriRef = def.data.get.ref;
   wizard.uriOut = def.data.get.out;
+  wizard.uriExternals = def.data.get.externals;
   wizard.fileType = def.data.type;
   wizard.configureCmd = def.data.configure;
   wizard.rulesType = def.data.rules.type;

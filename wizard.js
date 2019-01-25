@@ -288,6 +288,14 @@ exports.data = [
     },
   },
   {
+    type: 'confirm',
+    name: 'uriExternals',
+    message: 'Clone, checkout externals (like submodules) if any',
+    when: function(answers) {
+      return !!answers.uri;
+    },
+  },
+  {
     type: 'input',
     name: 'configureCmd',
     message: 'Configure step (commands, script, ...):',
