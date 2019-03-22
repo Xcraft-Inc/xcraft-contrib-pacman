@@ -203,25 +203,8 @@ var dependency = function(type) {
       type: 'checkbox',
       name: 'architecture',
       message: 'Architectures where this dependency must be applied (or empty)',
-      choices: function() {
-        var list = [];
-
-        list.push({name: 'all'});
-        list.push(new inquirer.Separator('== Architectures =='));
-        pacmanConfig.architectures.forEach(function(arch) {
-          list.push({name: arch});
-        });
-
-        return list;
-      },
-      filter: function(answer) {
-        if (answer.indexOf('all') !== -1) {
-          return [];
-        }
-
-        return answer;
-      },
-      when: false /* WIP */,
+      choices: () => pacmanConfig.architectures.map(arch => ({name: arch})),
+      filter: answer => answer || [],
     },
   ];
 };
