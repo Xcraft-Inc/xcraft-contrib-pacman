@@ -564,6 +564,7 @@ cmd.build = function*(msg, response) {
   for (const packageRef of pkgs) {
     try {
       yield build.package(packageRef);
+      xEnv.devrootUpdate();
     } catch (ex) {
       response.log.err(ex.stack || ex);
       status = response.events.status.failed;
