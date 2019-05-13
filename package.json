@@ -33,7 +33,7 @@
     "xcraft-core-platform": "^1.0.0",
     "xcraft-core-subst": "^1.0.0",
     "xcraft-core-uri": "^1.0.0",
-    "xcraft-core-utils": "^1.0.0",
+    "xcraft-core-utils": "^2.0.0",
     "xcraft-core-wizard": "^1.0.0"
   },
   "author": "Mathieu Schroeter",
