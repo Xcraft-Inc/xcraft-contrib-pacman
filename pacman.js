@@ -654,11 +654,11 @@ exports.xcraftCommands = function() {
   return {
     handlers: cmd,
     rc: {
-      list: {
+      'list': {
         parallel: true,
         desc: 'list all available packages',
       },
-      edit: {
+      'edit': {
         desc: 'create or edit a package definition',
         options: {
           wizard: true,
@@ -688,7 +688,7 @@ exports.xcraftCommands = function() {
       'edit.upload': {
         parallel: true,
       },
-      make: {
+      'make': {
         desc: 'make all or only the specified package',
         options: {
           params: {
@@ -696,7 +696,7 @@ exports.xcraftCommands = function() {
           },
         },
       },
-      install: {
+      'install': {
         desc: 'install the package',
         options: {
           params: {
@@ -704,7 +704,7 @@ exports.xcraftCommands = function() {
           },
         },
       },
-      reinstall: {
+      'reinstall': {
         desc: 'install or reinstall the package',
         options: {
           params: {
@@ -712,7 +712,7 @@ exports.xcraftCommands = function() {
           },
         },
       },
-      status: {
+      'status': {
         desc: 'retrieve the status of a package',
         options: {
           params: {
@@ -720,7 +720,7 @@ exports.xcraftCommands = function() {
           },
         },
       },
-      build: {
+      'build': {
         desc: 'compile a source package',
         options: {
           params: {
@@ -728,7 +728,7 @@ exports.xcraftCommands = function() {
           },
         },
       },
-      publish: {
+      'publish': {
         desc: 'publish the package',
         options: {
           params: {
@@ -737,7 +737,7 @@ exports.xcraftCommands = function() {
           },
         },
       },
-      remove: {
+      'remove': {
         desc: 'remove the package',
         options: {
           params: {
@@ -745,7 +745,7 @@ exports.xcraftCommands = function() {
           },
         },
       },
-      clean: {
+      'clean': {
         desc: 'remove the temporary package files',
         options: {
           params: {
