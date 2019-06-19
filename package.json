@@ -6,7 +6,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["xcraft", "packages", "wpkg"],
+  "keywords": [
+    "xcraft",
+    "packages",
+    "wpkg"
+  ],
   "repository": {
     "type": "file",
     "url": "lib/xcraft-contrib-pacman"
@@ -39,6 +43,9 @@
   "author": "Mathieu Schroeter",
   "license": "MIT",
   "devDependencies": {
-    "xcraft-dev-rules": "^0.4.0"
-  }
+    "prettier": "1.18.2",
+    "xcraft-dev-prettier": "^1.0.0",
+    "xcraft-dev-rules": "^1.0.0"
+  },
+  "prettier": "xcraft-dev-prettier"
 }
