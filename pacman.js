@@ -455,28 +455,34 @@ cmd.make = function*(msg, response, next) {
   response.events.send(`pacman.make.${msg.id}.finished`, status);
 };
 
+function* install(msg, resp, reinstall = false) {
+  const install = require('./lib/install.js')(resp);
+
+  const subCmd = reinstall ? 'reinstall' : 'install';
+
+  var pkgs = extractPackages(msg.data.packageRefs, resp).list;
+  var status = resp.events.status.succeeded;
+
+  for (const packageRef of pkgs) {
+    try {
+      yield install.package(packageRef, reinstall);
+      xEnv.devrootUpdate();
+    } catch (ex) {
+      resp.log.err(ex.stack || ex);
+      status = resp.events.status.failed;
+    } finally {
+      resp.events.send(`pacman.${subCmd}.${msg.id}.finished`, status);
+    }
+  }
+}
+
 /**
  * Try to install the developement package.
  *
  * @param {Object} msg
  */
-cmd.install = function*(msg, response) {
-  const install = require('./lib/install.js')(response);
-
-  var pkgs = extractPackages(msg.data.packageRefs, response).list;
-  var status = response.events.status.succeeded;
-
-  for (const packageRef of pkgs) {
-    try {
-      yield install.package(packageRef, false);
-      xEnv.devrootUpdate();
-    } catch (ex) {
-      response.log.err(ex.stack || ex);
-      status = response.events.status.failed;
-    } finally {
-      response.events.send(`pacman.install.${msg.id}.finished`, status);
-    }
-  }
+cmd.install = function*(msg, resp) {
+  yield* install(msg, resp, false);
 };
 
 /**
@@ -484,23 +490,8 @@ cmd.install = function*(msg, response) {
  *
  * @param {Object} msg
  */
-cmd.reinstall = function*(msg, response) {
-  const install = require('./lib/install.js')(response);
-
-  var pkgs = extractPackages(msg.data.packageRefs, response).list;
-  var status = response.events.status.succeeded;
-
-  for (const packageRef of pkgs) {
-    try {
-      yield install.package(packageRef, true);
-      xEnv.devrootUpdate();
-    } catch (ex) {
-      response.log.err(ex.stack || ex);
-      status = response.events.status.failed;
-    } finally {
-      response.events.send(`pacman.reinstall.${msg.id}.finished`, status);
-    }
-  }
+cmd.reinstall = function*(msg, resp) {
+  yield* install(msg, resp, true);
 };
 
 /**
