@@ -463,10 +463,14 @@ function* install(msg, resp, reinstall = false) {
   var pkgs = extractPackages(msg.data.packageRefs, resp).list;
   var status = resp.events.status.succeeded;
 
+  const {prodRoot} = msg.data;
+
   for (const packageRef of pkgs) {
     try {
-      yield install.package(packageRef, reinstall);
-      xEnv.devrootUpdate();
+      yield install.package(packageRef, prodRoot, reinstall);
+      if (!prodRoot) {
+        xEnv.devrootUpdate();
+      }
     } catch (ex) {
       resp.log.err(ex.stack || ex);
       status = resp.events.status.failed;
@@ -688,18 +692,20 @@ exports.xcraftCommands = function() {
         },
       },
       'install': {
-        desc: 'install the package',
+        desc:
+          'install the package (provide a prodRoot if you try to install a product)',
         options: {
           params: {
-            optional: 'packageRefs',
+            optional: ['packageRefs', 'prodRoot'],
           },
         },
       },
       'reinstall': {
-        desc: 'install or reinstall the package',
+        desc:
+          'install or reinstall the package (provide a prodRoot if you try to reinstall a product)',
         options: {
           params: {
-            optional: 'packageRefs',
+            optional: ['packageRefs', 'prodRoot'],
           },
         },
       },
