@@ -580,9 +580,11 @@ cmd.remove = function*(msg, response) {
   const pkgs = extractPackages(msg.data.packageRefs, response).list;
   let status = response.events.status.succeeded;
 
+  const recursive = msg.data.recursive.test(/^(1|true|y|yes)$/i);
+
   for (const packageRef of pkgs) {
     try {
-      yield remove.package(packageRef);
+      yield remove.package(packageRef, recursive);
       xEnv.devrootUpdate();
     } catch (ex) {
       response.log.err(ex.stack || ex);
@@ -738,7 +740,7 @@ exports.xcraftCommands = function() {
         desc: 'remove the package',
         options: {
           params: {
-            optional: 'packageRefs',
+            optional: ['packageRefs', 'recursive'],
           },
         },
       },
