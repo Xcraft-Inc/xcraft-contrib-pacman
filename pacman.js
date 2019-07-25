@@ -580,7 +580,8 @@ cmd.remove = function*(msg, response) {
   const pkgs = extractPackages(msg.data.packageRefs, response).list;
   let status = response.events.status.succeeded;
 
-  const recursive = msg.data.recursive.test(/^(1|true|y|yes)$/i);
+  const recursive =
+    msg.data.recursive && /^(1|true|y|yes)$/.test(msg.data.recursive);
 
   for (const packageRef of pkgs) {
     try {
