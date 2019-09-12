@@ -474,10 +474,10 @@ function* install(msg, resp, reinstall = false) {
     } catch (ex) {
       resp.log.err(ex.stack || ex);
       status = resp.events.status.failed;
-    } finally {
-      resp.events.send(`pacman.${subCmd}.${msg.id}.finished`, status);
     }
   }
+
+  resp.events.send(`pacman.${subCmd}.${msg.id}.finished`, status);
 }
 
 /**
