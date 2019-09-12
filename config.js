@@ -62,12 +62,6 @@ module.exports = [
   },
   {
     type: 'input',
-    name: 'pkgProductsRepository',
-    message: 'products repository path',
-    default: 'products/',
-  },
-  {
-    type: 'input',
     name: 'pkgIndex',
     message: 'index file for wpkg repositories',
     default: 'index.tar.gz',

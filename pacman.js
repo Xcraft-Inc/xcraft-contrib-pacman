@@ -125,6 +125,9 @@ cmd['edit.header'] = function(msg, response) {
 
   wizard.version = def.version;
   wizard.tool = def.distribution === pacmanConfig.pkgToolchainRepository;
+  if (!wizard.tool) {
+    wizard.distribution = def.distribution;
+  }
   wizard.maintainerName = def.maintainer.name;
   wizard.maintainerEmail = def.maintainer.email;
   wizard.architecture = def.architecture;

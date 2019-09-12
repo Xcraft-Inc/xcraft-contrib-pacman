@@ -70,6 +70,13 @@ exports.header = [
   },
   {
     type: 'input',
+    name: 'distribution',
+    message: "distribution's name",
+    when: answers => !answers.tool,
+    filter: answer => answer.replace(/([^/]+).*/, '$1/'),
+  },
+  {
+    type: 'input',
     name: 'maintainerName',
     message: "Maintainer's name",
     validate: function(value) {
