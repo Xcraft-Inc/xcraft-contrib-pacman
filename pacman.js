@@ -14,7 +14,7 @@ const xWizard = require('xcraft-core-wizard');
 var cmd = {};
 
 var depsPattern = '@deps';
-var extractPackages = function(packageRefs, distribution, response) {
+var extractPackages = function(packageRefs, distribution, resp) {
   var results = [];
   var pkgs = [];
 
@@ -52,7 +52,7 @@ var extractPackages = function(packageRefs, distribution, response) {
       var def = null;
       var deps = {};
       try {
-        def = definition.load(prev, null, response, distribution);
+        def = definition.load(prev, null, resp, distribution);
       } catch (ex) {
         return;
       }
@@ -65,7 +65,7 @@ var extractPackages = function(packageRefs, distribution, response) {
           depsList += ',' + depsPattern;
 
           /* Continue recursively for the dependencies of this dependency. */
-          deps[type] = extractPackages(depsList, distribution, response);
+          deps[type] = extractPackages(depsList, distribution, resp);
           results = _.union(results, deps[type].list);
         }
       });
@@ -80,8 +80,8 @@ var extractPackages = function(packageRefs, distribution, response) {
   };
 };
 
-function getDistribution(msg, response) {
-  const pacmanConfig = require('xcraft-core-etc')(null, response).load(
+function getDistribution(msg, resp) {
+  const pacmanConfig = require('xcraft-core-etc')(null, resp).load(
     'xcraft-contrib-pacman'
   );
 
@@ -90,14 +90,14 @@ function getDistribution(msg, response) {
     : pacmanConfig.pkgToolchainRepository;
 }
 
-cmd.list = function(msg, response) {
-  response.log.info('list of all products');
+cmd.list = function(msg, resp) {
+  resp.log.info('list of all products');
 
   var list = require('./lib/list.js');
 
-  var results = list.listProducts(response);
-  response.events.send('pacman.list', results);
-  response.events.send(`pacman.list.${msg.id}.finished`);
+  var results = list.listProducts(resp);
+  resp.events.send('pacman.list', results);
+  resp.events.send(`pacman.list.${msg.id}.finished`);
 };
 
 /**
@@ -105,24 +105,24 @@ cmd.list = function(msg, response) {
  *
  * @param {Object} msg
  */
-cmd.edit = function(msg, response) {
+cmd.edit = function(msg, resp) {
   var packageName = msg.data.packageName || '';
 
   msg.data.wizardImpl = xWizard.stringify(path.join(__dirname, './wizard.js'));
   msg.data.wizardAnswers = [];
   msg.data.wizardEditId = msg.id;
 
-  response.log.info('create a new package: ' + packageName);
+  resp.log.info('create a new package: ' + packageName);
 
   try {
-    response.command.send('pacman.edit.header', msg.data);
+    resp.command.send('pacman.edit.header', msg.data);
   } catch (err) {
-    response.log.err(err);
+    resp.log.err(err);
   }
 };
 
-cmd['edit.header'] = function(msg, response) {
-  const pacmanConfig = require('xcraft-core-etc')(null, response).load(
+cmd['edit.header'] = function(msg, resp) {
+  const pacmanConfig = require('xcraft-core-etc')(null, resp).load(
     'xcraft-contrib-pacman'
   );
 
@@ -131,7 +131,7 @@ cmd['edit.header'] = function(msg, response) {
     package: msg.data.packageName,
   };
 
-  var def = definition.load(msg.data.packageName, null, response);
+  var def = definition.load(msg.data.packageName, null, resp);
 
   wizard.version = def.version;
   wizard.tool = def.distribution === pacmanConfig.pkgToolchainRepository;
@@ -155,16 +155,16 @@ cmd['edit.header'] = function(msg, response) {
 
   msg.data.nextCommand = 'pacman.edit.askdep';
 
-  response.events.send('pacman.edit.added', msg.data);
-  response.events.send(`pacman.edit.header.${msg.id}.finished`);
+  resp.events.send('pacman.edit.added', msg.data);
+  resp.events.send(`pacman.edit.header.${msg.id}.finished`);
 };
 
-cmd['edit.askdep'] = function(msg, response) {
+cmd['edit.askdep'] = function(msg, resp) {
   var wizard = {};
 
   var wizardName = 'askdep/' + msg.data.depType;
 
-  var def = definition.load(msg.data.packageName, null, response);
+  var def = definition.load(msg.data.packageName, null, resp);
   var keys = Object.keys(def.dependency[msg.data.depType]);
 
   if (keys.length > msg.data.idxDep) {
@@ -186,11 +186,11 @@ cmd['edit.askdep'] = function(msg, response) {
 
   msg.data.nextCommand = 'pacman.edit.dependency';
 
-  response.events.send('pacman.edit.added', msg.data);
-  response.events.send(`pacman.edit.askdep.${msg.id}.finished`);
+  resp.events.send('pacman.edit.added', msg.data);
+  resp.events.send(`pacman.edit.askdep.${msg.id}.finished`);
 };
 
-cmd['edit.dependency'] = function(msg, response) {
+cmd['edit.dependency'] = function(msg, resp) {
   var wizard = {
     version: '',
   };
@@ -199,14 +199,14 @@ cmd['edit.dependency'] = function(msg, response) {
     msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].hasDependency ===
     false
   ) {
-    cmd[msg.data.nextStep](msg, response);
-    response.events.send(`pacman.edit.dependency.${msg.id}.finished`);
+    cmd[msg.data.nextStep](msg, resp);
+    resp.events.send(`pacman.edit.dependency.${msg.id}.finished`);
     return;
   }
 
   var wizardName = 'dependency/' + msg.data.depType;
 
-  var def = definition.load(msg.data.packageName, null, response);
+  var def = definition.load(msg.data.packageName, null, resp);
   var keys = Object.keys(def.dependency[msg.data.depType]);
 
   if (keys.length > msg.data.idxDep) {
@@ -229,14 +229,14 @@ cmd['edit.dependency'] = function(msg, response) {
 
   msg.data.nextCommand = 'pacman.edit.askdep';
 
-  response.events.send('pacman.edit.added', msg.data);
-  response.events.send(`pacman.edit.dependency.${msg.id}.finished`);
+  resp.events.send('pacman.edit.added', msg.data);
+  resp.events.send(`pacman.edit.dependency.${msg.id}.finished`);
 };
 
-cmd['edit.data'] = function(msg, response) {
+cmd['edit.data'] = function(msg, resp) {
   var wizard = {};
 
-  var def = definition.load(msg.data.packageName, null, response);
+  var def = definition.load(msg.data.packageName, null, resp);
 
   wizard.uri = def.data.get.uri;
   wizard.uriRef = def.data.get.ref;
@@ -287,11 +287,11 @@ cmd['edit.data'] = function(msg, response) {
     msg.data.nextCommand = 'pacman.edit.env';
   }
 
-  response.events.send('pacman.edit.added', msg.data);
-  response.events.send(`pacman.edit.data.${msg.id}.finished`);
+  resp.events.send('pacman.edit.added', msg.data);
+  resp.events.send(`pacman.edit.data.${msg.id}.finished`);
 };
 
-cmd['edit.env'] = function(msg, response) {
+cmd['edit.env'] = function(msg, resp) {
   var wizard = {};
 
   /* Continue when the key is an empty string. */
@@ -301,12 +301,12 @@ cmd['edit.env'] = function(msg, response) {
     ) &&
     !msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].key.length
   ) {
-    cmd[msg.data.nextStep](msg, response);
-    response.events.send(`pacman.edit.env.${msg.id}.finished`);
+    cmd[msg.data.nextStep](msg, resp);
+    resp.events.send(`pacman.edit.env.${msg.id}.finished`);
     return;
   }
 
-  var def = definition.load(msg.data.packageName, null, response);
+  var def = definition.load(msg.data.packageName, null, resp);
   var keys = Object.keys(def.data.env.other);
 
   if (keys.length > msg.data.idxEnv) {
@@ -322,18 +322,18 @@ cmd['edit.env'] = function(msg, response) {
 
   msg.data.nextCommand = 'pacman.edit.env';
 
-  response.events.send('pacman.edit.added', msg.data);
-  response.events.send(`pacman.edit.env.${msg.id}.finished`);
+  resp.events.send('pacman.edit.added', msg.data);
+  resp.events.send(`pacman.edit.env.${msg.id}.finished`);
 };
 
-cmd['edit.save'] = function(msg, response) {
+cmd['edit.save'] = function(msg, resp) {
   var create = require('./lib/edit.js');
 
   var wizardAnswers = msg.data.wizardAnswers;
 
   create.pkgTemplate(
     wizardAnswers,
-    response,
+    resp,
     function(wizardName, file) {
       msg.data.wizardName = wizardName;
       msg.data.wizardDefaults = {};
@@ -342,22 +342,22 @@ cmd['edit.save'] = function(msg, response) {
 
       msg.data.nextCommand = 'pacman.edit.upload';
 
-      response.events.send('pacman.edit.added', msg.data);
+      resp.events.send('pacman.edit.added', msg.data);
     },
     function(err, useChest) {
       if (err) {
-        response.log.err(err);
+        resp.log.err(err);
       }
-      response.events.send(`pacman.edit.save.${msg.id}.finished`);
+      resp.events.send(`pacman.edit.save.${msg.id}.finished`);
       if (!useChest) {
-        response.events.send(`pacman.edit.${msg.data.wizardEditId}.finished`);
+        resp.events.send(`pacman.edit.${msg.data.wizardEditId}.finished`);
       }
     }
   );
 };
 
-cmd['edit.upload'] = function(msg, response) {
-  const chestConfig = require('xcraft-core-etc')(null, response).load(
+cmd['edit.upload'] = function(msg, resp) {
+  const chestConfig = require('xcraft-core-etc')(null, resp).load(
     'xcraft-contrib-chest'
   );
 
@@ -365,28 +365,28 @@ cmd['edit.upload'] = function(msg, response) {
     !chestConfig ||
     !msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].mustUpload
   ) {
-    response.events.send(`pacman.edit.upload.${msg.id}.finished`);
-    response.events.send(`pacman.edit.${msg.data.wizardEditId}.finished`);
+    resp.events.send(`pacman.edit.upload.${msg.id}.finished`);
+    resp.events.send(`pacman.edit.${msg.data.wizardEditId}.finished`);
     return;
   }
 
-  response.log.info(
+  resp.log.info(
     'upload %s to chest://%s:%d',
     msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].localPath,
     chestConfig.host,
     chestConfig.port
   );
 
-  response.events.subscribe(`chest.send.${msg.id}.finished`, function() {
-    response.events.unsubscribe(`chest.send.${msg.id}.finished`);
-    response.events.send(`pacman.edit.upload.${msg.id}.finished`);
-    response.events.send(`pacman.edit.${msg.data.wizardEditId}.finished`);
+  resp.events.subscribe(`chest.send.${msg.id}.finished`, function() {
+    resp.events.unsubscribe(`chest.send.${msg.id}.finished`);
+    resp.events.send(`pacman.edit.upload.${msg.id}.finished`);
+    resp.events.send(`pacman.edit.${msg.data.wizardEditId}.finished`);
   });
 
   var chestMsg = {
     file: msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].localPath,
   };
-  response.command.send('chest.send', chestMsg);
+  resp.command.send('chest.send', chestMsg);
 };
 
 /**
@@ -394,11 +394,11 @@ cmd['edit.upload'] = function(msg, response) {
  *
  * @param {Object} msg
  */
-cmd.make = function*(msg, response, next) {
-  const pacmanConfig = require('xcraft-core-etc')(null, response).load(
+cmd.make = function*(msg, resp, next) {
+  const pacmanConfig = require('xcraft-core-etc')(null, resp).load(
     'xcraft-contrib-pacman'
   );
-  const make = require('./lib/make.js')(response);
+  const make = require('./lib/make.js')(resp);
 
   let packageRefs = null;
   let distribution = pacmanConfig.pkgToolchainRepository;
@@ -432,7 +432,7 @@ cmd.make = function*(msg, response, next) {
     });
   }
 
-  response.log.verb(
+  resp.log.verb(
     'list of overloaded properties: %s %s',
     JSON.stringify(packageArgsOther, null, 2),
     JSON.stringify(packageArgs, null, 2)
@@ -445,9 +445,9 @@ cmd.make = function*(msg, response, next) {
   const pkgs = extractPackages(
     packageRefs,
     pacmanConfig.pkgToolchainRepository,
-    response
+    resp
   ).list;
-  let status = response.events.status.succeeded;
+  let status = resp.events.status.succeeded;
 
   const cleanArg = {};
   if (packageRefs) {
@@ -460,17 +460,17 @@ cmd.make = function*(msg, response, next) {
   }
 
   try {
-    yield response.command.send('pacman.clean', cleanArg, next);
+    yield resp.command.send('pacman.clean', cleanArg, next);
   } catch (ex) {
-    response.log.err(ex.stack || ex);
-    response.events.send(`pacman.make.${msg.id}.finished`);
+    resp.log.err(ex.stack || ex);
+    resp.events.send(`pacman.make.${msg.id}.finished`);
     return;
   }
 
   for (const packageRef of pkgs) {
     const pkg = utils.parsePkgRef(packageRef);
 
-    response.log.info(
+    resp.log.info(
       'make the wpkg package for ' + pkg.name + ' on architecture: ' + pkg.arch
     );
 
@@ -482,12 +482,12 @@ cmd.make = function*(msg, response, next) {
     try {
       yield make.package(pkg.name, pkg.arch, pkgArgs, null);
     } catch (ex) {
-      response.log.err(ex.stack || ex);
-      status = response.events.status.failed;
+      resp.log.err(ex.stack || ex);
+      status = resp.events.status.failed;
     }
   }
 
-  response.events.send(`pacman.make.${msg.id}.finished`, status);
+  resp.events.send(`pacman.make.${msg.id}.finished`, status);
 };
 
 function* install(msg, resp, reinstall = false) {
@@ -539,14 +539,14 @@ cmd.reinstall = function*(msg, resp) {
  *
  * @param {Object} msg
  */
-cmd.status = function*(msg, response) {
-  const install = require('./lib/install.js')(response);
-  const publish = require('./lib/publish.js')(response);
+cmd.status = function*(msg, resp) {
+  const install = require('./lib/install.js')(resp);
+  const publish = require('./lib/publish.js')(resp);
 
-  const distribution = getDistribution(msg, response);
+  const distribution = getDistribution(msg, resp);
 
-  var pkgs = extractPackages(msg.data.packageRefs, distribution, response).list;
-  var status = response.events.status.succeeded;
+  var pkgs = extractPackages(msg.data.packageRefs, distribution, resp).list;
+  var status = resp.events.status.succeeded;
 
   try {
     let installStatus;
@@ -567,12 +567,12 @@ cmd.status = function*(msg, response) {
     }
 
     const res = _.merge(installStatus, publishStatus);
-    response.events.send('pacman.status', res);
+    resp.events.send('pacman.status', res);
   } catch (ex) {
-    response.log.err(ex.stack || ex);
-    status = response.events.status.failed;
+    resp.log.err(ex.stack || ex);
+    status = resp.events.status.failed;
   } finally {
-    response.events.send(`pacman.status.${msg.id}.finished`, status);
+    resp.events.send(`pacman.status.${msg.id}.finished`, status);
   }
 };
 
@@ -581,22 +581,22 @@ cmd.status = function*(msg, response) {
  *
  * @param {Object} msg
  */
-cmd.build = function*(msg, response) {
-  const build = require('./lib/build.js')(response);
+cmd.build = function*(msg, resp) {
+  const build = require('./lib/build.js')(resp);
 
   let pkgs = [null];
-  const distribution = getDistribution(msg, response);
+  const distribution = getDistribution(msg, resp);
 
   const extractedPkgs = extractPackages(
     msg.data.packageRefs,
     distribution,
-    response
+    resp
   );
   if (!extractedPkgs.all) {
     pkgs = extractedPkgs.list;
   }
 
-  let status = response.events.status.succeeded;
+  let status = resp.events.status.succeeded;
 
   /* Try to build most of packages; continue with the next on error. */
   for (const packageRef of pkgs) {
@@ -604,12 +604,12 @@ cmd.build = function*(msg, response) {
       yield build.package(packageRef, distribution);
       xEnv.devrootUpdate(distribution);
     } catch (ex) {
-      response.log.err(ex.stack || ex);
-      status = response.events.status.failed;
+      resp.log.err(ex.stack || ex);
+      status = resp.events.status.failed;
     }
   }
 
-  response.events.send(`pacman.build.${msg.id}.finished`, status);
+  resp.events.send(`pacman.build.${msg.id}.finished`, status);
 };
 
 /**
@@ -617,14 +617,13 @@ cmd.build = function*(msg, response) {
  *
  * @param {Object} msg
  */
-cmd.remove = function*(msg, response) {
-  const remove = require('./lib/remove.js')(response);
+cmd.remove = function*(msg, resp) {
+  const remove = require('./lib/remove.js')(resp);
 
-  const distribution = getDistribution(msg, response);
+  const distribution = getDistribution(msg, resp);
 
-  const pkgs = extractPackages(msg.data.packageRefs, distribution, response)
-    .list;
-  let status = response.events.status.succeeded;
+  const pkgs = extractPackages(msg.data.packageRefs, distribution, resp).list;
+  let status = resp.events.status.succeeded;
 
   const recursive =
     msg.data.recursive && /^(1|true|y|yes)$/.test(msg.data.recursive);
@@ -634,12 +633,12 @@ cmd.remove = function*(msg, response) {
       yield remove.package(packageRef, distribution, recursive);
       xEnv.devrootUpdate(distribution);
     } catch (ex) {
-      response.log.err(ex.stack || ex);
-      status = response.events.status.failed;
+      resp.log.err(ex.stack || ex);
+      status = resp.events.status.failed;
     }
   }
 
-  response.events.send(`pacman.remove.${msg.id}.finished`, status);
+  resp.events.send(`pacman.remove.${msg.id}.finished`, status);
 };
 
 /**
@@ -647,25 +646,24 @@ cmd.remove = function*(msg, response) {
  *
  * @param {Object} msg
  */
-cmd.clean = function(msg, response) {
-  const clean = require('./lib/clean.js')(response);
+cmd.clean = function(msg, resp) {
+  const clean = require('./lib/clean.js')(resp);
 
-  const distribution = getDistribution(msg, response);
+  const distribution = getDistribution(msg, resp);
 
-  const pkgs = extractPackages(msg.data.packageNames, distribution, response)
-    .list;
-  let status = response.events.status.succeeded;
+  const pkgs = extractPackages(msg.data.packageNames, distribution, resp).list;
+  let status = resp.events.status.succeeded;
 
   for (const packageName of pkgs) {
     try {
       clean.temp(packageName);
     } catch (ex) {
-      response.log.err(ex.stack || ex);
-      status = response.events.status.failed;
+      resp.log.err(ex.stack || ex);
+      status = resp.events.status.failed;
     }
   }
 
-  response.events.send(`pacman.clean.${msg.id}.finished`, status);
+  resp.events.send(`pacman.clean.${msg.id}.finished`, status);
 };
 
 /**
@@ -673,14 +671,13 @@ cmd.clean = function(msg, response) {
  *
  * @param {Object} msg
  */
-cmd.publish = function*(msg, response) {
-  const publish = require('./lib/publish.js')(response);
+cmd.publish = function*(msg, resp) {
+  const publish = require('./lib/publish.js')(resp);
 
-  const distribution = getDistribution(msg, response);
+  const distribution = getDistribution(msg, resp);
 
-  const pkgs = extractPackages(msg.data.packageRefs, distribution, response)
-    .list;
-  let status = response.events.status.succeeded;
+  const pkgs = extractPackages(msg.data.packageRefs, distribution, resp).list;
+  let status = resp.events.status.succeeded;
 
   /* Try to publish most of packages; continue with the next on error. */
   for (const packageRef of pkgs) {
@@ -692,12 +689,12 @@ cmd.publish = function*(msg, response) {
         distribution
       );
     } catch (ex) {
-      response.log.err(ex.stack || ex);
-      status = response.events.status.failed;
+      resp.log.err(ex.stack || ex);
+      status = resp.events.status.failed;
     }
   }
 
-  response.events.send(`pacman.publish.${msg.id}.finished`, status);
+  resp.events.send(`pacman.publish.${msg.id}.finished`, status);
 };
 
 /**
