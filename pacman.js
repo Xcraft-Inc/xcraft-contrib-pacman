@@ -14,7 +14,7 @@ const xWizard = require('xcraft-core-wizard');
 var cmd = {};
 
 var depsPattern = '@deps';
-var extractPackages = function(packageRefs, response) {
+var extractPackages = function(packageRefs, distribution, response) {
   var results = [];
   var pkgs = [];
 
@@ -52,7 +52,7 @@ var extractPackages = function(packageRefs, response) {
       var def = null;
       var deps = {};
       try {
-        def = definition.load(prev, null, response);
+        def = definition.load(prev, null, response, distribution);
       } catch (ex) {
         return;
       }
@@ -65,7 +65,7 @@ var extractPackages = function(packageRefs, response) {
           depsList += ',' + depsPattern;
 
           /* Continue recursively for the dependencies of this dependency. */
-          deps[type] = extractPackages(depsList, response);
+          deps[type] = extractPackages(depsList, distribution, response);
           results = _.union(results, deps[type].list);
         }
       });
@@ -79,6 +79,16 @@ var extractPackages = function(packageRefs, response) {
     all: all,
   };
 };
+
+function getDistribution(msg, response) {
+  const pacmanConfig = require('xcraft-core-etc')(null, response).load(
+    'xcraft-contrib-pacman'
+  );
+
+  return msg.data.distribution && msg.data.distribution.length > 1
+    ? msg.data.distribution.replace(/([^/]+).*/, '$1/')
+    : pacmanConfig.pkgToolchainRepository;
+}
 
 cmd.list = function(msg, response) {
   response.log.info('list of all products');
@@ -385,9 +395,13 @@ cmd['edit.upload'] = function(msg, response) {
  * @param {Object} msg
  */
 cmd.make = function*(msg, response, next) {
+  const pacmanConfig = require('xcraft-core-etc')(null, response).load(
+    'xcraft-contrib-pacman'
+  );
   const make = require('./lib/make.js')(response);
 
   let packageRefs = null;
+  let distribution = pacmanConfig.pkgToolchainRepository;
   const packageArgs = {};
   const packageArgsOther = {};
 
@@ -399,7 +413,7 @@ cmd.make = function*(msg, response, next) {
 
     /* Transform all properties to a map. */
     msg.data.packageArgs.forEach(arg => {
-      var match = arg.trim().match(/^p:(?:([^:]*):)?([^=]*)[=](.*)/);
+      let match = arg.trim().match(/^p:(?:([^:]*):)?([^=]*)[=](.*)/);
       if (match) {
         if (match[1]) {
           if (!packageArgs[match[1]]) {
@@ -408,6 +422,11 @@ cmd.make = function*(msg, response, next) {
           packageArgs[match[1]][match[2]] = match[3];
         } else {
           packageArgsOther[match[2]] = match[3];
+        }
+      } else {
+        match = arg.trim().match(/^d:([a-z]+)/);
+        if (match) {
+          distribution = `${match[1]}/`;
         }
       }
     });
@@ -419,12 +438,25 @@ cmd.make = function*(msg, response, next) {
     JSON.stringify(packageArgs, null, 2)
   );
 
-  const pkgs = extractPackages(packageRefs, response).list;
+  /* FIXME: replace pacmanConfig.pkgToolchainRepository by distribution
+   *        and by default it should make the package for all distributions
+   *        (in the case of non-source packages)
+   */
+  const pkgs = extractPackages(
+    packageRefs,
+    pacmanConfig.pkgToolchainRepository,
+    response
+  ).list;
   let status = response.events.status.succeeded;
 
   const cleanArg = {};
   if (packageRefs) {
     cleanArg.packageNames = pkgs.join(',');
+    /* FIXME: replace pacmanConfig.pkgToolchainRepository by distribution
+     *        and by default it should clean the package for all distributions
+     *        (in the case of non-source packages)
+     */
+    cleanArg.distribution = pacmanConfig.pkgToolchainRepository;
   }
 
   try {
@@ -463,16 +495,17 @@ function* install(msg, resp, reinstall = false) {
 
   const subCmd = reinstall ? 'reinstall' : 'install';
 
-  var pkgs = extractPackages(msg.data.packageRefs, resp).list;
-  var status = resp.events.status.succeeded;
-
   const {prodRoot} = msg.data;
+  const distribution = getDistribution(msg, resp);
+
+  var pkgs = extractPackages(msg.data.packageRefs, distribution, resp).list;
+  var status = resp.events.status.succeeded;
 
   for (const packageRef of pkgs) {
     try {
-      yield install.package(packageRef, prodRoot, reinstall);
+      yield install.package(packageRef, distribution, prodRoot, reinstall);
       if (!prodRoot) {
-        xEnv.devrootUpdate();
+        xEnv.devrootUpdate(distribution);
       }
     } catch (ex) {
       resp.log.err(ex.stack || ex);
@@ -510,7 +543,9 @@ cmd.status = function*(msg, response) {
   const install = require('./lib/install.js')(response);
   const publish = require('./lib/publish.js')(response);
 
-  var pkgs = extractPackages(msg.data.packageRefs, response).list;
+  const distribution = getDistribution(msg, response);
+
+  var pkgs = extractPackages(msg.data.packageRefs, distribution, response).list;
   var status = response.events.status.succeeded;
 
   try {
@@ -518,13 +553,13 @@ cmd.status = function*(msg, response) {
     let publishStatus;
 
     for (const packageRef of pkgs) {
-      const code = yield install.status(packageRef);
+      const code = yield install.status(packageRef, distribution);
       installStatus = {
         packageRef: packageRef,
         installed: !!code,
       };
 
-      const deb = yield publish.status(packageRef, null);
+      const deb = yield publish.status(packageRef, null, null);
       publishStatus = {
         packageRef: packageRef,
         published: deb,
@@ -550,8 +585,13 @@ cmd.build = function*(msg, response) {
   const build = require('./lib/build.js')(response);
 
   let pkgs = [null];
+  const distribution = getDistribution(msg, response);
 
-  const extractedPkgs = extractPackages(msg.data.packageRefs, response);
+  const extractedPkgs = extractPackages(
+    msg.data.packageRefs,
+    distribution,
+    response
+  );
   if (!extractedPkgs.all) {
     pkgs = extractedPkgs.list;
   }
@@ -561,8 +601,8 @@ cmd.build = function*(msg, response) {
   /* Try to build most of packages; continue with the next on error. */
   for (const packageRef of pkgs) {
     try {
-      yield build.package(packageRef);
-      xEnv.devrootUpdate();
+      yield build.package(packageRef, distribution);
+      xEnv.devrootUpdate(distribution);
     } catch (ex) {
       response.log.err(ex.stack || ex);
       status = response.events.status.failed;
@@ -580,7 +620,10 @@ cmd.build = function*(msg, response) {
 cmd.remove = function*(msg, response) {
   const remove = require('./lib/remove.js')(response);
 
-  const pkgs = extractPackages(msg.data.packageRefs, response).list;
+  const distribution = getDistribution(msg, response);
+
+  const pkgs = extractPackages(msg.data.packageRefs, distribution, response)
+    .list;
   let status = response.events.status.succeeded;
 
   const recursive =
@@ -588,8 +631,8 @@ cmd.remove = function*(msg, response) {
 
   for (const packageRef of pkgs) {
     try {
-      yield remove.package(packageRef, recursive);
-      xEnv.devrootUpdate();
+      yield remove.package(packageRef, distribution, recursive);
+      xEnv.devrootUpdate(distribution);
     } catch (ex) {
       response.log.err(ex.stack || ex);
       status = response.events.status.failed;
@@ -607,7 +650,10 @@ cmd.remove = function*(msg, response) {
 cmd.clean = function(msg, response) {
   const clean = require('./lib/clean.js')(response);
 
-  const pkgs = extractPackages(msg.data.packageNames, response).list;
+  const distribution = getDistribution(msg, response);
+
+  const pkgs = extractPackages(msg.data.packageNames, distribution, response)
+    .list;
   let status = response.events.status.succeeded;
 
   for (const packageName of pkgs) {
@@ -630,13 +676,21 @@ cmd.clean = function(msg, response) {
 cmd.publish = function*(msg, response) {
   const publish = require('./lib/publish.js')(response);
 
-  const pkgs = extractPackages(msg.data.packageRefs, response).list;
+  const distribution = getDistribution(msg, response);
+
+  const pkgs = extractPackages(msg.data.packageRefs, distribution, response)
+    .list;
   let status = response.events.status.succeeded;
 
   /* Try to publish most of packages; continue with the next on error. */
   for (const packageRef of pkgs) {
     try {
-      yield publish.add(packageRef, null, msg.data.outputRepository);
+      yield publish.add(
+        packageRef,
+        null,
+        msg.data.outputRepository,
+        distribution
+      );
     } catch (ex) {
       response.log.err(ex.stack || ex);
       status = response.events.status.failed;
@@ -702,7 +756,7 @@ exports.xcraftCommands = function() {
           'install the package (provide a prodRoot if you try to install a product)',
         options: {
           params: {
-            optional: ['packageRefs', 'prodRoot'],
+            optional: ['packageRefs', 'distribution', 'prodRoot'],
           },
         },
       },
@@ -711,7 +765,7 @@ exports.xcraftCommands = function() {
           'install or reinstall the package (provide a prodRoot if you try to reinstall a product)',
         options: {
           params: {
-            optional: ['packageRefs', 'prodRoot'],
+            optional: ['packageRefs', 'distribution', 'prodRoot'],
           },
         },
       },
@@ -719,7 +773,7 @@ exports.xcraftCommands = function() {
         desc: 'retrieve the status of a package',
         options: {
           params: {
-            optional: 'packageRefs',
+            optional: ['packageRefs', 'distribution'],
           },
         },
       },
@@ -727,7 +781,7 @@ exports.xcraftCommands = function() {
         desc: 'compile a source package',
         options: {
           params: {
-            optional: 'packageRefs',
+            optional: ['packageRefs', 'distribution'],
           },
         },
       },
@@ -736,7 +790,7 @@ exports.xcraftCommands = function() {
         options: {
           params: {
             required: 'outputRepository',
-            optional: 'packageRefs',
+            optional: ['packageRefs', 'distribution'],
           },
         },
       },
@@ -744,7 +798,7 @@ exports.xcraftCommands = function() {
         desc: 'remove the package',
         options: {
           params: {
-            optional: ['packageRefs', 'recursive'],
+            optional: ['packageRefs', 'distribution', 'recursive'],
           },
         },
       },
@@ -752,7 +806,7 @@ exports.xcraftCommands = function() {
         desc: 'remove the temporary package files',
         options: {
           params: {
-            optional: 'packageNames',
+            optional: ['packageNames', 'distribution'],
           },
         },
       },

@@ -7,16 +7,14 @@ SHARE=<PACMAN.SHARE>
 HOOK=<PACMAN.HOOK>
 ACTION=<PACMAN.ACTION>
 SYSROOT=<PACMAN.SYSROOT>
-CONFIG=<PACMAN.CONFIG>
-DISTRIBUTION="$PEON_DISTRIBUTION"
+DISTRIBUTION="<PACMAN.DISTRIBUTION>"
 WPKGACT="$1"
 [ "$1" = cmake ] && CMAKE_BINARY_DIR="$2" || CMAKE_BINARY_DIR=
-
-[ ! -f "$CONFIG" ] && exit 0
-
-PEON=$(node -e "process.stdout.write(require('path').resolve(__dirname, '$SYSROOT', require(require('path').resolve(__dirname, '$CONFIG')).bin));")
 
 [ -z "$NAME" ] && NAME="$2"
 [ -z "$VERSION" ] && VERSION="$3"
 
-node "$PEON" "$(pwd)" "$SHARE" "$HOOK" $ACTION "$WPKGACT" "$CMAKE_BINARY_DIR" "$NAME" "$VERSION" "$SYSROOT" "$DISTRIBUTION"
+_DISTRIBUTION="$(echo $DISTRIBUTION | tr -d '<>')"
+[ "$_DISTRIBUTION" = "PACMAN.DISTRIBUTION" ] && DISTRIBUTION="$PEON_DISTRIBUTION"
+
+xcraft-peon "$(pwd)" "$SHARE" "$HOOK" $ACTION "$WPKGACT" "$CMAKE_BINARY_DIR" "$NAME" "$VERSION" "$SYSROOT" "$DISTRIBUTION"
