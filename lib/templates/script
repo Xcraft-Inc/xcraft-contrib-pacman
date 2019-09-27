@@ -9,8 +9,14 @@ ACTION=<PACMAN.ACTION>
 SYSROOT=<PACMAN.SYSROOT>
 DISTRIBUTION="<PACMAN.DISTRIBUTION>"
 WPKGACT="$1"
-[ "$1" = cmake ] && CMAKE_BINARY_DIR="$2" || CMAKE_BINARY_DIR=
 
+if ! command -v xcraft-peon; then
+  [ "$HOOK" = global ] && exit 0
+  echo 'xcraft-peon is mandatory but not available in PATH'
+  exit 1
+fi
+
+[ "$1" = cmake ] && CMAKE_BINARY_DIR="$2" || CMAKE_BINARY_DIR=
 [ -z "$NAME" ] && NAME="$2"
 [ -z "$VERSION" ] && VERSION="$3"
 
