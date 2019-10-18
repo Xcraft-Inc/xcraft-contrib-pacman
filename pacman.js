@@ -698,6 +698,37 @@ cmd.publish = function*(msg, resp) {
 };
 
 /**
+ * Unpublish a package.
+ *
+ * @param {Object} msg
+ */
+cmd.unpublish = function*(msg, resp) {
+  const publish = require('./lib/publish.js')(resp);
+
+  const distribution = getDistribution(msg, resp);
+
+  const pkgs = extractPackages(msg.data.packageRefs, distribution, resp).list;
+  let status = resp.events.status.succeeded;
+
+  /* Try to unpublish most of packages; continue with the next on error. */
+  for (const [idx, packageRef] of pkgs.entries()) {
+    try {
+      yield publish.remove(
+        packageRef,
+        null,
+        distribution,
+        idx === pkgs.length - 1
+      );
+    } catch (ex) {
+      resp.log.err(ex.stack || ex);
+      status = resp.events.status.failed;
+    }
+  }
+
+  resp.events.send(`pacman.unpublish.${msg.id}.finished`, status);
+};
+
+/**
  * Retrieve the list of available commands.
  *
  * @returns {Object} The list and definitions of commands.
@@ -787,6 +818,14 @@ exports.xcraftCommands = function() {
         options: {
           params: {
             required: 'outputRepository',
+            optional: ['packageRefs', 'distribution'],
+          },
+        },
+      },
+      'unpublish': {
+        desc: 'unpublish the package',
+        options: {
+          params: {
             optional: ['packageRefs', 'distribution'],
           },
         },
