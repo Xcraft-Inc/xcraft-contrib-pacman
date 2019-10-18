@@ -35,6 +35,7 @@
     "xcraft-core-log": "^1.0.0",
     "xcraft-core-placeholder": "^1.0.0",
     "xcraft-core-platform": "^1.0.0",
+    "xcraft-core-scm": "^1.1.0",
     "xcraft-core-subst": "^1.0.0",
     "xcraft-core-uri": "^1.0.0",
     "xcraft-core-utils": "^2.0.0",
