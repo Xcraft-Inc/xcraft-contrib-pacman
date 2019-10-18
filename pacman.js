@@ -553,16 +553,16 @@ cmd.status = function*(msg, resp) {
     let publishStatus;
 
     for (const packageRef of pkgs) {
-      const code = yield install.status(packageRef, distribution);
+      const {installed} = yield install.status(packageRef, distribution);
       installStatus = {
         packageRef: packageRef,
-        installed: !!code,
+        installed,
       };
 
       const deb = yield publish.status(packageRef, null, null);
       publishStatus = {
         packageRef: packageRef,
-        published: deb,
+        published: deb.file,
       };
     }
 
