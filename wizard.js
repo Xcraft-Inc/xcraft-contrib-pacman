@@ -46,7 +46,7 @@ exports.header = [
   {
     type: 'input',
     name: 'version',
-    message: 'Package version',
+    message: 'Package version (last -<num> is reserved to the Debian release)',
     validate: function(value) {
       var regex = new RegExp('^' + versionRegex.source + '$');
 
