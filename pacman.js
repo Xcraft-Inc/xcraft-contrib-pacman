@@ -57,6 +57,11 @@ var extractPackages = function(packageRefs, distribution, resp) {
         return;
       }
 
+      /* When null, use the distribution specified in the first package. */
+      if (!distribution) {
+        distribution = def.distribution;
+      }
+
       Object.keys(def.dependency).forEach(function(type) {
         if (def.dependency[type]) {
           var depsList = Object.keys(def.dependency[type]).join(
@@ -76,18 +81,15 @@ var extractPackages = function(packageRefs, distribution, resp) {
 
   return {
     list: results,
-    all: all,
+    all,
+    distribution,
   };
 };
 
-function getDistribution(msg, resp) {
-  const pacmanConfig = require('xcraft-core-etc')(null, resp).load(
-    'xcraft-contrib-pacman'
-  );
-
+function getDistribution(msg) {
   return msg.data.distribution && msg.data.distribution.length > 1
     ? msg.data.distribution.replace(/([^/]+).*/, '$1/')
-    : pacmanConfig.pkgToolchainRepository;
+    : null;
 }
 
 cmd.list = function(msg, resp) {
@@ -496,9 +498,13 @@ function* install(msg, resp, reinstall = false) {
   const subCmd = reinstall ? 'reinstall' : 'install';
 
   const {prodRoot} = msg.data;
-  const distribution = getDistribution(msg, resp);
 
-  var pkgs = extractPackages(msg.data.packageRefs, distribution, resp).list;
+  const {list, distribution} = extractPackages(
+    msg.data.packageRefs,
+    getDistribution(msg),
+    resp
+  );
+  const pkgs = list;
   var status = resp.events.status.succeeded;
 
   for (const packageRef of pkgs) {
@@ -543,9 +549,12 @@ cmd.status = function*(msg, resp) {
   const install = require('./lib/install.js')(resp);
   const publish = require('./lib/publish.js')(resp);
 
-  const distribution = getDistribution(msg, resp);
-
-  var pkgs = extractPackages(msg.data.packageRefs, distribution, resp).list;
+  const {list, distribution} = extractPackages(
+    msg.data.packageRefs,
+    getDistribution(msg),
+    resp
+  );
+  const pkgs = list;
   var status = resp.events.status.succeeded;
 
   try {
@@ -585,15 +594,13 @@ cmd.build = function*(msg, resp) {
   const build = require('./lib/build.js')(resp);
 
   let pkgs = [null];
-  const distribution = getDistribution(msg, resp);
-
-  const extractedPkgs = extractPackages(
+  const {all, list, distribution} = extractPackages(
     msg.data.packageRefs,
-    distribution,
+    getDistribution(msg),
     resp
   );
-  if (!extractedPkgs.all) {
-    pkgs = extractedPkgs.list;
+  if (!all) {
+    pkgs = list;
   }
 
   let status = resp.events.status.succeeded;
@@ -620,9 +627,12 @@ cmd.build = function*(msg, resp) {
 cmd.remove = function*(msg, resp) {
   const remove = require('./lib/remove.js')(resp);
 
-  const distribution = getDistribution(msg, resp);
-
-  const pkgs = extractPackages(msg.data.packageRefs, distribution, resp).list;
+  const {list, distribution} = extractPackages(
+    msg.data.packageRefs,
+    getDistribution(msg),
+    resp
+  );
+  const pkgs = list;
   let status = resp.events.status.succeeded;
 
   const recursive =
@@ -649,9 +659,12 @@ cmd.remove = function*(msg, resp) {
 cmd.clean = function(msg, resp) {
   const clean = require('./lib/clean.js')(resp);
 
-  const distribution = getDistribution(msg, resp);
-
-  const pkgs = extractPackages(msg.data.packageNames, distribution, resp).list;
+  const {list} = extractPackages(
+    msg.data.packageNames,
+    getDistribution(msg),
+    resp
+  );
+  const pkgs = list;
   let status = resp.events.status.succeeded;
 
   for (const packageName of pkgs) {
@@ -674,9 +687,12 @@ cmd.clean = function(msg, resp) {
 cmd.publish = function*(msg, resp) {
   const publish = require('./lib/publish.js')(resp);
 
-  const distribution = getDistribution(msg, resp);
-
-  const pkgs = extractPackages(msg.data.packageRefs, distribution, resp).list;
+  const {list, distribution} = extractPackages(
+    msg.data.packageRefs,
+    getDistribution(msg),
+    resp
+  );
+  const pkgs = list;
   let status = resp.events.status.succeeded;
 
   /* Try to publish most of packages; continue with the next on error. */
@@ -705,9 +721,12 @@ cmd.publish = function*(msg, resp) {
 cmd.unpublish = function*(msg, resp) {
   const publish = require('./lib/publish.js')(resp);
 
-  const distribution = getDistribution(msg, resp);
-
-  const pkgs = extractPackages(msg.data.packageRefs, distribution, resp).list;
+  const {list, distribution} = extractPackages(
+    msg.data.packageRefs,
+    getDistribution(msg),
+    resp
+  );
+  const pkgs = list;
   let status = resp.events.status.succeeded;
 
   /* Try to unpublish most of packages; continue with the next on error. */
