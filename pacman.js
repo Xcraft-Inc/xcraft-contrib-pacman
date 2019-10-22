@@ -38,6 +38,12 @@ var extractPackages = function(packageRefs, distribution, resp) {
     var prev = null;
     pkgs.forEach(function(item) {
       if (!new RegExp(xUtils.regex.toRegexp(depsPattern)).test(item)) {
+        /* When null, use the distribution specified in the first package. */
+        if (!distribution) {
+          const def = definition.load(item, null, resp, null);
+          distribution = def.distribution;
+        }
+
         prev = item;
         results = _.union(results, [item]);
         return;
@@ -55,11 +61,6 @@ var extractPackages = function(packageRefs, distribution, resp) {
         def = definition.load(prev, null, resp, distribution);
       } catch (ex) {
         return;
-      }
-
-      /* When null, use the distribution specified in the first package. */
-      if (!distribution) {
-        distribution = def.distribution;
       }
 
       Object.keys(def.dependency).forEach(function(type) {
