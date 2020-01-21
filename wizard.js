@@ -315,17 +315,19 @@ exports.data = [
   {
     type: 'input',
     name: 'rulesArgsPostinst',
-    message: 'Arguments for the installer (to install):',
+    message:
+      'Arguments (or script if configure and arch != all) for the installer (to install):',
     when: function(answers) {
-      return answers.rulesType === 'exec';
+      return answers.rulesType === 'exec' || answers.rulesType === 'configure';
     },
   },
   {
     type: 'input',
     name: 'rulesArgsPrerm',
-    message: 'Arguments for the installer (to remove):',
+    message:
+      'Arguments (or script if configure and arch != all) for the installer (to remove):',
     when: function(answers) {
-      return answers.rulesType === 'exec';
+      return answers.rulesType === 'exec' || answers.rulesType === 'configure';
     },
   },
   {
