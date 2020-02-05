@@ -385,10 +385,6 @@ exports.data = [
     message:
       'Register an unusual location for PATH (keep empty with default PATH):',
     when: function(answers) {
-      if (answers.fileType === 'src') {
-        return false;
-      }
-
       return answers.rulesType !== 'meta';
     },
   },
