@@ -245,6 +245,7 @@ cmd['edit.data'] = function(msg, resp) {
   wizard.uriRef = def.data.get.ref;
   wizard.uriOut = def.data.get.out;
   wizard.uriExternals = def.data.get.externals;
+  wizard.prepareCmd = def.data.get.prepare;
   wizard.fileType = def.data.type;
   wizard.configureCmd = def.data.configure;
   wizard.rulesType = def.data.rules.type;

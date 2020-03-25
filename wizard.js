@@ -287,6 +287,14 @@ exports.data = [
   },
   {
     type: 'input',
+    name: 'prepareCmd',
+    message: 'Prepare src tree step (commands, script, ...):',
+    when: function(answers) {
+      return answers.fileType === 'src';
+    },
+  },
+  {
+    type: 'input',
     name: 'configureCmd',
     message: 'Configure step (commands, script, ...):',
     when: function(answers) {
