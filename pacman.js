@@ -14,7 +14,7 @@ const xWizard = require('xcraft-core-wizard');
 var cmd = {};
 
 var depsPattern = '@deps';
-var extractPackages = function(packageRefs, distribution, resp) {
+var extractPackages = function (packageRefs, distribution, resp) {
   var results = [];
   var pkgs = [];
 
@@ -29,14 +29,14 @@ var extractPackages = function(packageRefs, distribution, resp) {
   if (all) {
     pkgs = list.listProducts();
 
-    pkgs.forEach(function(item) {
+    pkgs.forEach(function (item) {
       results.push(item.name);
     });
   } else {
     pkgs = packageRefs.split(',');
 
     var prev = null;
-    pkgs.forEach(function(item) {
+    pkgs.forEach(function (item) {
       if (!new RegExp(xUtils.regex.toRegexp(depsPattern)).test(item)) {
         /* When null, use the distribution specified in the first package. */
         if (!distribution) {
@@ -63,7 +63,7 @@ var extractPackages = function(packageRefs, distribution, resp) {
         return;
       }
 
-      Object.keys(def.dependency).forEach(function(type) {
+      Object.keys(def.dependency).forEach(function (type) {
         if (def.dependency[type]) {
           var depsList = Object.keys(def.dependency[type]).join(
             ',' + depsPattern + ','
@@ -93,7 +93,7 @@ function getDistribution(msg) {
     : null;
 }
 
-cmd.list = function(msg, resp) {
+cmd.list = function (msg, resp) {
   resp.log.info('list of all products');
 
   var list = require('./lib/list.js');
@@ -108,7 +108,7 @@ cmd.list = function(msg, resp) {
  *
  * @param {Object} msg
  */
-cmd.edit = function(msg, resp) {
+cmd.edit = function (msg, resp) {
   var packageName = msg.data.packageName || '';
 
   msg.data.wizardImpl = xWizard.stringify(path.join(__dirname, './wizard.js'));
@@ -124,7 +124,7 @@ cmd.edit = function(msg, resp) {
   }
 };
 
-cmd['edit.header'] = function(msg, resp) {
+cmd['edit.header'] = function (msg, resp) {
   const pacmanConfig = require('xcraft-core-etc')(null, resp).load(
     'xcraft-contrib-pacman'
   );
@@ -162,7 +162,7 @@ cmd['edit.header'] = function(msg, resp) {
   resp.events.send(`pacman.edit.header.${msg.id}.finished`);
 };
 
-cmd['edit.askdep'] = function(msg, resp) {
+cmd['edit.askdep'] = function (msg, resp) {
   var wizard = {};
 
   var wizardName = 'askdep/' + msg.data.depType;
@@ -193,7 +193,7 @@ cmd['edit.askdep'] = function(msg, resp) {
   resp.events.send(`pacman.edit.askdep.${msg.id}.finished`);
 };
 
-cmd['edit.dependency'] = function(msg, resp) {
+cmd['edit.dependency'] = function (msg, resp) {
   var wizard = {
     version: '',
   };
@@ -236,7 +236,7 @@ cmd['edit.dependency'] = function(msg, resp) {
   resp.events.send(`pacman.edit.dependency.${msg.id}.finished`);
 };
 
-cmd['edit.data'] = function(msg, resp) {
+cmd['edit.data'] = function (msg, resp) {
   var wizard = {};
 
   var def = definition.load(msg.data.packageName, null, resp);
@@ -269,11 +269,11 @@ cmd['edit.data'] = function(msg, resp) {
 
   /* Ask for build dependencies only with source packages. */
   if (
-    msg.data.wizardAnswers.some(function(wizard) {
-      return Object.keys(wizard).some(function(it) {
+    msg.data.wizardAnswers.some(function (wizard) {
+      return Object.keys(wizard).some(function (it) {
         return (
           it === 'architecture' &&
-          wizard[it].some(function(arch) {
+          wizard[it].some(function (arch) {
             return arch === 'source';
           })
         );
@@ -295,7 +295,7 @@ cmd['edit.data'] = function(msg, resp) {
   resp.events.send(`pacman.edit.data.${msg.id}.finished`);
 };
 
-cmd['edit.env'] = function(msg, resp) {
+cmd['edit.env'] = function (msg, resp) {
   var wizard = {};
 
   /* Continue when the key is an empty string. */
@@ -330,7 +330,7 @@ cmd['edit.env'] = function(msg, resp) {
   resp.events.send(`pacman.edit.env.${msg.id}.finished`);
 };
 
-cmd['edit.save'] = function(msg, resp) {
+cmd['edit.save'] = function (msg, resp) {
   var create = require('./lib/edit.js');
 
   var wizardAnswers = msg.data.wizardAnswers;
@@ -338,7 +338,7 @@ cmd['edit.save'] = function(msg, resp) {
   create.pkgTemplate(
     wizardAnswers,
     resp,
-    function(wizardName, file) {
+    function (wizardName, file) {
       msg.data.wizardName = wizardName;
       msg.data.wizardDefaults = {};
 
@@ -348,7 +348,7 @@ cmd['edit.save'] = function(msg, resp) {
 
       resp.events.send('pacman.edit.added', msg.data);
     },
-    function(err, useChest) {
+    function (err, useChest) {
       if (err) {
         resp.log.err(err);
       }
@@ -360,7 +360,7 @@ cmd['edit.save'] = function(msg, resp) {
   );
 };
 
-cmd['edit.upload'] = function(msg, resp) {
+cmd['edit.upload'] = function (msg, resp) {
   const chestConfig = require('xcraft-core-etc')(null, resp).load(
     'xcraft-contrib-chest'
   );
@@ -381,7 +381,7 @@ cmd['edit.upload'] = function(msg, resp) {
     chestConfig.port
   );
 
-  resp.events.subscribe(`chest.send.${msg.id}.finished`, function() {
+  resp.events.subscribe(`chest.send.${msg.id}.finished`, function () {
     resp.events.unsubscribe(`chest.send.${msg.id}.finished`);
     resp.events.send(`pacman.edit.upload.${msg.id}.finished`);
     resp.events.send(`pacman.edit.${msg.data.wizardEditId}.finished`);
@@ -398,7 +398,7 @@ cmd['edit.upload'] = function(msg, resp) {
  *
  * @param {Object} msg
  */
-cmd.make = function*(msg, resp, next) {
+cmd.make = function* (msg, resp, next) {
   const pacmanConfig = require('xcraft-core-etc')(null, resp).load(
     'xcraft-contrib-pacman'
   );
@@ -416,7 +416,7 @@ cmd.make = function*(msg, resp, next) {
     }
 
     /* Transform all properties to a map. */
-    msg.data.packageArgs.forEach(arg => {
+    msg.data.packageArgs.forEach((arg) => {
       let match = arg.trim().match(/^p:(?:([^:]*):)?([^=]*)[=](.*)/);
       if (match) {
         if (match[1]) {
@@ -529,7 +529,7 @@ function* install(msg, resp, reinstall = false) {
  *
  * @param {Object} msg
  */
-cmd.install = function*(msg, resp) {
+cmd.install = function* (msg, resp) {
   yield* install(msg, resp, false);
 };
 
@@ -538,7 +538,7 @@ cmd.install = function*(msg, resp) {
  *
  * @param {Object} msg
  */
-cmd.reinstall = function*(msg, resp) {
+cmd.reinstall = function* (msg, resp) {
   yield* install(msg, resp, true);
 };
 
@@ -547,7 +547,7 @@ cmd.reinstall = function*(msg, resp) {
  *
  * @param {Object} msg
  */
-cmd.status = function*(msg, resp) {
+cmd.status = function* (msg, resp) {
   const install = require('./lib/install.js')(resp);
   const publish = require('./lib/publish.js')(resp);
 
@@ -592,7 +592,7 @@ cmd.status = function*(msg, resp) {
  *
  * @param {Object} msg
  */
-cmd.build = function*(msg, resp) {
+cmd.build = function* (msg, resp) {
   const build = require('./lib/build.js')(resp);
 
   let pkgs = [null];
@@ -626,7 +626,7 @@ cmd.build = function*(msg, resp) {
  *
  * @param {Object} msg
  */
-cmd.remove = function*(msg, resp) {
+cmd.remove = function* (msg, resp) {
   const remove = require('./lib/remove.js')(resp);
 
   const {list, distribution} = extractPackages(
@@ -658,7 +658,7 @@ cmd.remove = function*(msg, resp) {
  *
  * @param {Object} msg
  */
-cmd.clean = function(msg, resp) {
+cmd.clean = function (msg, resp) {
   const clean = require('./lib/clean.js')(resp);
 
   const {list} = extractPackages(
@@ -686,7 +686,7 @@ cmd.clean = function(msg, resp) {
  *
  * @param {Object} msg
  */
-cmd.publish = function*(msg, resp) {
+cmd.publish = function* (msg, resp) {
   const publish = require('./lib/publish.js')(resp);
 
   const {list, distribution} = extractPackages(
@@ -720,7 +720,7 @@ cmd.publish = function*(msg, resp) {
  *
  * @param {Object} msg
  */
-cmd.unpublish = function*(msg, resp) {
+cmd.unpublish = function* (msg, resp) {
   const publish = require('./lib/publish.js')(resp);
 
   const {list, distribution} = extractPackages(
@@ -754,7 +754,7 @@ cmd.unpublish = function*(msg, resp) {
  *
  * @returns {Object} The list and definitions of commands.
  */
-exports.xcraftCommands = function() {
+exports.xcraftCommands = function () {
   return {
     handlers: cmd,
     rc: {
