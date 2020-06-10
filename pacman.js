@@ -284,15 +284,26 @@ cmd['edit.data'] = function (msg, resp) {
     msg.data.idxDep = 0;
     msg.data.idxRange = 0;
     msg.data.depType = 'build';
-    msg.data.nextStep = 'edit.env';
+    msg.data.nextStep = 'edit.make';
 
     msg.data.nextCommand = 'pacman.edit.askdep';
   } else {
-    msg.data.nextCommand = 'pacman.edit.env';
+    msg.data.nextCommand = 'pacman.edit.make';
   }
 
   resp.events.send('pacman.edit.added', msg.data);
   resp.events.send(`pacman.edit.data.${msg.id}.finished`);
+};
+
+cmd['edit.make'] = (msg, resp) => {
+  /* Prepare for dependency wizards. */
+  msg.data.idxDep = 0;
+  msg.data.idxRange = 0;
+  msg.data.depType = 'make';
+  msg.data.nextStep = 'edit.env';
+  cmd['edit.askdep'](msg, resp);
+
+  resp.events.send(`pacman.edit.make.${msg.id}.finished`);
 };
 
 cmd['edit.env'] = function (msg, resp) {
@@ -781,6 +792,9 @@ exports.xcraftCommands = function () {
         parallel: true,
       },
       'edit.data': {
+        parallel: true,
+      },
+      'edit.make': {
         parallel: true,
       },
       'edit.env': {

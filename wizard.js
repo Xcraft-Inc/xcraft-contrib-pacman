@@ -180,6 +180,7 @@ var askdep = function (type) {
   ];
 };
 
+exports['askdep/make'] = askdep('make');
 exports['askdep/install'] = askdep('install');
 exports['askdep/build'] = askdep('build');
 
@@ -216,6 +217,7 @@ var dependency = function (type) {
   ];
 };
 
+exports['dependency/make'] = dependency('make');
 exports['dependency/install'] = dependency('install');
 exports['dependency/build'] = dependency('build');
 
