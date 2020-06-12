@@ -70,18 +70,23 @@ var extractPackages = function (packageRefs, distribution, resp, _pkgs = []) {
         return;
       }
 
-      Object.keys(def.dependency).forEach(function (type) {
-        if (def.dependency[type]) {
-          var depsList = Object.keys(def.dependency[type]).join(
-            ',' + depsPattern + ','
-          );
-          depsList += ',' + depsPattern;
+      Object.keys(def.dependency)
+        .filter((type) => type !== 'make')
+        .forEach(function (type) {
+          if (
+            def.dependency[type] &&
+            Object.keys(def.dependency[type]).length > 0
+          ) {
+            var depsList = Object.keys(def.dependency[type]).join(
+              ',' + depsPattern + ','
+            );
+            depsList += ',' + depsPattern;
 
-          /* Continue recursively for the dependencies of this dependency. */
-          deps[type] = extractPackages(depsList, distribution, resp);
-          results = _.union(results, deps[type].list);
-        }
-      });
+            /* Continue recursively for the dependencies of this dependency. */
+            deps[type] = extractPackages(depsList, distribution, resp, _pkgs);
+            results = _.union(results, deps[type].list);
+          }
+        });
 
       prev = null;
     });
