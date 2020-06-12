@@ -14,7 +14,7 @@ const xWizard = require('xcraft-core-wizard');
 var cmd = {};
 
 var depsPattern = '@deps';
-var extractPackages = function (packageRefs, distribution, resp) {
+var extractPackages = function (packageRefs, distribution, resp, _pkgs = []) {
   var results = [];
   var pkgs = [];
 
@@ -54,12 +54,19 @@ var extractPackages = function (packageRefs, distribution, resp) {
         return;
       }
 
+      if (_pkgs[prev]) {
+        prev = null;
+        return;
+      }
+
       /* Section to extract all dependencies for the current package. */
       var def = null;
       var deps = {};
       try {
         def = definition.load(prev, null, resp, distribution);
+        _pkgs[prev] = true;
       } catch (ex) {
+        prev = null;
         return;
       }
 
