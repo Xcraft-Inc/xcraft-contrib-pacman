@@ -27,6 +27,7 @@
     "lodash": "^4.17.5",
     "traverse": "^0.6.6",
     "gigawatts": "^4.0.5",
+    "goblin-overwatch": "^0.0.1",
     "xcraft-contrib-bootwpkg": "0.1.0",
     "xcraft-core-busclient": "^1.0.0",
     "xcraft-core-env": "^2.0.0",

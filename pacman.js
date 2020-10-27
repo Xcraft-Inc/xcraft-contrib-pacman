@@ -772,6 +772,19 @@ cmd.unpublish = function* (msg, resp) {
   resp.events.send(`pacman.unpublish.${msg.id}.finished`, status);
 };
 
+cmd['_postload'] = function* (msg, resp, next) {
+  try {
+    yield resp.command.send('overwatch.init', null, next);
+    resp.events.send(`pacman._postload.${msg.id}.finished`);
+  } catch (ex) {
+    resp.events.send(`pacman._postload.${msg.id}.error`, {
+      code: ex.code,
+      message: ex.message,
+      stack: ex.stack,
+    });
+  }
+};
+
 /**
  * Retrieve the list of available commands.
  *
