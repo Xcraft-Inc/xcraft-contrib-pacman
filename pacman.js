@@ -10,6 +10,7 @@ var utils = require('./lib/utils.js');
 var xUtils = require('xcraft-core-utils');
 var xEnv = require('xcraft-core-env');
 const xWizard = require('xcraft-core-wizard');
+const xPlatform = require('xcraft-core-platform');
 
 var cmd = {};
 
@@ -565,6 +566,26 @@ cmd.reinstall = function* (msg, resp) {
   yield* install(msg, resp, true);
 };
 
+cmd.upgrade = function* (msg, resp, next) {
+  const {getTargetRoot} = require('.');
+  const wpkg = require('xcraft-contrib-wpkg')(resp);
+  let status = resp.events.status.succeeded;
+
+  try {
+    const {arch = xPlatform.getToolchainArch()} = msg.data;
+    const {distribution} = msg.data;
+    const targetRoot = getTargetRoot(distribution, resp);
+
+    yield wpkg.update(arch, targetRoot, next);
+    yield wpkg.upgrade(arch, targetRoot, next);
+  } catch (ex) {
+    resp.log.err(ex.stack || ex);
+    status = resp.events.status.failed;
+  } finally {
+    resp.events.send(`pacman.upgrade.${msg.id}.finished`, status);
+  }
+};
+
 /**
  * Test if a package is installed or published.
  *
@@ -854,6 +875,14 @@ exports.xcraftCommands = function () {
         options: {
           params: {
             optional: ['packageRefs', 'distribution', 'prodRoot'],
+          },
+        },
+      },
+      'upgrade': {
+        desc: 'upgrade the packages',
+        options: {
+          params: {
+            optional: ['arch', 'distribution'],
           },
         },
       },
