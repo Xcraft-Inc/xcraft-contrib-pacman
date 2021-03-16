@@ -10,7 +10,7 @@ set "DISTRIBUTION=<PACMAN.DISTRIBUTION>"
 set WPKGACT="%1"
 
 where xcraft-peon.bat >nul 2>nul
-if not errorlevel 0 (
+if %errorlevel% neq 0 (
   if [%HOOK%]==[global] exit 0
   @echo xcraft-peon is mandatory but not available in PATH
   exit 1
