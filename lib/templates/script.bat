@@ -9,8 +9,9 @@ set "SYSROOT=<PACMAN.SYSROOT>"
 set "DISTRIBUTION=<PACMAN.DISTRIBUTION>"
 set WPKGACT="%1"
 
-where xcraft-peon.bat >nul 2>nul
-if %errorlevel% neq 0 (
+set found=0
+for %%x in (xcraft-peon.bat) do if not [%%~$PATH:x]==[] set found=1
+if [%found%]==[0] (
   if [%HOOK%]==[global] exit 0
   @echo xcraft-peon is mandatory but not available in PATH
   exit 1
@@ -24,7 +25,7 @@ if [%1]==[cmake] (
 if [%NAME%]==[] set NAME="%2"
 if [%VERSION%]==[] set VERSION="%3"
 
-set _DISTRIBUTION=%DISTRIBUTION:~1,-1%
+if not "[%DISTRIBUTION%]"=="[]" set _DISTRIBUTION=%DISTRIBUTION:~1,-1%
 if [%_DISTRIBUTION%]==[PACMAN.DISTRIBUTION] set DISTRIBUTION=%PEON_DISTRIBUTION%
 
 xcraft-peon.bat "%CD%" "%SHARE%" "%HOOK%" %ACTION% "%WPKGACT%" "%CMAKE_BINARY_DIR%" "%NAME%" "%VERSION%" "%SYSROOT%" "%DISTRIBUTION%"
