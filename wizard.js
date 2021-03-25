@@ -263,6 +263,7 @@ exports.data = [
       switch (uriObj.protocol) {
         case 'http:':
         case 'https:':
+        case 'ssh+git:':
         case 'chest:': {
           return true;
         }
