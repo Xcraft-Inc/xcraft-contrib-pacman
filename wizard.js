@@ -401,10 +401,27 @@ exports.data = [
   },
 ];
 
+exports.rulesEnv = [
+  {
+    type: 'input',
+    name: 'key1',
+    message:
+      'Insert the name of a specific environment variable for building (or nothing to continue):',
+  },
+  {
+    type: 'name',
+    name: 'value',
+    message: 'Value of the environment variable:',
+    when: function (answers) {
+      return !!answers.key1.trim().length;
+    },
+  },
+];
+
 exports.env = [
   {
     type: 'input',
-    name: 'key',
+    name: 'key0',
     message:
       'Insert the name of a specific environment variable (or nothing to continue):',
   },
@@ -413,7 +430,7 @@ exports.env = [
     name: 'value',
     message: 'Value of the environment variable:',
     when: function (answers) {
-      return !!answers.key.trim().length;
+      return !!answers.key0.trim().length;
     },
   },
 ];

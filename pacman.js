@@ -264,6 +264,7 @@ cmd['edit.data'] = function (msg, resp) {
   wizard.rulesType = def.data.rules.type;
   wizard.rulesTest = def.data.rules.test;
   wizard.rulesLocation = def.data.rules.location;
+  wizard.rulesEnv = def.data.rules.env;
   wizard.rulesArgsPostinst = def.data.rules.args.postinst;
   wizard.rulesArgsPrerm = def.data.rules.args.prerm;
   wizard.rulesArgsMakeall = def.data.rules.args.makeall;
@@ -313,10 +314,45 @@ cmd['edit.make'] = (msg, resp) => {
   msg.data.idxDep = 0;
   msg.data.idxRange = 0;
   msg.data.depType = 'make';
-  msg.data.nextStep = 'edit.env';
+  msg.data.nextStep = 'edit.rulesEnv';
   cmd['edit.askdep'](msg, resp);
 
   resp.events.send(`pacman.edit.make.${msg.id}.finished`);
+};
+
+cmd['edit.rulesEnv'] = function (msg, resp) {
+  var wizard = {};
+
+  /* Continue when the key is an empty string. */
+  if (
+    msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].hasOwnProperty(
+      'key1'
+    ) &&
+    !msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].key1.length
+  ) {
+    cmd[msg.data.nextStep](msg, resp);
+    resp.events.send(`pacman.edit.rulesEnv.${msg.id}.finished`);
+    return;
+  }
+
+  var def = definition.load(msg.data.packageName, null, resp);
+  var keys = Object.keys(def.data.rules.env);
+
+  if (keys.length > msg.data.idxEnv) {
+    var key = keys[msg.data.idxEnv];
+    wizard.key1 = key;
+    wizard.value = def.data.rules.env[key];
+    msg.data.idxEnv++;
+  }
+
+  msg.data.wizardName = 'rulesEnv';
+  msg.data.wizardDefaults = wizard;
+  msg.data.nextStep = 'edit.env';
+
+  msg.data.nextCommand = 'pacman.edit.rulesEnv';
+
+  resp.events.send('pacman.edit.added', msg.data);
+  resp.events.send(`pacman.edit.rulesEnv.${msg.id}.finished`);
 };
 
 cmd['edit.env'] = function (msg, resp) {
@@ -325,9 +361,9 @@ cmd['edit.env'] = function (msg, resp) {
   /* Continue when the key is an empty string. */
   if (
     msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].hasOwnProperty(
-      'key'
+      'key0'
     ) &&
-    !msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].key.length
+    !msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].key0.length
   ) {
     cmd[msg.data.nextStep](msg, resp);
     resp.events.send(`pacman.edit.env.${msg.id}.finished`);
@@ -339,7 +375,7 @@ cmd['edit.env'] = function (msg, resp) {
 
   if (keys.length > msg.data.idxEnv) {
     var key = keys[msg.data.idxEnv];
-    wizard.key = key;
+    wizard.key0 = key;
     wizard.value = def.data.env.other[key];
     msg.data.idxEnv++;
   }
@@ -841,6 +877,9 @@ exports.xcraftCommands = function () {
         parallel: true,
       },
       'edit.make': {
+        parallel: true,
+      },
+      'edit.rulesEnv': {
         parallel: true,
       },
       'edit.env': {
