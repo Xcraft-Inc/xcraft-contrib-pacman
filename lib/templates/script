@@ -2,6 +2,7 @@
 set -e
 
 NAME='<PACMAN.NAME>'
+SUBNAME='<PACMAN.SUBNAME>'
 VERSION='<PACMAN.VERSION>'
 SHARE='<PACMAN.SHARE>'
 HOOK='<PACMAN.HOOK>'
@@ -16,7 +17,15 @@ if ! command -v xcraft-peon; then
   exit 1
 fi
 
+
 [ "$1" = cmake ] && CMAKE_BINARY_DIR="$2" || CMAKE_BINARY_DIR=
+
+_SUBNAME="$(echo $SUBNAME | tr -d '<>')"
+if [ -n "$_SUBNAME" ] && [ "$_SUBNAME" != 'PACMAN.SUBNAME' ]; then
+  NAME="$NAME-$SUBNAME"
+  SHARE="$SHARE-$SUBNAME"
+fi
+
 [ -z "$NAME" ] && NAME="$2"
 [ -z "$VERSION" ] && VERSION="$3"
 

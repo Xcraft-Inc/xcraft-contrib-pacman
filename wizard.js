@@ -167,6 +167,14 @@ exports.header = [
     message: 'Long description',
     loktharType: 'multi-line',
   },
+  {
+    type: 'input',
+    name: 'subPackages',
+    message: `Sub-packages list (comma separated, like: 'runtime*,dev,doc')`,
+    default: 'runtime*',
+    when: (answers) => answers.architecture.indexOf('source') !== -1,
+    filter: (answer) => answer.split(','),
+  },
 ];
 
 var askdep = function (type) {
@@ -213,6 +221,15 @@ var dependency = function (type) {
       message: 'Architectures where this dependency must be applied (or empty)',
       choices: () => pacmanConfig.architectures.map((arch) => ({name: arch})),
       filter: (answer) => answer || [],
+    },
+    {
+      type: 'input',
+      name: 'subPackages',
+      message: 'Sub-packages where this dependency must be associated',
+      default: '',
+      when: function () {
+        return type === 'install';
+      },
     },
   ];
 };

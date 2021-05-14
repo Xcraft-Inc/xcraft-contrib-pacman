@@ -149,6 +149,7 @@ cmd['edit.header'] = function (msg, resp) {
 
   var def = definition.load(msg.data.packageName, null, resp);
 
+  wizard.subPackages = def.subpackage.join(',');
   wizard.version = def.version;
   wizard.tool = def.distribution === pacmanConfig.pkgToolchainRepository;
   if (!wizard.tool) {
@@ -234,6 +235,11 @@ cmd['edit.dependency'] = function (msg, resp) {
         def.dependency[msg.data.depType][key][msg.data.idxRange].version;
       wizard.architecture =
         def.dependency[msg.data.depType][key][msg.data.idxRange].architecture;
+      if (def.dependency[msg.data.depType][key][msg.data.idxRange].subpackage) {
+        wizard.subPackages = def.dependency[msg.data.depType][key][
+          msg.data.idxRange
+        ].subpackage.join(',');
+      }
       msg.data.idxRange++;
     } else {
       msg.data.idxDep++;

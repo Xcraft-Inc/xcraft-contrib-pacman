@@ -1,6 +1,7 @@
 @echo off
 
 set "NAME=<PACMAN.NAME>"
+set "SUBNAME=<PACMAN.SUBNAME>"
 set "VERSION=<PACMAN.VERSION>"
 set "SHARE=<PACMAN.SHARE>"
 set "HOOK=<PACMAN.HOOK>"
@@ -22,6 +23,14 @@ if [%1]==[cmake] (
 ) else (
   set CMAKE_BINARY_DIR=
 )
+
+
+if not "[%SUBNAME%]"=="[]" set _SUBNAME=%SUBNAME:~1,-1%
+if not [%_SUBNAME%]==[] if not [%_SUBNAME%]==[PACMAN.SUBNAME] (
+  set NAME="%NAME%-%SUBNAME%"
+  set SHARE="%SHARE%-%SUBNAME%"
+)
+
 if [%NAME%]==[] set NAME="%2"
 if [%VERSION%]==[] set VERSION="%3"
 
