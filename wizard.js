@@ -35,7 +35,7 @@ exports.header = [
 
       if (/-(src|dev)$/.test(value)) {
         return (
-          "A package name can not be terminated by '-src' or 'dev' which are " +
+          "A package name can not be terminated by '-src' or '-dev' which are " +
           'reserved words.'
         );
       }
