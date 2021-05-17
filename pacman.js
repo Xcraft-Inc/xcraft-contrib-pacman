@@ -539,6 +539,7 @@ cmd.make = function* (msg, resp, next) {
 
   for (const packageRef of pkgs) {
     const pkg = utils.parsePkgRef(packageRef);
+    pkg.name = pkg.name.replace(/-dev$/, '');
 
     resp.log.info(
       'make the wpkg package for ' + pkg.name + ' on architecture: ' + pkg.arch

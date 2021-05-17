@@ -33,10 +33,10 @@ exports.header = [
         );
       }
 
-      if (/-src$/.test(value)) {
+      if (/-(src|dev)$/.test(value)) {
         return (
-          "A package name can not be terminated by '-src' which is " +
-          'a reserved word.'
+          "A package name can not be terminated by '-src' or 'dev' which are " +
+          'reserved words.'
         );
       }
 
