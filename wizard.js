@@ -1,6 +1,8 @@
 'use strict';
 
 var inquirer = require('inquirer');
+const path = require('path');
+const utils = require('xcraft-core-utils');
 
 var xFs = require('xcraft-core-fs');
 var xPeon = require('xcraft-contrib-peon');
@@ -199,7 +201,20 @@ var dependency = function (type) {
       name: 'dependency/' + type,
       message: "Package's name",
       choices: function () {
-        return xFs.lsdir(xcraftConfig.pkgProductsRoot);
+        return xFs.lsdir(xcraftConfig.pkgProductsRoot).reduce((list, dir) => {
+          list.push(dir);
+          const def = utils.yaml.fromFile(
+            path.join(xcraftConfig.pkgProductsRoot, dir, 'config.yaml')
+          );
+          if (def.subpackage) {
+            list.push(
+              ...def.subpackage
+                .filter((sub) => sub.indexOf('*') === -1)
+                .map((sub) => `${dir}-${sub}`)
+            );
+          }
+          return list;
+        }, []);
       },
     },
     {
