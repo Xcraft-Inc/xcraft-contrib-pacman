@@ -210,6 +210,7 @@ var dependency = function (type) {
             list.push(
               ...def.subpackage
                 .filter((sub) => sub.indexOf('*') === -1)
+                .map((sub) => sub.replace(/:.*/, ''))
                 .map((sub) => `${dir}-${sub}`)
             );
           }
