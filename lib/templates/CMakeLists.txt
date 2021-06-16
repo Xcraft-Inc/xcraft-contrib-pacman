@@ -1,8 +1,9 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.20)
 
 project(<PACKAGE.NAME>)
 
-set(CPACK_SOURCE_GENERATOR "TGZ")
+set(CPACK_THREADS "4")
+set(CPACK_SOURCE_GENERATOR "TZST")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "<PACKAGE.NAME>_<PACKAGE.VERSION>")
 
 include(CPack)
