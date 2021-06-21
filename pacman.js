@@ -15,7 +15,13 @@ const xPlatform = require('xcraft-core-platform');
 var cmd = {};
 
 var depsPattern = '@deps';
-var extractPackages = function (packageRefs, distribution, resp, _pkgs = []) {
+var extractPackages = function (
+  packageRefs,
+  distribution,
+  resp,
+  withMake = false,
+  _pkgs = []
+) {
   var results = [];
   var pkgs = [];
 
@@ -72,7 +78,7 @@ var extractPackages = function (packageRefs, distribution, resp, _pkgs = []) {
       }
 
       Object.keys(def.dependency)
-        .filter((type) => type !== 'make')
+        .filter((type) => (withMake ? true : type !== 'make'))
         .forEach(function (type) {
           if (
             def.dependency[type] &&
@@ -84,7 +90,13 @@ var extractPackages = function (packageRefs, distribution, resp, _pkgs = []) {
             depsList += ',' + depsPattern;
 
             /* Continue recursively for the dependencies of this dependency. */
-            deps[type] = extractPackages(depsList, distribution, resp, _pkgs);
+            deps[type] = extractPackages(
+              depsList,
+              distribution,
+              resp,
+              withMake,
+              _pkgs
+            );
             results = _.union(results, deps[type].list);
           }
         });
@@ -836,6 +848,27 @@ cmd.unpublish = function* (msg, resp) {
   resp.events.send(`pacman.unpublish.${msg.id}.finished`, status);
 };
 
+cmd.graph = function* (msg, resp) {
+  const {graph} = require('./lib/graph.js')(resp);
+
+  const {list, distribution} = extractPackages(
+    msg.data.packageNames,
+    getDistribution(msg),
+    resp,
+    true
+  );
+  let status = resp.events.status.succeeded;
+
+  try {
+    yield graph(list, distribution);
+  } catch (ex) {
+    resp.log.err(ex.stack || ex);
+    status = resp.events.status.failed;
+  }
+
+  resp.events.send(`pacman.graph.${msg.id}.finished`, status);
+};
+
 cmd['_postload'] = function* (msg, resp, next) {
   try {
     yield resp.command.send('overwatch.init', null, next);
@@ -975,6 +1008,15 @@ exports.xcraftCommands = function () {
       },
       'clean': {
         desc: 'remove the temporary package files',
+        options: {
+          params: {
+            optional: ['packageNames', 'distribution'],
+          },
+        },
+      },
+      'graph': {
+        desc: 'generate the dependency graph for the package(s)',
+        parallel: true,
         options: {
           params: {
             optional: ['packageNames', 'distribution'],
