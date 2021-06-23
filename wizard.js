@@ -432,6 +432,15 @@ exports.data = [
       return answers.rulesType !== 'meta';
     },
   },
+  {
+    type: 'input',
+    name: 'registerPathSub',
+    message:
+      'Register an unusual location for PATH (subPackages variant as JS Object):',
+    when: function (answers) {
+      return answers.rulesType !== 'meta';
+    },
+  },
 ];
 
 exports.rulesEnv = [

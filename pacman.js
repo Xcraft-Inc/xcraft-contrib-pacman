@@ -290,6 +290,14 @@ cmd['edit.data'] = function (msg, resp) {
   wizard.rulesArgsMakeinstall = def.data.rules.args.makeinstall;
   wizard.deployCmd = def.data.deploy;
   wizard.registerPath = def.data.env.path.join(',');
+  const registerPathSub = {};
+  Object.keys(def.data.env)
+    .filter((key) => key.startsWith('path/'))
+    .forEach((key) => {
+      const sub = key.replace(/.*[/]/, '');
+      registerPathSub[sub] = def.data.env[key].join(',');
+    });
+  wizard.registerPathSub = JSON.stringify(registerPathSub);
   wizard.embedded = def.data.embedded;
   if (def.data.runtime) {
     wizard.runtimeConfigureCmd = def.data.runtime.configure;
