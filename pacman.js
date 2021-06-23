@@ -3,6 +3,7 @@
 var path = require('path');
 var _ = require('lodash');
 
+const watt = require('gigawatts');
 var definition = require('./lib/def.js');
 var list = require('./lib/list.js');
 var utils = require('./lib/utils.js');
@@ -880,6 +881,8 @@ cmd.graph = function* (msg, resp) {
 cmd.version = function* (msg, resp) {
   const clc = require('cli-color');
   const url = require('url');
+  const semver = require('semver');
+  const clone = require('clone');
   const urlExist = require('url-exist');
   const xFtp = require('xcraft-core-ftp');
   const xPeonUtils = require('xcraft-contrib-peon/lib/utils.js');
@@ -896,42 +899,70 @@ cmd.version = function* (msg, resp) {
   const X = clc.redBright('⨯');
   const H = clc.magentaBright('?');
 
+  const checkVersion = watt(function* (type, uri) {
+    let status = X;
+    switch (type) {
+      case 'http': {
+        if (yield urlExist(uri)) {
+          status = V;
+        }
+        break;
+      }
+      case 'ftp': {
+        try {
+          const uriObj = url.parse(uri);
+          const size = yield xFtp.size(uriObj);
+          status = size > 0 ? V : H;
+        } catch (ex) {
+          status = X;
+        }
+        break;
+      }
+      default:
+        status = H;
+    }
+    return status;
+  });
+
   for (const [, packageRef] of list.entries()) {
     try {
       const pkg = utils.parsePkgRef(packageRef);
       const packageDef = definition.load(pkg.name, {}, resp, null);
-      const getObj = utils.makeGetObj(packageDef);
+      const getObj = utils.makeGetObj(clone(packageDef));
       const type = xPeonUtils.typeFromUri(getObj);
       if (!type) {
         continue;
       }
 
-      let exists = X;
-      switch (type) {
-        case 'http': {
-          if (yield urlExist(getObj.uri)) {
-            exists = V;
-          }
-          break;
-        }
-        case 'ftp': {
-          try {
-            const uriObj = url.parse(getObj.uri);
-            const size = yield xFtp.size(uriObj);
-            exists = size > 0 ? V : H;
-          } catch (ex) {
-            exists = X;
-          }
-          break;
-        }
-        default:
-          exists = H;
+      const versions = [];
+      versions.push(packageDef.$version);
+
+      if (getObj.uri !== packageDef.data.get.uri) {
+        versions.push(semver.inc(versions[0], 'patch'));
+        versions.push(semver.inc(versions[0], 'minor'));
+        versions.push(semver.inc(versions[0], 'major'));
       }
-      resp.log.info(
-        `[${exists}] ${type.toUpperCase()}${new Array(5 - type.length).join(
-          ' '
-        )} ${pkg.name} v${packageDef.$version}`
-      );
+
+      for (const version of versions) {
+        if (!version) {
+          continue;
+        }
+        packageDef.$version = version;
+        const getObj = utils.makeGetObj(clone(packageDef));
+        const status = yield checkVersion(type, getObj.uri);
+
+        if (version === versions[0]) {
+          resp.log.info(
+            `[${status}] ${type.toUpperCase()}${new Array(5 - type.length).join(
+              ' '
+            )} ${pkg.name} v${version}`
+          );
+        } else if (version !== versions[versions.length - 1]) {
+          resp.log.info(` |- [${status}] v${version}`);
+        } else {
+          resp.log.info(` '- [${status}] v${version}`);
+        }
+      }
     } catch (ex) {
       resp.log.err(ex.stack || ex);
       status = resp.events.status.failed;
