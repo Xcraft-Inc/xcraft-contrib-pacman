@@ -877,6 +877,70 @@ cmd.graph = function* (msg, resp) {
   resp.events.send(`pacman.graph.${msg.id}.finished`, status);
 };
 
+cmd.version = function* (msg, resp) {
+  const clc = require('cli-color');
+  const url = require('url');
+  const urlExist = require('url-exist');
+  const xFtp = require('xcraft-core-ftp');
+  const xPeonUtils = require('xcraft-contrib-peon/lib/utils.js');
+
+  const {list} = extractPackages(
+    msg.data.packageNames,
+    getDistribution(msg),
+    resp,
+    true
+  );
+  let status = resp.events.status.succeeded;
+
+  const V = clc.greenBright('✓');
+  const X = clc.redBright('⨯');
+  const H = clc.magentaBright('?');
+
+  for (const [, packageRef] of list.entries()) {
+    try {
+      const pkg = utils.parsePkgRef(packageRef);
+      const packageDef = definition.load(pkg.name, {}, resp, null);
+      const getObj = utils.makeGetObj(packageDef);
+      const type = xPeonUtils.typeFromUri(getObj);
+      if (!type) {
+        continue;
+      }
+
+      let exists = X;
+      switch (type) {
+        case 'http': {
+          if (yield urlExist(getObj.uri)) {
+            exists = V;
+          }
+          break;
+        }
+        case 'ftp': {
+          try {
+            const uriObj = url.parse(getObj.uri);
+            const size = yield xFtp.size(uriObj);
+            exists = size > 0 ? V : H;
+          } catch (ex) {
+            exists = X;
+          }
+          break;
+        }
+        default:
+          exists = H;
+      }
+      resp.log.info(
+        `[${exists}] ${type.toUpperCase()}${new Array(5 - type.length).join(
+          ' '
+        )} ${pkg.name} v${packageDef.$version}`
+      );
+    } catch (ex) {
+      resp.log.err(ex.stack || ex);
+      status = resp.events.status.failed;
+    }
+  }
+
+  resp.events.send(`pacman.version.${msg.id}.finished`, status);
+};
+
 cmd['_postload'] = function* (msg, resp, next) {
   try {
     yield resp.command.send('overwatch.init', null, next);
@@ -1028,6 +1092,15 @@ exports.xcraftCommands = function () {
         options: {
           params: {
             optional: ['packageNames', 'distribution'],
+          },
+        },
+      },
+      'version': {
+        desc: 'read and test the version of the package(s)',
+        parallel: true,
+        options: {
+          params: {
+            optional: ['packageNames'],
           },
         },
       },
