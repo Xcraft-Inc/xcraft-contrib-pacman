@@ -1064,7 +1064,7 @@ exports.xcraftCommands = function () {
         desc: 'upgrade the packages',
         options: {
           params: {
-            optional: ['arch', 'distribution'],
+            optional: ['distribution', 'arch'],
           },
         },
       },
