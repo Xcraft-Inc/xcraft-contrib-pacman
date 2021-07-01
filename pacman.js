@@ -119,7 +119,7 @@ function getDistribution(msg) {
     : null;
 }
 
-const wrapOverwatch = watt(function* (msg, resp, func, next) {
+const wrapOverwatch = watt(function* (func, msg, resp, next) {
   func = watt(func);
 
   if (msg._ignoreOverwatch) {
@@ -579,31 +579,35 @@ cmd.make = function* (msg, resp, next) {
     return;
   }
 
-  yield wrapOverwatch(msg, resp, function* () {
-    for (const packageRef of pkgs) {
-      const pkg = utils.parsePkgRef(packageRef);
-      pkg.name = pkg.name.replace(/-dev$/, '');
+  yield wrapOverwatch(
+    function* () {
+      for (const packageRef of pkgs) {
+        const pkg = utils.parsePkgRef(packageRef);
+        pkg.name = pkg.name.replace(/-dev$/, '');
 
-      resp.log.info(
-        'make the wpkg package for ' +
-          pkg.name +
-          ' on architecture: ' +
-          pkg.arch
-      );
+        resp.log.info(
+          'make the wpkg package for ' +
+            pkg.name +
+            ' on architecture: ' +
+            pkg.arch
+        );
 
-      let pkgArgs = packageArgsOther;
-      if (packageArgs.hasOwnProperty(pkg.name)) {
-        pkgArgs = packageArgs[pkg.name];
+        let pkgArgs = packageArgsOther;
+        if (packageArgs.hasOwnProperty(pkg.name)) {
+          pkgArgs = packageArgs[pkg.name];
+        }
+
+        try {
+          yield make.package(pkg.name, pkg.arch, pkgArgs, null);
+        } catch (ex) {
+          resp.log.err(ex.stack || ex);
+          status = resp.events.status.failed;
+        }
       }
-
-      try {
-        yield make.package(pkg.name, pkg.arch, pkgArgs, null);
-      } catch (ex) {
-        resp.log.err(ex.stack || ex);
-        status = resp.events.status.failed;
-      }
-    }
-  });
+    },
+    msg,
+    resp
+  );
 
   resp.events.send(`pacman.make.${msg.id}.finished`, status);
 };
@@ -742,17 +746,21 @@ cmd.build = function* (msg, resp, next) {
   let status = resp.events.status.succeeded;
 
   /* Try to build most of packages; continue with the next on error. */
-  yield wrapOverwatch(msg, resp, function* () {
-    for (const packageRef of pkgs) {
-      try {
-        yield build.package(packageRef, distribution);
-        xEnv.devrootUpdate(distribution);
-      } catch (ex) {
-        resp.log.err(ex.stack || ex);
-        status = resp.events.status.failed;
+  yield wrapOverwatch(
+    function* () {
+      for (const packageRef of pkgs) {
+        try {
+          yield build.package(packageRef, distribution);
+          xEnv.devrootUpdate(distribution);
+        } catch (ex) {
+          resp.log.err(ex.stack || ex);
+          status = resp.events.status.failed;
+        }
       }
-    }
-  });
+    },
+    msg,
+    resp
+  );
 
   resp.events.send(`pacman.build.${msg.id}.finished`, status);
 };
