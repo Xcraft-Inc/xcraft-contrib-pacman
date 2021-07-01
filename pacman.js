@@ -119,6 +119,27 @@ function getDistribution(msg) {
     : null;
 }
 
+const wrapOverwatch = watt(function* (msg, resp, func, next) {
+  func = watt(func);
+
+  if (msg._ignoreOverwatch) {
+    yield func();
+    return;
+  }
+
+  try {
+    yield resp.command.send('overwatch.clear-all-errors', null, next);
+    yield func();
+  } finally {
+    const {data} = yield resp.command.send(
+      'overwatch.get-all-errors',
+      null,
+      next
+    );
+    utils.errorReporting(resp)(data);
+  }
+});
+
 cmd.list = function (msg, resp) {
   resp.log.info('list of all products');
 
@@ -558,26 +579,31 @@ cmd.make = function* (msg, resp, next) {
     return;
   }
 
-  for (const packageRef of pkgs) {
-    const pkg = utils.parsePkgRef(packageRef);
-    pkg.name = pkg.name.replace(/-dev$/, '');
+  yield wrapOverwatch(msg, resp, function* () {
+    for (const packageRef of pkgs) {
+      const pkg = utils.parsePkgRef(packageRef);
+      pkg.name = pkg.name.replace(/-dev$/, '');
 
-    resp.log.info(
-      'make the wpkg package for ' + pkg.name + ' on architecture: ' + pkg.arch
-    );
+      resp.log.info(
+        'make the wpkg package for ' +
+          pkg.name +
+          ' on architecture: ' +
+          pkg.arch
+      );
 
-    let pkgArgs = packageArgsOther;
-    if (packageArgs.hasOwnProperty(pkg.name)) {
-      pkgArgs = packageArgs[pkg.name];
+      let pkgArgs = packageArgsOther;
+      if (packageArgs.hasOwnProperty(pkg.name)) {
+        pkgArgs = packageArgs[pkg.name];
+      }
+
+      try {
+        yield make.package(pkg.name, pkg.arch, pkgArgs, null);
+      } catch (ex) {
+        resp.log.err(ex.stack || ex);
+        status = resp.events.status.failed;
+      }
     }
-
-    try {
-      yield make.package(pkg.name, pkg.arch, pkgArgs, null);
-    } catch (ex) {
-      resp.log.err(ex.stack || ex);
-      status = resp.events.status.failed;
-    }
-  }
+  });
 
   resp.events.send(`pacman.make.${msg.id}.finished`, status);
 };
@@ -700,7 +726,7 @@ cmd.status = function* (msg, resp) {
  *
  * @param {Object} msg
  */
-cmd.build = function* (msg, resp) {
+cmd.build = function* (msg, resp, next) {
   const build = require('./lib/build.js')(resp);
 
   let pkgs = [null];
@@ -716,15 +742,17 @@ cmd.build = function* (msg, resp) {
   let status = resp.events.status.succeeded;
 
   /* Try to build most of packages; continue with the next on error. */
-  for (const packageRef of pkgs) {
-    try {
-      yield build.package(packageRef, distribution);
-      xEnv.devrootUpdate(distribution);
-    } catch (ex) {
-      resp.log.err(ex.stack || ex);
-      status = resp.events.status.failed;
+  yield wrapOverwatch(msg, resp, function* () {
+    for (const packageRef of pkgs) {
+      try {
+        yield build.package(packageRef, distribution);
+        xEnv.devrootUpdate(distribution);
+      } catch (ex) {
+        resp.log.err(ex.stack || ex);
+        status = resp.events.status.failed;
+      }
     }
-  }
+  });
 
   resp.events.send(`pacman.build.${msg.id}.finished`, status);
 };
