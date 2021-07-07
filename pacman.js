@@ -167,6 +167,23 @@ cmd['list-status'] = function* (msg, resp, next) {
   }
 };
 
+cmd.search = function* (msg, resp, next) {
+  const wpkg = require('xcraft-contrib-wpkg')(resp);
+  let list = [];
+
+  try {
+    const {arch = xPlatform.getToolchainArch()} = msg.data;
+    const {pattern} = msg.data;
+    const distribution = getDistribution(msg);
+
+    list = yield wpkg.search(arch, distribution, pattern, next);
+  } catch (ex) {
+    resp.events.send(`pacman.search.${msg.id}.error`, ex);
+  } finally {
+    resp.events.send(`pacman.search.${msg.id}.finished`, list);
+  }
+};
+
 /**
  * Create a new package template or modify an existing package config file.
  *
@@ -1056,7 +1073,17 @@ exports.xcraftCommands = function () {
         desc: 'list status of installed packages',
         options: {
           params: {
-            optional: ['distribution', 'pattern', 'arch'],
+            optional: ['pattern', 'distribution', 'arch'],
+          },
+        },
+      },
+      'search': {
+        parallel: true,
+        desc: 'search files installed packages',
+        options: {
+          params: {
+            required: 'pattern',
+            optional: ['distribution', 'arch'],
           },
         },
       },
