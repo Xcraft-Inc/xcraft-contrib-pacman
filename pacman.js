@@ -801,6 +801,10 @@ cmd.build = function* (msg, resp, next) {
 };
 
 cmd['zero-build'] = function* (msg, resp) {
+  const pacmanConfig = require('xcraft-core-etc')(null, resp).load(
+    'xcraft-contrib-pacman'
+  );
+
   const build = require('./lib/build.js')(resp);
 
   const distribution = getDistribution(msg);
@@ -811,7 +815,7 @@ cmd['zero-build'] = function* (msg, resp) {
     resp.log.info(
       clc.blueBright.bold(
         `Go to the source directory of ${msg.data.packageRef} in the ${
-          distribution || 'toolchain'
+          distribution || pacmanConfig.pkgToolchainRepository
         } distribution.\n` +
           `A 'source-debug-env.sh' script can be used in order to manually load the build environment.`
       ) + ' '
