@@ -150,6 +150,23 @@ cmd.list = function (msg, resp) {
   resp.events.send(`pacman.list.${msg.id}.finished`);
 };
 
+cmd['list-status'] = function* (msg, resp, next) {
+  const wpkg = require('xcraft-contrib-wpkg')(resp);
+  let list = [];
+
+  try {
+    const {arch = xPlatform.getToolchainArch()} = msg.data;
+    const {pattern} = msg.data;
+    const distribution = getDistribution(msg);
+
+    list = yield wpkg.list(arch, distribution, pattern, next);
+  } catch (ex) {
+    resp.events.send(`pacman.list-status.${msg.id}.error`, ex);
+  } finally {
+    resp.events.send(`pacman.list-status.${msg.id}.finished`, list);
+  }
+};
+
 /**
  * Create a new package template or modify an existing package config file.
  *
@@ -1033,6 +1050,15 @@ exports.xcraftCommands = function () {
       'list': {
         parallel: true,
         desc: 'list all available packages',
+      },
+      'list-status': {
+        parallel: true,
+        desc: 'list status of installed packages',
+        options: {
+          params: {
+            optional: ['distribution', 'pattern', 'arch'],
+          },
+        },
       },
       'edit': {
         desc: 'create or edit a package definition',
