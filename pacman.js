@@ -2,6 +2,7 @@
 
 var path = require('path');
 var _ = require('lodash');
+const clc = require('cli-color');
 
 const watt = require('gigawatts');
 var definition = require('./lib/def.js');
@@ -799,6 +800,31 @@ cmd.build = function* (msg, resp, next) {
   resp.events.send(`pacman.build.${msg.id}.finished`, status);
 };
 
+cmd['zero-build'] = function* (msg, resp) {
+  const build = require('./lib/build.js')(resp);
+
+  const distribution = getDistribution(msg);
+  process.env.PEON_DEBUG_ENV = '1';
+
+  try {
+    yield build.package(msg.data.packageRef, distribution);
+    resp.log.info(
+      clc.blueBright.bold(
+        `Go to the source directory of ${msg.data.packageRef} in the ${
+          distribution || 'toolchain'
+        } distribution.\n` +
+          `A 'source-debug-env.sh' script can be used in order to manually load the build environment.`
+      ) + ' '
+    );
+    resp.events.send(`pacman.zero-build.${msg.id}.finished`);
+  } catch (ex) {
+    resp.log.err(ex.stack || ex.message || ex);
+    resp.events.send(`pacman.zero-build.${msg.id}.error`);
+  } finally {
+    delete process.env.PEON_DEBUG_ENV;
+  }
+};
+
 /**
  * Try to remove the developement package.
  *
@@ -1170,6 +1196,15 @@ exports.xcraftCommands = function () {
         options: {
           params: {
             optional: ['packageRefs', 'distribution'],
+          },
+        },
+      },
+      'zero-build': {
+        desc: 'prepare a package for building (without starting the build)',
+        options: {
+          params: {
+            required: 'packageRef',
+            optional: ['distribution'],
           },
         },
       },
