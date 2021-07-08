@@ -1035,12 +1035,37 @@ cmd.version = function* (msg, resp) {
       }
 
       const versions = [];
-      versions.push(packageDef.$version);
+      versions.push(`${packageDef.$version}`);
 
-      if (getObj.uri !== packageDef.data.get.uri) {
-        versions.push(semver.inc(versions[0], 'patch'));
-        versions.push(semver.inc(versions[0], 'minor'));
-        versions.push(semver.inc(versions[0], 'major'));
+      let version0 = versions[0];
+      const length = version0.split('.').length;
+      if (length <= 3 && getObj.uri !== packageDef.data.get.uri) {
+        switch (length) {
+          case 1:
+            version0 += '.0';
+          // eslint-disable-next-line no-fallthrough
+          case 2:
+            version0 += '.0';
+        }
+        if (length >= 3) {
+          let version = semver.inc(version0, 'patch');
+          versions.push(version);
+        }
+        if (length >= 2) {
+          let version = semver.inc(version0, 'minor');
+          if (version && length === 2) {
+            version = version.split('.').slice(0, -1).join('.');
+          }
+          versions.push(version);
+        }
+        let version = semver.inc(version0, 'major');
+        if (version && length <= 2) {
+          version = version
+            .split('.')
+            .slice(0, length === 2 ? -1 : -2)
+            .join('.');
+        }
+        versions.push(version);
       }
 
       for (const version of versions) {
