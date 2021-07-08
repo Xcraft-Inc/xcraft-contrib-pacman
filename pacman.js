@@ -817,7 +817,7 @@ cmd['zero-build'] = function* (msg, resp) {
         `Go to the source directory of ${msg.data.packageRef} in the ${
           distribution || pacmanConfig.pkgToolchainRepository
         } distribution.\n` +
-          `A 'source-debug-env.sh' script can be used in order to manually load the build environment.`
+          `A 'source-debug-env.(sh|cmd)' script can be used in order to manually load the build environment.`
       ) + ' '
     );
     resp.events.send(`pacman.zero-build.${msg.id}.finished`);
