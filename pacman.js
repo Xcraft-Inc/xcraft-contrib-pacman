@@ -807,14 +807,20 @@ cmd['zero-build'] = function* (msg, resp) {
 
   const build = require('./lib/build.js')(resp);
 
-  const distribution = getDistribution(msg);
+  const {packageRef} = msg.data;
+  let distribution = getDistribution(msg);
+  if (!distribution) {
+    const def = definition.load(packageRef, null, resp, null);
+    distribution = def.distribution;
+  }
+
   process.env.PEON_DEBUG_ENV = '1';
 
   try {
-    yield build.package(msg.data.packageRef, distribution);
+    yield build.package(packageRef, distribution);
     resp.log.info(
       clc.blueBright.bold(
-        `Go to the source directory of ${msg.data.packageRef} in the ${
+        `Go to the source directory of ${packageRef} in the ${
           distribution || pacmanConfig.pkgToolchainRepository
         } distribution.\n` +
           `A 'source-debug-env.(sh|cmd)' script can be used in order to manually load the build environment.`
