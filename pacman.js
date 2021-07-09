@@ -185,6 +185,21 @@ cmd.search = function* (msg, resp, next) {
   }
 };
 
+cmd.unlock = function* (msg, resp, next) {
+  const wpkg = require('xcraft-contrib-wpkg')(resp);
+
+  try {
+    const {arch = xPlatform.getToolchainArch()} = msg.data;
+    const distribution = getDistribution(msg);
+
+    yield wpkg.unlock(arch, distribution, next);
+  } catch (ex) {
+    resp.events.send(`pacman.unlock.${msg.id}.error`, ex);
+  } finally {
+    resp.events.send(`pacman.unlock.${msg.id}.finished`, list);
+  }
+};
+
 /**
  * Create a new package template or modify an existing package config file.
  *
@@ -1144,6 +1159,14 @@ exports.xcraftCommands = function () {
         options: {
           params: {
             required: 'pattern',
+            optional: ['distribution', 'arch'],
+          },
+        },
+      },
+      'unlock': {
+        desc: 'remove database lock',
+        options: {
+          params: {
             optional: ['distribution', 'arch'],
           },
         },
