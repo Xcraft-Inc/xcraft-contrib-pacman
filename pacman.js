@@ -137,7 +137,7 @@ const wrapOverwatch = watt(function* (func, msg, resp, next) {
       null,
       next
     );
-    utils.errorReporting(resp)(data);
+    yield utils.errorReporting(resp)(data);
   }
 });
 
