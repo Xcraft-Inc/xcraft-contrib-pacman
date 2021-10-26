@@ -722,6 +722,7 @@ cmd.upgrade = function* (msg, resp, next) {
 
     yield wpkg.update(arch, targetRoot, next);
     yield wpkg.upgrade(arch, targetRoot, next);
+    xEnv.devrootUpdate(distribution);
   } catch (ex) {
     resp.log.err(ex.stack || ex);
     status = resp.events.status.failed;
