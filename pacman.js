@@ -123,7 +123,7 @@ function getDistribution(msg) {
 const wrapOverwatch = watt(function* (func, msg, resp, next) {
   func = watt(func);
 
-  if (msg._ignoreOverwatch) {
+  if (msg.data._ignoreOverwatch) {
     yield func();
     return;
   }
