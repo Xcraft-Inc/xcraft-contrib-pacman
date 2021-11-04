@@ -428,6 +428,7 @@ cmd['edit.rulesEnv'] = function (msg, resp) {
     ) &&
     !msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].key1.length
   ) {
+    msg.data.idxEnv = 0;
     cmd[msg.data.nextStep](msg, resp);
     resp.events.send(`pacman.edit.rulesEnv.${msg.id}.finished`);
     return;
@@ -463,6 +464,7 @@ cmd['edit.env'] = function (msg, resp) {
     ) &&
     !msg.data.wizardAnswers[msg.data.wizardAnswers.length - 1].key0.length
   ) {
+    msg.data.idxEnv = 0;
     cmd[msg.data.nextStep](msg, resp);
     resp.events.send(`pacman.edit.env.${msg.id}.finished`);
     return;
