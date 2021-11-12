@@ -345,6 +345,7 @@ cmd['edit.data'] = function (msg, resp) {
   var def = definition.load(msg.data.packageName, null, resp);
 
   wizard.uri = def.data.get.uri;
+  wizard.mirrors = def.data.get.mirrors.join(',');
   wizard.uriRef = def.data.get.ref;
   wizard.uriOut = def.data.get.out;
   wizard.uriExternals = def.data.get.externals;

@@ -283,6 +283,13 @@ exports.data = [
   },
   {
     type: 'input',
+    name: 'mirrors',
+    message: `Mirrors list (comma separated, like: 'https://a.b.c,ftp://a.b.c')`,
+    default: '',
+    filter: (answer) => (answer ? answer.split(',') : []),
+  },
+  {
+    type: 'input',
     name: 'uriOut',
     message: 'Output basename (keep empty for current URI basename):',
     when: function (answers) {
