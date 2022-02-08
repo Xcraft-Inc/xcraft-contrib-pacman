@@ -636,7 +636,7 @@ cmd.make = function* (msg, resp, next) {
     function* () {
       for (const packageRef of pkgs) {
         const pkg = utils.parsePkgRef(packageRef);
-        const pkgDef = definition.getBasePackageDef(pkg.name);
+        const pkgDef = definition.getBasePackageDef(pkg.name, resp);
         pkg.name = pkgDef.name;
 
         resp.log.info(
