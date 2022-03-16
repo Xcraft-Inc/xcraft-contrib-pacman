@@ -834,7 +834,9 @@ cmd['zero-build'] = function* (msg, resp) {
     distribution = def.distribution;
   }
 
-  process.env.PEON_DEBUG_ENV = '1';
+  const pkg = utils.parsePkgRef(packageRef);
+
+  process.env.PEON_DEBUG_PKG = pkg.name;
 
   try {
     yield build.package(packageRef, distribution);
@@ -851,7 +853,7 @@ cmd['zero-build'] = function* (msg, resp) {
     resp.log.err(ex.stack || ex.message || ex);
     resp.events.send(`pacman.zero-build.${msg.id}.error`);
   } finally {
-    delete process.env.PEON_DEBUG_ENV;
+    delete process.env.PEON_DEBUG_PKG;
   }
 };
 
