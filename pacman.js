@@ -1128,6 +1128,14 @@ cmd.version = function* (msg, resp) {
 cmd['_postload'] = function* (msg, resp, next) {
   try {
     yield resp.command.send('overwatch.init', null, next);
+
+    let {wpkgHttp} = require('./lib/index.js');
+    wpkgHttp = wpkgHttp();
+    if (wpkgHttp) {
+      /* Main server for HTTP access to repositories */
+      wpkgHttp.serve();
+    }
+
     resp.events.send(`pacman._postload.${msg.id}.finished`);
   } catch (ex) {
     resp.events.send(`pacman._postload.${msg.id}.error`, {

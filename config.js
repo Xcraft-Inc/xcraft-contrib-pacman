@@ -80,4 +80,16 @@ module.exports = [
     message: 'location for build stamps',
     default: './var/xcraft-contrib-pacman/',
   },
+  {
+    type: 'confirm',
+    name: 'http.enabled',
+    message: 'enable HTTP server for WPKG repositories',
+    default: true,
+  },
+  {
+    type: 'input',
+    name: 'http.port',
+    message: 'set the HTTP server port for the repositories',
+    default: 12321,
+  },
 ];

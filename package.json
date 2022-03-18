@@ -22,8 +22,10 @@
   },
   "dependencies": {
     "async": "^1.4.0",
+    "chokidar": "^3.5.3",
     "cli-color": "^1.0.0",
     "clone": "^2.1.2",
+    "express": "^4.17.3",
     "fs-extra": "^9.1.0",
     "inquirer": "^0.12.0",
     "js-yaml": "^3.3.1",
