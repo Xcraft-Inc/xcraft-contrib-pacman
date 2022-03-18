@@ -1206,7 +1206,7 @@ exports.xcraftCommands = function () {
       },
       'search': {
         parallel: true,
-        desc: 'search files installed packages',
+        desc: 'search files in installed packages',
         options: {
           params: {
             required: 'pattern',
