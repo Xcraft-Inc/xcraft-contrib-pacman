@@ -985,6 +985,42 @@ cmd.unpublish = function* (msg, resp) {
   resp.events.send(`pacman.unpublish.${msg.id}.finished`, status);
 };
 
+cmd.addSource = function* (msg, resp) {
+  const admindir = require('./lib/admindir.js')(resp);
+
+  let status = resp.events.status.succeeded;
+
+  try {
+    const {arch = xPlatform.getToolchainArch()} = msg.data;
+    const {uri, distribution} = msg.data;
+
+    yield admindir.addSource(uri, arch, distribution);
+  } catch (ex) {
+    resp.log.err(ex.stack || ex);
+    status = resp.events.status.failed;
+  } finally {
+    resp.events.send(`pacman.addSource.${msg.id}.finished`, status);
+  }
+};
+
+cmd.delSource = function* (msg, resp) {
+  const admindir = require('./lib/admindir.js')(resp);
+
+  let status = resp.events.status.succeeded;
+
+  try {
+    const {arch = xPlatform.getToolchainArch()} = msg.data;
+    const {uri, distribution} = msg.data;
+
+    yield admindir.delSource(uri, arch, distribution);
+  } catch (ex) {
+    resp.log.err(ex.stack || ex);
+    status = resp.events.status.failed;
+  } finally {
+    resp.events.send(`pacman.delSource.${msg.id}.finished`, status);
+  }
+};
+
 cmd.graph = function* (msg, resp) {
   const {graph} = require('./lib/graph.js')(resp);
 
@@ -1311,6 +1347,24 @@ exports.xcraftCommands = function () {
         options: {
           params: {
             optional: ['packageNames', 'distribution'],
+          },
+        },
+      },
+      'addSource': {
+        desc: 'add a new source to a target root',
+        options: {
+          params: {
+            required: ['uri'],
+            optional: ['distribution', 'arch'],
+          },
+        },
+      },
+      'delSource': {
+        desc: 'delete a source from a target root',
+        options: {
+          params: {
+            required: ['uri'],
+            optional: ['distribution', 'arch'],
           },
         },
       },
