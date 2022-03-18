@@ -1352,6 +1352,7 @@ exports.xcraftCommands = function () {
       },
       'addSource': {
         desc: 'add a new source to a target root',
+        parallel: true,
         options: {
           params: {
             required: ['uri'],
@@ -1361,6 +1362,7 @@ exports.xcraftCommands = function () {
       },
       'delSource': {
         desc: 'delete a source from a target root',
+        parallel: true,
         options: {
           params: {
             required: ['uri'],
