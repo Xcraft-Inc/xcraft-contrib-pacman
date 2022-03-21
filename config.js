@@ -92,4 +92,10 @@ module.exports = [
     message: 'set the HTTP server port for the repositories',
     default: 12321,
   },
+  {
+    type: 'input',
+    name: 'http.hostname',
+    message: 'set the HTTP hostname for the repositories',
+    default: '0.0.0.0',
+  },
 ];
