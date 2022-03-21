@@ -86,9 +86,9 @@ var extractPackages = function (
             def.dependency[type] &&
             Object.keys(def.dependency[type]).length > 0
           ) {
-            var depsList = Object.keys(def.dependency[type]).join(
-              ',' + depsPattern + ','
-            );
+            var depsList = Object.keys(def.dependency[type])
+              .filter((dep) => !def.dependency[type][dep][0].external)
+              .join(',' + depsPattern + ',');
             depsList += ',' + depsPattern;
 
             /* Continue recursively for the dependencies of this dependency. */
@@ -324,6 +324,8 @@ cmd['edit.dependency'] = function (msg, resp) {
           msg.data.idxRange
         ].subpackage.join(',');
       }
+      wizard.external =
+        def.dependency[msg.data.depType][key][msg.data.idxRange].external;
       msg.data.idxRange++;
     } else {
       msg.data.idxDep++;

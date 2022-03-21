@@ -247,6 +247,15 @@ var dependency = function (type) {
         return type === 'install';
       },
     },
+    {
+      type: 'confirm',
+      name: 'external',
+      message: 'If this package is referenced in an external WPKG repository',
+      default: false,
+      when: function () {
+        return type === 'build' || type === 'make';
+      },
+    },
   ];
 };
 
