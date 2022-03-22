@@ -248,10 +248,10 @@ var dependency = function (type) {
       },
     },
     {
-      type: 'confirm',
+      type: 'input',
       name: 'external',
-      message: 'If this package is referenced in an external WPKG repository',
-      default: false,
+      message: 'Distribution of a package referenced in an external WPKG repository',
+      default: '',
       when: function () {
         return type === 'build' || type === 'make';
       },
