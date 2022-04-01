@@ -942,7 +942,8 @@ cmd.publish = function* (msg, resp) {
         packageRef,
         null,
         msg.data.outputRepository,
-        distribution
+        distribution,
+        true
       );
     } catch (ex) {
       resp.log.err(ex.stack || ex);
