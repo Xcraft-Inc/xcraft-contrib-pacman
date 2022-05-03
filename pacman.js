@@ -142,13 +142,17 @@ const wrapOverwatch = watt(function* (func, msg, resp, next) {
 });
 
 cmd.list = function (msg, resp) {
-  resp.log.info('list of all products');
+  try {
+    resp.log.info('list of all products');
 
-  var list = require('./lib/list.js');
-
-  var results = list.listProducts(resp);
-  resp.events.send('pacman.list', results);
-  resp.events.send(`pacman.list.${msg.id}.finished`);
+    var list = require('./lib/list.js');
+    var results = list.listProducts(resp);
+    resp.log.info.table(results);
+  } catch (ex) {
+    resp.events.send(`pacman.list.${msg.id}.error`, ex);
+  } finally {
+    resp.events.send(`pacman.list.${msg.id}.finished`, list);
+  }
 };
 
 cmd['list-status'] = function* (msg, resp, next) {
