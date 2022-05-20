@@ -204,7 +204,11 @@ var dependency = function (type) {
         return xFs.lsdir(xcraftConfig.pkgProductsRoot).reduce((list, dir) => {
           list.push(dir);
           const def = utils.yaml.fromFile(
-            path.join(xcraftConfig.pkgProductsRoot, dir, 'config.yaml')
+            path.join(
+              xcraftConfig.pkgProductsRoot,
+              dir,
+              pacmanConfig.pkgCfgFileName
+            )
           );
           if (def.subpackage) {
             list.push(
