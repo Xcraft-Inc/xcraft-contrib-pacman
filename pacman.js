@@ -3,6 +3,7 @@
 var path = require('path');
 var _ = require('lodash');
 const clc = require('cli-color');
+const fse = require('fs-extra');
 
 const watt = require('gigawatts');
 var definition = require('./lib/def.js');
@@ -1193,21 +1194,24 @@ cmd.gitMerge = function* (msg, resp, next) {
     }
 
     const def = {
-      version: [null, null],
-      $ref: [null, null],
-      $hash: [null, null],
+      version: [null, null, null],
+      $ref: [null, null, null],
+      $hash: [null, null, null],
     };
 
     for (const chunk of result.files[0].chunks) {
+      let added = 1;
       const changes = chunk.changes.filter(
         (change) => change.type === 'DeletedLine' || change.type === 'AddedLine'
       );
       changes.forEach((change) => {
         for (const key of keys) {
           if (
-            new RegExp(`^[ ]*${key.replace('$', '\\$')}:`).test(change.content)
+            new RegExp(`^[ ]*[+]?${key.replace('$', '\\$')}:`).test(
+              change.content
+            )
           ) {
-            const idx = change.type === 'DeletedLine' ? 0 : 1;
+            const idx = change.type === 'DeletedLine' ? 0 : added++;
             def[key][idx] = change.content
               .replace(/[^:]+:/, '')
               .trim()
@@ -1217,6 +1221,8 @@ cmd.gitMerge = function* (msg, resp, next) {
       });
     }
 
+    const isConflict = !!def.version[2];
+
     if (def.version[0] && def.version[1]) {
       const wpkg = require('xcraft-contrib-wpkg')(resp);
       const pacmanDef = require('./lib/def.js');
@@ -1224,18 +1230,75 @@ cmd.gitMerge = function* (msg, resp, next) {
         def.version[1], // V2
         def.version[0] //  V1
       );
+
       if (isV2Greater) {
-        return; /* It's already the right version */
+        def.version.shift();
+        def.$ref.shift();
+        def.$hash.shift();
+      } else {
+        def.version[1] = def.version[2];
+        def.$ref[1] = def.$ref[2];
+        def.$hash[1] = def.$hash[2];
+        def.version[2] = null;
+        def.$ref[2] = null;
+        def.$hash[2] = null;
+      }
+
+      if (isConflict) {
+        /* It's a merge conflict */
+        const isV3Greater = yield wpkg.isV1Greater(
+          def.version[1], // V3
+          def.version[0] //  V2
+        );
+        if (isV3Greater) {
+          def.version.shift();
+          def.$ref.shift();
+          def.$hash.shift();
+        }
+
+        /* Resolve conficts in the package definition, then
+         * it's possible to load the file. This resolver is stupid
+         * because the entries are just removed. It must be used
+         * only for conflicts related to the versionning.
+         */
+        let inConflict = false;
+        resp.log.warn(`check for the merge, this resolver is a bit stupid`);
+        const data = fse
+          .readFileSync(pkg, 'utf8')
+          .split('\n')
+          .reduce((merged, row) => {
+            if (row.startsWith('+<<<<<<<')) {
+              inConflict = true;
+              return merged;
+            }
+            if (row.startsWith('+>>>>>>>')) {
+              inConflict = false;
+              return merged;
+            }
+            if (inConflict) {
+              if (!new RegExp(`(${keys.join('|')})`).test(row)) {
+                resp.log.info(`skipped merge entry: ${row}`);
+              }
+              return merged;
+            }
+            merged.push(row);
+            return merged;
+          }, [])
+          .join('\n');
+        fse.writeFileSync(pkg, data);
+      } else if (isV2Greater) {
+        /* It's already the right version */
+        return;
       }
 
       const packageName = path.basename(path.dirname(pkg));
       const pkgDef = pacmanDef.load(packageName, {}, resp);
-      pkgDef.version = def.version[1];
-      if (def.$ref[1]) {
-        pkgDef.data.get.$ref = def.$ref[1];
+      pkgDef.version = def.version[0];
+      if (def.$ref[0]) {
+        pkgDef.data.get.$ref = def.$ref[0];
       }
-      if (def.$hash[1]) {
-        pkgDef.data.get.$hash = def.$hash[1];
+      if (def.$hash[0]) {
+        pkgDef.data.get.$hash = def.$hash[0];
       }
       pacmanDef.save(pkgDef, null, resp);
     }
