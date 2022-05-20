@@ -1167,6 +1167,101 @@ cmd.version = function* (msg, resp) {
   resp.events.send(`pacman.version.${msg.id}.finished`, status);
 };
 
+cmd.gitMerge = function* (msg, resp, next) {
+  const parseGitDiff = require('parse-git-diff');
+  const xProcess = require('xcraft-core-process')({logger: 'none', resp});
+  const xFs = require('xcraft-core-fs');
+  const xConfig = require('xcraft-core-etc')(null, resp).load('xcraft');
+  const pacmanConfig = require('xcraft-core-etc')(null, resp).load(
+    'xcraft-contrib-pacman'
+  );
+
+  const keys = ['version', '$ref', '$hash'];
+
+  const spawn = watt(function* (pkg, next) {
+    let diff = '';
+    yield xProcess.spawn(
+      'git',
+      ['diff', '--', pkg],
+      {},
+      next,
+      (stdout) => (diff += stdout)
+    );
+    const result = parseGitDiff(diff);
+    if (!result?.files[0]?.chunks) {
+      return;
+    }
+
+    const def = {
+      version: [null, null],
+      $ref: [null, null],
+      $hash: [null, null],
+    };
+
+    for (const chunk of result.files[0].chunks) {
+      const changes = chunk.changes.filter(
+        (change) => change.type === 'DeletedLine' || change.type === 'AddedLine'
+      );
+      changes.forEach((change) => {
+        for (const key of keys) {
+          if (
+            new RegExp(`^[ ]*${key.replace('$', '\\$')}:`).test(change.content)
+          ) {
+            const idx = change.type === 'DeletedLine' ? 0 : 1;
+            def[key][idx] = change.content
+              .replace(/[^:]+:/, '')
+              .trim()
+              .replace(/['"]/g, '');
+          }
+        }
+      });
+    }
+
+    if (def.version[0] && def.version[1]) {
+      const wpkg = require('xcraft-contrib-wpkg')(resp);
+      const pacmanDef = require('./lib/def.js');
+      const isV2Greater = yield wpkg.isV1Greater(
+        def.version[1], // V2
+        def.version[0] //  V1
+      );
+      if (isV2Greater) {
+        return; /* It's already the right version */
+      }
+
+      const packageName = path.basename(path.dirname(pkg));
+      const pkgDef = pacmanDef.load(packageName, {}, resp);
+      pkgDef.version = def.version[1];
+      if (def.$ref[1]) {
+        pkgDef.data.get.$ref = def.$ref[1];
+      }
+      if (def.$hash[1]) {
+        pkgDef.data.get.$hash = def.$hash[1];
+      }
+      pacmanDef.save(pkgDef, null, resp);
+    }
+  });
+
+  try {
+    const packages = xFs
+      .lsdir(xConfig.pkgProductsRoot)
+      .map((pkg) =>
+        path.join(xConfig.pkgProductsRoot, pkg, pacmanConfig.pkgCfgFileName)
+      );
+
+    for (const pkg of packages) {
+      spawn(pkg, next.parallel());
+    }
+    yield next.sync();
+    resp.events.send(`pacman.gitMerge.${msg.id}.finished`);
+  } catch (ex) {
+    resp.events.send(`pacman.gitMerge.${msg.id}.error`, {
+      code: ex.code,
+      message: ex.message,
+      stack: ex.stack,
+    });
+  }
+};
+
 cmd['_postload'] = function* (msg, resp, next) {
   try {
     yield resp.command.send('overwatch.init', null, next);
@@ -1393,6 +1488,10 @@ exports.xcraftCommands = function () {
             optional: ['packageNames'],
           },
         },
+      },
+      'gitMerge': {
+        desc: 'merge the package definitions with the appropriate version',
+        parallel: false,
       },
     },
   };
