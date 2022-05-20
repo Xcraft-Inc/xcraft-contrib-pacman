@@ -1168,7 +1168,7 @@ cmd.version = function* (msg, resp) {
   resp.events.send(`pacman.version.${msg.id}.finished`, status);
 };
 
-cmd.gitMerge = function* (msg, resp, next) {
+cmd.gitMergeDefinitions = function* (msg, resp, next) {
   const parseGitDiff = require('parse-git-diff');
   const xProcess = require('xcraft-core-process')({logger: 'none', resp});
   const xFs = require('xcraft-core-fs');
@@ -1315,10 +1315,10 @@ cmd.gitMerge = function* (msg, resp, next) {
       spawn(pkg, next.parallel());
     }
     yield next.sync();
-    resp.events.send(`pacman.gitMerge.${msg.id}.finished`);
+    resp.events.send(`pacman.gitMergeDefinitions.${msg.id}.finished`);
   } catch (ex) {
     resp.log.err(ex.stack || ex.message || ex);
-    resp.events.send(`pacman.gitMerge.${msg.id}.error`, {
+    resp.events.send(`pacman.gitMergeDefinitions.${msg.id}.error`, {
       code: ex.code,
       message: ex.message,
       stack: ex.stack,
@@ -1553,8 +1553,8 @@ exports.xcraftCommands = function () {
           },
         },
       },
-      'gitMerge': {
-        desc: 'merge the package definitions with the appropriate version',
+      'gitMergeDefinitions': {
+        desc: 'merge the package definitions with the appropriate versions',
         parallel: false,
       },
     },
