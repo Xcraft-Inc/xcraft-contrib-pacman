@@ -1317,6 +1317,7 @@ cmd.gitMerge = function* (msg, resp, next) {
     yield next.sync();
     resp.events.send(`pacman.gitMerge.${msg.id}.finished`);
   } catch (ex) {
+    resp.log.err(ex.stack || ex.message || ex);
     resp.events.send(`pacman.gitMerge.${msg.id}.error`, {
       code: ex.code,
       message: ex.message,
