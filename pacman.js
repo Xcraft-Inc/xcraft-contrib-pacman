@@ -1213,9 +1213,7 @@ cmd.gitMergeDefinitions = function* (msg, resp, next) {
       changes.forEach((change) => {
         for (const key of keys) {
           if (
-            new RegExp(`^[ ]*[+]?${key.replace('$', '\\$')}:`).test(
-              change.content
-            )
+            new RegExp(`^[ +]*${key.replace('$', '\\$')}:`).test(change.content)
           ) {
             const idx = change.type === 'DeletedLine' ? 0 : added++;
             def[key][idx] = versionCleaner(change.content);
@@ -1227,7 +1225,7 @@ cmd.gitMergeDefinitions = function* (msg, resp, next) {
     let isConflict = !!def.version[2];
 
     if (!def.version[0]) {
-      const _ver = diff.split('\n').filter((row) => /^ version:/.test(row));
+      const _ver = diff.split('\n').filter((row) => /^ [+]?version:/.test(row));
       if (_ver.length !== 1) {
         resp.log.err(`unsupported merge conflict with ${pkg}`);
         return;
@@ -1282,11 +1280,11 @@ cmd.gitMergeDefinitions = function* (msg, resp, next) {
           .readFileSync(pkg, 'utf8')
           .split('\n')
           .reduce((merged, row) => {
-            if (row.startsWith('<<<<<<<')) {
+            if (/^[ +]*<<<<<<</.test(row)) {
               inConflict = true;
               return merged;
             }
-            if (row.startsWith('>>>>>>>')) {
+            if (/^[ +]*>>>>>>>/.test(row)) {
               inConflict = false;
               return merged;
             }
