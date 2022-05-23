@@ -1179,6 +1179,12 @@ cmd.gitMergeDefinitions = function* (msg, resp, next) {
 
   const keys = ['version', '$ref', '$hash'];
 
+  const versionCleaner = (version) =>
+    version
+      .replace(/[^:]+:/, '')
+      .trim()
+      .replace(/['"]/g, '');
+
   const spawn = watt(function* (pkg, next) {
     let diff = '';
     yield xProcess.spawn(
@@ -1212,16 +1218,23 @@ cmd.gitMergeDefinitions = function* (msg, resp, next) {
             )
           ) {
             const idx = change.type === 'DeletedLine' ? 0 : added++;
-            def[key][idx] = change.content
-              .replace(/[^:]+:/, '')
-              .trim()
-              .replace(/['"]/g, '');
+            def[key][idx] = versionCleaner(change.content);
           }
         }
       });
     }
 
-    const isConflict = !!def.version[2];
+    let isConflict = !!def.version[2];
+
+    if (!def.version[0]) {
+      const _ver = diff.split('\n').filter((row) => /^ version:/.test(row));
+      if (_ver.length !== 1) {
+        resp.log.err(`unsupported merge conflict with ${pkg}`);
+        return;
+      }
+      def.version[0] = versionCleaner(_ver[0]);
+      isConflict = true;
+    }
 
     if (def.version[0] && def.version[1]) {
       const wpkg = require('xcraft-contrib-wpkg')(resp);
@@ -1246,14 +1259,16 @@ cmd.gitMergeDefinitions = function* (msg, resp, next) {
 
       if (isConflict) {
         /* It's a merge conflict */
-        const isV3Greater = yield wpkg.isV1Greater(
-          def.version[1], // V3
-          def.version[0] //  V2
-        );
-        if (isV3Greater) {
-          def.version.shift();
-          def.$ref.shift();
-          def.$hash.shift();
+        if (def.version[1]) {
+          const isV3Greater = yield wpkg.isV1Greater(
+            def.version[1], // V3
+            def.version[0] //  V2
+          );
+          if (isV3Greater) {
+            def.version.shift();
+            def.$ref.shift();
+            def.$hash.shift();
+          }
         }
 
         /* Resolve conficts in the package definition, then
@@ -1267,11 +1282,11 @@ cmd.gitMergeDefinitions = function* (msg, resp, next) {
           .readFileSync(pkg, 'utf8')
           .split('\n')
           .reduce((merged, row) => {
-            if (row.startsWith('+<<<<<<<')) {
+            if (row.startsWith('<<<<<<<')) {
               inConflict = true;
               return merged;
             }
-            if (row.startsWith('+>>>>>>>')) {
+            if (row.startsWith('>>>>>>>')) {
               inConflict = false;
               return merged;
             }
