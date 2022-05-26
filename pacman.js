@@ -1006,7 +1006,7 @@ cmd.addSource = function* (msg, resp) {
       arch,
       distribution,
       location,
-      components.split('.')
+      components.split(',')
     );
   } catch (ex) {
     resp.log.err(ex.stack || ex);
@@ -1025,7 +1025,13 @@ cmd.delSource = function* (msg, resp) {
     const {arch = xPlatform.getToolchainArch()} = msg.data;
     const {uri, distribution, location, components} = msg.data;
 
-    yield admindir.delSource(uri, arch, distribution, location, components);
+    yield admindir.delSource(
+      uri,
+      arch,
+      distribution,
+      location,
+      components.split(',')
+    );
   } catch (ex) {
     resp.log.err(ex.stack || ex);
     status = resp.events.status.failed;
