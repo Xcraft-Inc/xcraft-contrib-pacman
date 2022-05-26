@@ -999,9 +999,15 @@ cmd.addSource = function* (msg, resp) {
 
   try {
     const {arch = xPlatform.getToolchainArch()} = msg.data;
-    const {uri, distribution, components} = msg.data;
+    const {uri, distribution, location, components} = msg.data;
 
-    yield admindir.addSource(uri, arch, distribution, components.split('.'));
+    yield admindir.addSource(
+      uri,
+      arch,
+      distribution,
+      location,
+      components.split('.')
+    );
   } catch (ex) {
     resp.log.err(ex.stack || ex);
     status = resp.events.status.failed;
@@ -1017,9 +1023,9 @@ cmd.delSource = function* (msg, resp) {
 
   try {
     const {arch = xPlatform.getToolchainArch()} = msg.data;
-    const {uri, distribution, components} = msg.data;
+    const {uri, distribution, location, components} = msg.data;
 
-    yield admindir.delSource(uri, arch, distribution, components);
+    yield admindir.delSource(uri, arch, distribution, location, components);
   } catch (ex) {
     resp.log.err(ex.stack || ex);
     status = resp.events.status.failed;
@@ -1534,7 +1540,7 @@ exports.xcraftCommands = function () {
         options: {
           params: {
             required: ['uri'],
-            optional: ['distribution', 'arch', 'components'],
+            optional: ['distribution', 'arch', 'location', 'components'],
           },
         },
       },
@@ -1544,7 +1550,7 @@ exports.xcraftCommands = function () {
         options: {
           params: {
             required: ['uri'],
-            optional: ['distribution', 'arch', 'components'],
+            optional: ['distribution', 'arch', 'location', 'components'],
           },
         },
       },
