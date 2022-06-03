@@ -177,6 +177,18 @@ exports.header = [
     when: (answers) => answers.architecture.indexOf('source') !== -1,
     filter: (answer) => answer.split(','),
   },
+  {
+    type: 'checkbox',
+    name: 'bump',
+    message:
+      'List of packages to bump (must be rebuilt when this one has changed)',
+    choices: function () {
+      return xFs.lsdir(xcraftConfig.pkgProductsRoot).reduce((list, dir) => {
+        list.push(dir);
+        return list;
+      }, []);
+    },
+  },
 ];
 
 var askdep = function (type) {

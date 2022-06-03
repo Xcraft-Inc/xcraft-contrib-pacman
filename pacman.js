@@ -249,6 +249,7 @@ cmd['edit.header'] = function (msg, resp) {
   wizard.architecture = def.architecture;
   wizard.descriptionBrief = def.description.brief;
   wizard.descriptionLong = def.description.long;
+  wizard.bump = def.bump;
 
   msg.data.wizardName = 'header';
   msg.data.wizardDefaults = wizard;
@@ -639,31 +640,62 @@ cmd.make = function* (msg, resp, next) {
     return;
   }
 
+  function* _make(packageRef, props, bumpPkg) {
+    const pkg = utils.parsePkgRef(packageRef);
+    const pkgDef = definition.getBasePackageDef(pkg.name, resp);
+    pkg.name = pkgDef.name;
+
+    resp.log.info(
+      'make the wpkg package for ' + pkg.name + ' on architecture: ' + pkg.arch
+    );
+
+    let pkgArgs = props;
+    if (packageArgs.hasOwnProperty(pkg.name)) {
+      pkgArgs = packageArgs[pkg.name];
+    }
+
+    try {
+      const result = yield make.package(pkg.name, pkg.arch, pkgArgs, null);
+      if (result.bump.length) {
+        /* Complete the bump list if necessary */
+        for (const b of result.bump) {
+          bumpPkg[b] |= false;
+        }
+      }
+      if (bumpPkg.hasOwnProperty(pkg.name) && result.make) {
+        /* It's already re-maked, bump is useless */
+        bumpPkg[pkg.name] = true;
+      }
+    } catch (ex) {
+      resp.log.err(ex.stack || ex);
+      status = resp.events.status.failed;
+    }
+  }
+
+  function* _makeList(pkgs, props) {
+    /* List of packages to bump when this pkg-name is changed / new */
+    const bumpPkg = {};
+
+    for (const packageRef of pkgs) {
+      yield* _make(packageRef, props, bumpPkg);
+    }
+
+    return bumpPkg;
+  }
+
   yield wrapOverwatch(
     function* () {
-      for (const packageRef of pkgs) {
-        const pkg = utils.parsePkgRef(packageRef);
-        const pkgDef = definition.getBasePackageDef(pkg.name, resp);
-        pkg.name = pkgDef.name;
+      let bumpPkg = yield* _makeList(pkgs, packageArgsOther);
+      let list = Object.keys(bumpPkg);
 
-        resp.log.info(
-          'make the wpkg package for ' +
-            pkg.name +
-            ' on architecture: ' +
-            pkg.arch
+      while (list.length) {
+        bumpPkg = yield* _makeList(
+          /* Only if the bump is useful */
+          list.filter((pkg) => !bumpPkg[pkg]),
+          {p: 'p'},
+          {}
         );
-
-        let pkgArgs = packageArgsOther;
-        if (packageArgs.hasOwnProperty(pkg.name)) {
-          pkgArgs = packageArgs[pkg.name];
-        }
-
-        try {
-          yield make.package(pkg.name, pkg.arch, pkgArgs, null);
-        } catch (ex) {
-          resp.log.err(ex.stack || ex);
-          status = resp.events.status.failed;
-        }
+        list = Object.keys(bumpPkg);
       }
     },
     msg,
