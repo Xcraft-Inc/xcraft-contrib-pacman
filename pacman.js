@@ -208,7 +208,8 @@ cmd.unlock = function* (msg, resp, next) {
 /**
  * Create a new package template or modify an existing package config file.
  *
- * @param {Object} msg
+ * @param {Object} msg - Xcraft message.
+ * @param {Object} resp - Response object.
  */
 cmd.edit = function (msg, resp) {
   var packageName = msg.data.packageName || '';
@@ -565,7 +566,9 @@ cmd['edit.upload'] = function (msg, resp) {
 /**
  * Make the Control file for WPKG by using a package config file.
  *
- * @param {Object} msg
+ * @param {Object} msg - Xcraft message.
+ * @param {Object} resp - Response object.
+ * @param {function} next - Watt's callback.
  */
 cmd.make = function* (msg, resp, next) {
   const pacmanConfig = require('xcraft-core-etc')(null, resp).load(
@@ -738,7 +741,8 @@ function* install(msg, resp, reinstall = false) {
 /**
  * Try to install the developement package.
  *
- * @param {Object} msg
+ * @param {Object} msg - Xcraft message.
+ * @param {Object} resp - Response object.
  */
 cmd.install = function* (msg, resp) {
   yield* install(msg, resp, false);
@@ -747,7 +751,8 @@ cmd.install = function* (msg, resp) {
 /**
  * Try to reinstall the developement package.
  *
- * @param {Object} msg
+ * @param {Object} msg - Xcraft message.
+ * @param {Object} resp - Response object.
  */
 cmd.reinstall = function* (msg, resp) {
   yield* install(msg, resp, true);
@@ -777,7 +782,8 @@ cmd.upgrade = function* (msg, resp, next) {
 /**
  * Test if a package is installed or published.
  *
- * @param {Object} msg
+ * @param {Object} msg - Xcraft message.
+ * @param {Object} resp - Response object.
  */
 cmd.status = function* (msg, resp) {
   const install = require('./lib/install.js')(resp);
@@ -822,9 +828,10 @@ cmd.status = function* (msg, resp) {
 /**
  * Try to compile the sources of a source package.
  *
- * @param {Object} msg
+ * @param {Object} msg - Xcraft message.
+ * @param {Object} resp - Response object.
  */
-cmd.build = function* (msg, resp, next) {
+cmd.build = function* (msg, resp) {
   const build = require('./lib/build.js')(resp);
 
   let pkgs = [null];
@@ -899,7 +906,8 @@ cmd['zero-build'] = function* (msg, resp) {
 /**
  * Try to remove the developement package.
  *
- * @param {Object} msg
+ * @param {Object} msg - Xcraft message.
+ * @param {Object} resp - Response object.
  */
 cmd.remove = function* (msg, resp) {
   const remove = require('./lib/remove.js')(resp);
@@ -931,7 +939,8 @@ cmd.remove = function* (msg, resp) {
 /**
  * Remove all the generated files from the temporary directory.
  *
- * @param {Object} msg
+ * @param {Object} msg - Xcraft message.
+ * @param {Object} resp - Response object.
  */
 cmd.clean = function (msg, resp) {
   const clean = require('./lib/clean.js')(resp);
@@ -959,7 +968,8 @@ cmd.clean = function (msg, resp) {
 /**
  * Publish a package in a specified repository.
  *
- * @param {Object} msg
+ * @param {Object} msg - Xcraft message.
+ * @param {Object} resp - Response object.
  */
 cmd.publish = function* (msg, resp) {
   const publish = require('./lib/publish.js')(resp);
@@ -993,7 +1003,8 @@ cmd.publish = function* (msg, resp) {
 /**
  * Unpublish a package.
  *
- * @param {Object} msg
+ * @param {Object} msg - Xcraft message.
+ * @param {Object} resp - Response object.
  */
 cmd.unpublish = function* (msg, resp) {
   const publish = require('./lib/publish.js')(resp);
