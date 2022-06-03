@@ -694,8 +694,8 @@ cmd.make = function* (msg, resp, next) {
 
       while (list.length) {
         bumpPkg = yield* _makeList(
-          /* Only if the bump is useful */
-          list.filter((pkg) => !bumpPkg[pkg]),
+          /* Only if the bump is useful and if it's the main list */
+          list.filter((pkg) => !bumpPkg[pkg] && pkgs.includes(pkg)),
           {p: 'p'},
           {}
         );
