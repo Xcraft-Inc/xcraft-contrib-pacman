@@ -666,22 +666,30 @@ cmd.make = function* (msg, resp, next) {
           bumpPkg[b] |= false;
         }
       }
-      if (bumpPkg.hasOwnProperty(pkg.name) && result.make) {
-        /* It's already re-maked, bump is useless */
-        bumpPkg[pkg.name] = true;
+      if (result.make) {
+        if (bumpPkg.hasOwnProperty(pkg.name)) {
+          /* It's already re-maked, bump is useless */
+          bumpPkg[pkg.name] = true;
+        }
+        return true;
       }
+      return false;
     } catch (ex) {
       resp.log.err(ex.stack || ex);
       status = resp.events.status.failed;
     }
   }
 
-  function* _makeList(pkgs, props) {
+  function* _makeList(pkgs, getProps, makeList) {
     /* List of packages to bump when this pkg-name is changed / new */
     const bumpPkg = {};
 
     for (const packageRef of pkgs) {
-      yield* _make(packageRef, props, bumpPkg);
+      const props = getProps(packageRef);
+      const isMake = yield* _make(packageRef, props, bumpPkg);
+      if (isMake) {
+        makeList[packageRef] = true;
+      }
     }
 
     return bumpPkg;
@@ -689,15 +697,23 @@ cmd.make = function* (msg, resp, next) {
 
   yield wrapOverwatch(
     function* () {
-      let bumpPkg = yield* _makeList(pkgs, packageArgsOther);
+      const makeList = {};
+      let bumpPkg = yield* _makeList(pkgs, () => packageArgsOther, makeList);
       let list = Object.keys(bumpPkg);
 
       while (list.length) {
         bumpPkg = yield* _makeList(
-          /* Only if the bump is useful and if it's the main list */
-          list.filter((pkg) => !bumpPkg[pkg] && pkgs.includes(pkg)),
-          {p: 'p'},
-          {}
+          list
+            .filter(
+              /* Only if the bump is useful and if it's the main list */
+              (pkg) => !bumpPkg[pkg] && pkgs.includes(pkg)
+            )
+            .filter(
+              /* Only if not already changed */
+              (pkg) => !makeList[pkg]
+            ),
+          () => ({p: 'p'}),
+          makeList
         );
         list = Object.keys(bumpPkg);
       }
