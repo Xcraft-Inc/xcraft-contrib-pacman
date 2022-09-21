@@ -868,36 +868,38 @@ cmd.status = function* (msg, resp) {
 cmd.show = function* (msg, resp, next) {
   const wpkg = require('xcraft-contrib-wpkg')(resp);
 
-  const {list, distribution} = extractPackages(
-    msg.data.packageRefs,
-    getDistribution(msg),
-    resp
-  );
-  const pkgs = list;
+  const {packageRef} = msg.data;
+  let distribution = getDistribution(msg);
+  const version = msg.data.version;
 
   try {
     const out = {};
-    for (const packageRef of pkgs) {
-      const pkg = utils.parsePkgRef(packageRef);
-      const dump = yield wpkg.show(pkg.name, pkg.arch, distribution, next);
-      out[packageRef] = dump;
+    const pkg = utils.parsePkgRef(packageRef);
+    const dump = yield wpkg.show(
+      pkg.name,
+      pkg.arch,
+      version,
+      distribution,
+      next
+    );
+    out[packageRef] = dump;
 
-      /* For the CLI */
-      resp.log.dbg(`◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢`);
-      Object.keys(dump)
-        .filter((key) => dump[key] !== 'undefined')
-        .forEach((key) => {
-          if (/(Depends|X-Craft)/.test(key)) {
-            resp.log.dbg(`${key}:`);
-            dump[key]
-              .split(', ')
-              .sort()
-              .forEach((entry) => resp.log.dbg(`  ${entry}`));
-          } else {
-            resp.log.dbg(`${key}: ${dump[key]}`);
-          }
-        });
-    }
+    /* For the CLI */
+    resp.log.dbg(`◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢`);
+    Object.keys(dump)
+      .filter((key) => dump[key] !== 'undefined')
+      .forEach((key) => {
+        if (/(Depends|X-Craft)/.test(key)) {
+          resp.log.dbg(`${key}:`);
+          dump[key]
+            .split(', ')
+            .sort()
+            .forEach((entry) => resp.log.dbg(`  ${entry}`));
+        } else {
+          resp.log.dbg(`${key}: ${dump[key]}`);
+        }
+      });
+
     resp.events.send(`pacman.show.${msg.id}.finished`, out);
   } catch (ex) {
     resp.log.err(ex.stack || ex.message || ex);
@@ -1625,7 +1627,7 @@ exports.xcraftCommands = function () {
         desc: 'show informations about a package',
         options: {
           params: {
-            optional: ['packageRefs', 'distribution'],
+            optional: ['packageRef', 'version', 'distribution'],
           },
         },
       },
