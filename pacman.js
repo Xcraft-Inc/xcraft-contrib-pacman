@@ -151,7 +151,11 @@ cmd.list = function (msg, resp) {
     var results = list.listProducts(resp);
     resp.log.info.table(results);
   } catch (ex) {
-    resp.events.send(`pacman.list.${msg.id}.error`, ex);
+    resp.events.send(`pacman.list.${msg.id}.error`, {
+      code: ex.code,
+      message: ex.message,
+      stack: ex.stack,
+    });
   } finally {
     resp.events.send(`pacman.list.${msg.id}.finished`, list);
   }
@@ -168,7 +172,11 @@ cmd['list-status'] = function* (msg, resp, next) {
 
     list = yield wpkg.list(arch, distribution, pattern, next);
   } catch (ex) {
-    resp.events.send(`pacman.list-status.${msg.id}.error`, ex);
+    resp.events.send(`pacman.list-status.${msg.id}.error`, {
+      code: ex.code,
+      message: ex.message,
+      stack: ex.stack,
+    });
   } finally {
     resp.events.send(`pacman.list-status.${msg.id}.finished`, list);
   }
@@ -185,7 +193,11 @@ cmd.search = function* (msg, resp, next) {
 
     list = yield wpkg.search(arch, distribution, pattern, next);
   } catch (ex) {
-    resp.events.send(`pacman.search.${msg.id}.error`, ex);
+    resp.events.send(`pacman.search.${msg.id}.error`, {
+      code: ex.code,
+      message: ex.message,
+      stack: ex.stack,
+    });
   } finally {
     resp.events.send(`pacman.search.${msg.id}.finished`, list);
   }
@@ -200,7 +212,11 @@ cmd.unlock = function* (msg, resp, next) {
 
     yield wpkg.unlock(arch, distribution, next);
   } catch (ex) {
-    resp.events.send(`pacman.unlock.${msg.id}.error`, ex);
+    resp.events.send(`pacman.unlock.${msg.id}.error`, {
+      code: ex.code,
+      message: ex.message,
+      stack: ex.stack,
+    });
   } finally {
     resp.events.send(`pacman.unlock.${msg.id}.finished`, list);
   }
@@ -914,7 +930,11 @@ cmd['zero-build'] = function* (msg, resp) {
     resp.events.send(`pacman.zero-build.${msg.id}.finished`);
   } catch (ex) {
     resp.log.err(ex.stack || ex.message || ex);
-    resp.events.send(`pacman.zero-build.${msg.id}.error`);
+    resp.events.send(`pacman.zero-build.${msg.id}.error`, {
+      code: ex.code,
+      message: ex.message,
+      stack: ex.stack,
+    });
   } finally {
     delete process.env.PEON_DEBUG_PKG;
   }
