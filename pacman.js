@@ -859,6 +859,57 @@ cmd.status = function* (msg, resp) {
 };
 
 /**
+ * Show informations about a package.
+ *
+ * @param {Object} msg - Xcraft message.
+ * @param {Object} resp - Response object.
+ * @param {function} next - Watt's callback.
+ */
+cmd.show = function* (msg, resp, next) {
+  const wpkg = require('xcraft-contrib-wpkg')(resp);
+
+  const {list, distribution} = extractPackages(
+    msg.data.packageRefs,
+    getDistribution(msg),
+    resp
+  );
+  const pkgs = list;
+
+  try {
+    const out = {};
+    for (const packageRef of pkgs) {
+      const pkg = utils.parsePkgRef(packageRef);
+      const dump = yield wpkg.show(pkg.name, pkg.arch, distribution, next);
+      out[packageRef] = dump;
+
+      /* For the CLI */
+      resp.log.dbg(`◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢`);
+      Object.keys(dump)
+        .filter((key) => dump[key] !== 'undefined')
+        .forEach((key) => {
+          if (/(Depends|X-Craft)/.test(key)) {
+            resp.log.dbg(`${key}:`);
+            dump[key]
+              .split(', ')
+              .sort()
+              .forEach((entry) => resp.log.dbg(`  ${entry}`));
+          } else {
+            resp.log.dbg(`${key}: ${dump[key]}`);
+          }
+        });
+    }
+    resp.events.send(`pacman.show.${msg.id}.finished`, out);
+  } catch (ex) {
+    resp.log.err(ex.stack || ex.message || ex);
+    resp.events.send(`pacman.show.${msg.id}.error`, {
+      code: ex.code,
+      message: ex.message,
+      stack: ex.stack,
+    });
+  }
+};
+
+/**
  * Try to compile the sources of a source package.
  *
  * @param {Object} msg - Xcraft message.
@@ -1564,6 +1615,14 @@ exports.xcraftCommands = function () {
       },
       'status': {
         desc: 'retrieve the status of a package',
+        options: {
+          params: {
+            optional: ['packageRefs', 'distribution'],
+          },
+        },
+      },
+      'show': {
+        desc: 'show informations about a package',
         options: {
           params: {
             optional: ['packageRefs', 'distribution'],
