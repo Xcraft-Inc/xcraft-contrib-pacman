@@ -884,8 +884,7 @@ cmd.show = function* (msg, resp, next) {
     );
     out[packageRef] = dump;
 
-    /* For the CLI */
-    resp.log.dbg(`◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢`);
+    /* For the REPL */
     Object.keys(dump)
       .filter((key) => dump[key] !== 'undefined')
       .forEach((key) => {
