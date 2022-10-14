@@ -28,6 +28,7 @@ var extractPackages = function (
 ) {
   var results = [];
   var pkgs = [];
+  const arch = xPlatform.getToolchainArch();
 
   if (packageRefs) {
     packageRefs = packageRefs
@@ -88,8 +89,15 @@ var extractPackages = function (
             def.dependency[type] &&
             Object.keys(def.dependency[type]).length > 0
           ) {
-            var depsList = Object.keys(def.dependency[type])
+            let depsList = Object.keys(def.dependency[type])
               .filter((dep) => !def.dependency[type][dep][0].external)
+              .filter((dep) =>
+                def.dependency[type][dep].some(
+                  (meta) =>
+                    meta.architecture.length === 0 ||
+                    meta.architecture.includes(arch)
+                )
+              )
               .join(',' + depsPattern + ',');
             depsList += ',' + depsPattern;
 
