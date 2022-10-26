@@ -1631,6 +1631,7 @@ exports.xcraftCommands = function () {
         },
       },
       'show': {
+        parallel: true,
         desc: 'show informations about a package',
         options: {
           params: {
