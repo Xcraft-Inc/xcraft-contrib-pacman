@@ -937,7 +937,7 @@ cmd.bom = function* (msg, resp, next) {
       let dump;
 
       try {
-        yield* show(name, version, next);
+        dump = yield* show(name, version, next);
       } catch (ex) {
         resp.log.warn(ex.message || ex);
         return;
