@@ -940,11 +940,15 @@ cmd.bom = function* (msg, resp, next) {
         dump = yield* show(name, version, next);
       } catch (ex) {
         resp.log.warn(ex.message || ex);
-        out[`${name}-${version}`] = {
-          name,
-          version,
-          missing: true,
-        };
+        if (!out[name]) {
+          out[name] = {
+            name,
+            version: [version],
+            missing: true,
+          };
+        } else if (!out[name].version.includes(version)) {
+          out[name].version.push(version);
+        }
         return;
       }
 
@@ -960,13 +964,16 @@ cmd.bom = function* (msg, resp, next) {
           .filter((pkg) => !pkg.name.endsWith('-src'));
 
         for (const pkg of pkgs) {
-          if (out[`${pkg.name}-${pkg.version}`]) {
+          if (out[pkg.name]) {
+            if (!out[pkg.name].version.includes(pkg.version)) {
+              out[pkg.name].version.push(pkg.version);
+            }
             continue;
           }
 
-          out[`${pkg.name}-${pkg.version}`] = {
+          out[pkg.name] = {
             name: pkg.name,
-            version: pkg.version,
+            version: [pkg.version],
           };
 
           yield* extract(pkg.name, pkg.version, next);
@@ -978,7 +985,7 @@ cmd.bom = function* (msg, resp, next) {
 
     for (const pkg in out) {
       resp.log.dbg(
-        `${out[pkg].name} ${out[pkg].version} ${
+        `${out[pkg].name} ${out[pkg].version.join(',')} ${
           out[pkg].missing ? 'MISSING' : ''
         }`
       );
