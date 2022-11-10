@@ -940,6 +940,11 @@ cmd.bom = function* (msg, resp, next) {
         dump = yield* show(name, version, next);
       } catch (ex) {
         resp.log.warn(ex.message || ex);
+        out[`${name}-${version}`] = {
+          name,
+          version,
+          missing: true,
+        };
         return;
       }
 
@@ -972,7 +977,11 @@ cmd.bom = function* (msg, resp, next) {
     yield* extract(pkg.name, version, next);
 
     for (const pkg in out) {
-      resp.log.dbg(`${out[pkg].name} ${out[pkg].version}`);
+      resp.log.dbg(
+        `${out[pkg].name} ${out[pkg].version} ${
+          out[pkg].missing ? 'MISSING' : ''
+        }`
+      );
     }
     resp.events.send(`pacman.bom.${msg.id}.finished`, out);
   } catch (ex) {
