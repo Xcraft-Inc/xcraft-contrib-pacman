@@ -918,6 +918,66 @@ cmd.show = function* (msg, resp, next) {
   }
 };
 
+cmd.bom = function* (msg, resp, next) {
+  const wpkg = require('xcraft-contrib-wpkg')(resp);
+
+  const {packageRef} = msg.data;
+  let distribution = getDistribution(msg);
+  const version = msg.data.version;
+
+  try {
+    const out = {};
+    const pkg = utils.parsePkgRef(packageRef);
+
+    const show = function* (name, version, next) {
+      return yield wpkg.show(name, pkg.arch, version, distribution, next);
+    };
+
+    const extract = function* (name, version, next) {
+      const dump = yield* show(name, version, next);
+
+      const _distribution = distribution.replace('/', '');
+      const key = `X-Craft-Packages-${_distribution}`;
+      if (dump[key] && dump[key] !== 'undefined') {
+        const pkgs = dump[key]
+          .split(', ')
+          .map((entry) => {
+            const m = entry.match(/([^ ]+) \((.*)\)/);
+            return {name: m[1], version: m[2]};
+          })
+          .filter((pkg) => !pkg.name.endsWith('-src'));
+
+        for (const pkg of pkgs) {
+          if (out[`${pkg.name}-${pkg.version}`]) {
+            continue;
+          }
+
+          out[`${pkg.name}-${pkg.version}`] = {
+            name: pkg.name,
+            version: pkg.version,
+          };
+
+          yield* extract(pkg.name, pkg.version, next);
+        }
+      }
+    };
+
+    yield* extract(pkg.name, version, next);
+
+    for (const pkg in out) {
+      resp.log.dbg(`${out[pkg].name} ${out[pkg].version}`);
+    }
+    resp.events.send(`pacman.bom.${msg.id}.finished`, out);
+  } catch (ex) {
+    resp.log.err(ex.stack || ex.message || ex);
+    resp.events.send(`pacman.bom.${msg.id}.error`, {
+      code: ex.code,
+      message: ex.message,
+      stack: ex.stack,
+    });
+  }
+};
+
 /**
  * Try to compile the sources of a source package.
  *
@@ -1633,6 +1693,15 @@ exports.xcraftCommands = function () {
       'show': {
         parallel: true,
         desc: 'show informations about a package',
+        options: {
+          params: {
+            optional: ['packageRef', 'version', 'distribution'],
+          },
+        },
+      },
+      'bom': {
+        parallel: true,
+        desc: 'dump BOM about a package',
         options: {
           params: {
             optional: ['packageRef', 'version', 'distribution'],
