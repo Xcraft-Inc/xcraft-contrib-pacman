@@ -964,10 +964,21 @@ cmd.bom = function* (msg, resp, next) {
           .filter((pkg) => !pkg.name.endsWith('-src'))
           .filter(
             (pkg) =>
-              dump?.Depends.split(', ').includes(pkg.name) ||
+              dump?.Depends.split(', ')
+                .map((s) => s.split(' ', 1)[0])
+                .includes(pkg.name) ||
+              dump?.['Build-Depends']
+                .split(', ')
+                .map((s) => s.split(' ', 1)[0])
+                .includes(pkg.name) ||
               dump?.['X-Craft-Build-Depends']
                 .split(', ')
-                .includes(`*${_distribution}@${pkg.name}`)
+                .map((s) => s.split(' ', 1)[0])
+                .includes(`*${_distribution}@${pkg.name}`) ||
+              dump?.['X-Craft-Build-Depends']
+                .split(', ')
+                .map((s) => s.split(' ', 1)[0])
+                .includes(pkg.name)
           );
 
         for (const pkg of pkgs) {
