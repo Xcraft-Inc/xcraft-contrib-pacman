@@ -934,7 +934,14 @@ cmd.bom = function* (msg, resp, next) {
     };
 
     const extract = function* (name, version, next) {
-      const dump = yield* show(name, version, next);
+      let dump;
+
+      try {
+        yield* show(name, version, next);
+      } catch (ex) {
+        resp.log.warn(ex.message || ex);
+        return;
+      }
 
       const _distribution = distribution.replace('/', '');
       const key = `X-Craft-Packages-${_distribution}`;
