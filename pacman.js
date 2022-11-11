@@ -954,11 +954,17 @@ function* getPackageBOM(
         return deps;
       }, deps);
 
-  const extract = function (pkg) {
+  const extractForSrc = function (pkg) {
     const deps = {};
     explode(deps, pkg.Depends);
     explode(deps, pkg['Build-Depends']);
     explode(deps, pkg['X-Craft-Build-Depends']);
+    return deps;
+  };
+
+  const extractForBin = function (pkg) {
+    const deps = {};
+    explode(deps, pkg.Depends);
     return deps;
   };
 
@@ -1014,7 +1020,7 @@ function* getPackageBOM(
     const srcPkgInfo = yield* show(srcPkg, version, 'sources', next);
 
     /* 3. Extract dependencies of the src package */
-    const srcDeps = extract(srcPkgInfo);
+    const srcDeps = extractForSrc(srcPkgInfo);
 
     /* 4. Extract versions of src dependencies */
     injectVersions(binPkgInfo, srcDeps);
@@ -1033,7 +1039,7 @@ function* getPackageBOM(
      * FIXME: the versions are not available, it needs to add the
      *        toolchain deps list in bin package too
      */
-    deps = extract(binPkgInfo);
+    deps = extractForBin(binPkgInfo);
   }
 
   for (const dep of Object.keys(deps)) {
