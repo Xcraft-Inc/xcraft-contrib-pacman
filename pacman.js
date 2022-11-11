@@ -944,7 +944,13 @@ function* getPackageBOM(
       .split(', ')
       .map((s) => s.split(' ', 1)[0])
       .reduce((deps, name) => {
-        deps[name] = {};
+        let value = {};
+        const x = name.split('@');
+        if (x.length > 1) {
+          name = x[1];
+          value = {extern: x[0].substring(1)};
+        }
+        deps[name] = value;
         return deps;
       }, deps);
 
@@ -1060,13 +1066,14 @@ cmd.bom = function* (msg, resp, next) {
       next
     );
 
-    for (const entry in pkgBOM) {
+    for (const name in pkgBOM) {
+      const versions = Object.keys(pkgBOM[name])
+        .filter((e) => e !== 'version' && e !== 'extern')
+        .join(', ');
       resp.log.dbg(
-        `${entry} ${new Array(40 - entry.length).join(' ')} ${Object.keys(
-          pkgBOM[entry]
-        )
-          .filter((e) => e !== 'version')
-          .join(', ')}`
+        `${name} ${new Array(30 - name.length).join(' ')} ${versions} ${
+          pkgBOM[name].extern ? pkgBOM[name].extern : ''
+        }`
       );
     }
 
