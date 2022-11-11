@@ -986,8 +986,18 @@ function* getPackageBOM(
   let deps;
 
   /* 1. pacman.show of bin package (for distrib dep versions) */
-  const binPkg = utils.parsePkgRef(packageRef);
-  const binPkgInfo = yield* show(binPkg, version, distribution, next);
+  let binPkg;
+  let binPkgInfo;
+  try {
+    binPkg = utils.parsePkgRef(packageRef);
+    binPkgInfo = yield* show(binPkg, version, distribution, next);
+  } catch (ex) {
+    if (ex !== 'package not found') {
+      throw ex;
+    }
+
+    return {[binPkg.name]: {version, [binPkg.version]: {missing: true}}};
+  }
 
   /* 2. pacman.show of src package (for deps) */
   try {
