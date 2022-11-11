@@ -1009,7 +1009,8 @@ function* getPackageBOM(
 
   /* 2. pacman.show of src package (for deps) */
   try {
-    const srcPkg = {...binPkg, ...{name: `${binPkg.name}-src`}};
+    const name = binPkg.name.replace(/(?:-stub|-src|-dev)$/, '');
+    const srcPkg = {...binPkg, ...{name: `${name}-src`}};
     const srcPkgInfo = yield* show(srcPkg, version, 'sources', next);
 
     /* 3. Extract dependencies of the src package */
@@ -1018,7 +1019,11 @@ function* getPackageBOM(
     /* 4. Extract versions of src dependencies */
     injectVersions(binPkgInfo, srcDeps);
 
-    deps = srcDeps;
+    deps = {
+      ...deps,
+      [name]: {version: srcPkgInfo.Version, [srcPkgInfo.Version]: {}},
+      ...srcDeps,
+    };
   } catch (ex) {
     if (ex !== 'package not found') {
       throw ex;
