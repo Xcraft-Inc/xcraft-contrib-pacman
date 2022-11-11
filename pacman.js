@@ -1066,13 +1066,18 @@ cmd.bom = function* (msg, resp, next) {
       next
     );
 
+    const nameLength =
+      Object.keys(pkgBOM)
+        .map((name) => name.length)
+        .reduce((max, cur) => (cur > max ? cur : max), 0) + 5;
+
     for (const name in pkgBOM) {
       const versions = Object.keys(pkgBOM[name])
         .filter((e) => e !== 'version' && e !== 'extern')
         .join(', ');
       resp.log.dbg(
-        `${name} ${new Array(30 - name.length).join(' ')} ${versions} ${
-          pkgBOM[name].extern ? pkgBOM[name].extern : ''
+        `${name} ${new Array(nameLength - name.length).join(' ')} ${versions} ${
+          pkgBOM[name].extern ? 'extern' : ''
         }`
       );
     }
