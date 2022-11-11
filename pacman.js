@@ -918,7 +918,20 @@ cmd.show = function* (msg, resp, next) {
   }
 };
 
-function* getPackageBOM(resp, packageRef, version, distribution, next) {
+function* getPackageBOM(
+  resp,
+  packageRef,
+  version,
+  distribution,
+  processed = {},
+  next
+) {
+  if (processed[`${packageRef}-${version}-${distribution}`]) {
+    return {};
+  }
+
+  processed[`${packageRef}-${version}-${distribution}`] = true;
+
   const show = function* ({name, arch}, version, distribution, next) {
     const wpkg = require('xcraft-contrib-wpkg')(resp);
     return yield wpkg.show(name, arch, version, distribution, next);
@@ -1005,6 +1018,7 @@ function* getPackageBOM(resp, packageRef, version, distribution, next) {
       dep,
       deps[dep].version,
       distribution,
+      processed,
       next
     );
 
@@ -1032,6 +1046,7 @@ cmd.bom = function* (msg, resp, next) {
       packageRef,
       version,
       distribution,
+      {},
       next
     );
 
