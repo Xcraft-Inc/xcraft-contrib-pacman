@@ -1003,10 +1003,7 @@ function* getPackageBOM(
     }
 
     return {
-      [binPkg.name]: {
-        version,
-        [version]: {missing: true},
-      },
+      [binPkg.name]: {version, [version]: {missing: true}},
     };
   }
 
