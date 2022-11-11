@@ -1002,7 +1002,12 @@ function* getPackageBOM(
       throw ex;
     }
 
-    return {[binPkg.name]: {version, [binPkg.version]: {missing: true}}};
+    return {
+      [binPkg.name]: {
+        version: binPkgInfo.Version,
+        [binPkgInfo.Version]: {missing: true},
+      },
+    };
   }
 
   /* 2. pacman.show of src package (for deps) */
@@ -1048,7 +1053,13 @@ function* getPackageBOM(
     }
   }
 
-  return deps;
+  return {
+    ...deps,
+    [binPkg.name]: {
+      version: binPkgInfo.Version,
+      [binPkgInfo.Version]: {},
+    },
+  };
 }
 
 cmd.bom = function* (msg, resp, next) {
