@@ -1032,7 +1032,8 @@ function* getPackageBOM(
     /* 3. Extract dependencies of the bin package */
     const binDeps = extract(binPkgInfo);
 
-    return {}; // FIXME
+    // FIXME: the versions are not available, it needs to add the toolchain deps list in bin package too
+    return binDeps;
   }
 
   for (const dep in {...deps}) {
