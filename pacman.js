@@ -944,11 +944,11 @@ function* getPackageBOM(
       .split(', ')
       .map((s) => s.split(' ', 1)[0])
       .reduce((deps, name) => {
-        let value = {};
+        let value = {version: null};
         const x = name.split('@');
         if (x.length > 1) {
           name = x[1];
-          value = {extern: x[0].substring(1)};
+          value.extern = x[0].substring(1);
         }
         deps[name] = value;
         return deps;
@@ -1029,14 +1029,14 @@ function* getPackageBOM(
       throw ex;
     }
 
-    /* 3. Extract dependencies of the bin package */
-    const binDeps = extract(binPkgInfo);
-
-    // FIXME: the versions are not available, it needs to add the toolchain deps list in bin package too
-    return binDeps;
+    /* 3. Extract dependencies of the bin package
+     * FIXME: the versions are not available, it needs to add the
+     *        toolchain deps list in bin package too
+     */
+    deps = extract(binPkgInfo);
   }
 
-  for (const dep in {...deps}) {
+  for (const dep of Object.keys(deps)) {
     const _deps = yield* getPackageBOM(
       resp,
       dep,
@@ -1050,7 +1050,7 @@ function* getPackageBOM(
       const _version = _deps[_dep].version;
       if (!deps[_dep]) {
         deps[_dep] = _deps[_dep];
-      } else if (!deps[_dep][_version]) {
+      } else if (_version && !deps[_dep][_version]) {
         deps[_dep][_version] = _deps[_dep][_version];
       }
     }
