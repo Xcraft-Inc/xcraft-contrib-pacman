@@ -1077,19 +1077,21 @@ cmd.bom = function* (msg, resp, next) {
       next
     );
 
+    const keys = Object.keys(pkgBOM).sort();
+    const pkg = utils.parsePkgRef(packageRef);
     const nameLength =
       Object.keys(pkgBOM)
         .map((name) => name.length)
         .reduce((max, cur) => (cur > max ? cur : max), 0) + 5;
 
-    for (const name in pkgBOM) {
+    for (const name of keys) {
       const versions = Object.keys(pkgBOM[name])
         .filter((e) => e !== 'version' && e !== 'extern')
         .join(', ');
       resp.log.dbg(
-        `${name} ${new Array(nameLength - name.length).join(' ')} ${versions} ${
-          pkgBOM[name].extern ? 'extern' : ''
-        }`
+        `${name === pkg.name ? '×' : ' '} ${name} ${new Array(
+          nameLength - name.length
+        ).join(' ')} ${versions} ${pkgBOM[name].extern ? 'extern' : ''}`
       );
     }
 
