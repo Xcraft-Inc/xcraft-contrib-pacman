@@ -1091,7 +1091,7 @@ cmd.bom = function* (msg, resp, next) {
       resp.log.dbg(
         `${name === pkg.name ? '×' : ' '} ${name} ${new Array(
           nameLength - name.length
-        ).join(' ')} ${versions} ${pkgBOM[name].extern ? 'extern' : ''}`
+        ).join(' ')} ${pkgBOM[name].extern ? 'extern' : '      '} ${versions}`
       );
     }
 
