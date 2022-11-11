@@ -918,97 +918,134 @@ cmd.show = function* (msg, resp, next) {
   }
 };
 
-cmd.bom = function* (msg, resp, next) {
-  const wpkg = require('xcraft-contrib-wpkg')(resp);
+function* getPackageBOM(resp, packageRef, version, distribution, next) {
+  const show = function* ({name, arch}, version, distribution, next) {
+    const wpkg = require('xcraft-contrib-wpkg')(resp);
+    return yield wpkg.show(name, arch, version, distribution, next);
+  };
 
+  const explode = (deps, entry) =>
+    entry &&
+    entry !== 'undefined' &&
+    entry
+      .split(', ')
+      .map((s) => s.split(' ', 1)[0])
+      .reduce((deps, name) => {
+        deps[name] = {};
+        return deps;
+      }, deps);
+
+  const extract = function (pkg) {
+    const deps = {};
+    explode(deps, pkg.Depends);
+    explode(deps, pkg['Build-Depends']);
+    explode(deps, pkg['X-Craft-Build-Depends']);
+    return deps;
+  };
+
+  const injectVersions = function (pkg, deps) {
+    const versions = pkg[`X-Craft-Packages-${distribution.replace('/', '')}`]
+      .split(', ')
+      .map((entry) => {
+        const m = entry.match(/([^ ]+) \((.*)\)/);
+        return {
+          name: m[1],
+          version: m[2],
+        };
+      })
+      .reduce((versions, entry) => {
+        versions[entry.name] = entry.version;
+        return versions;
+      }, {});
+
+    /* Remove not installed deps */
+    Object.keys(deps)
+      .filter((dep) => !versions[dep])
+      .forEach((dep) => delete deps[dep]);
+
+    /* Inject the version provided by the binary package */
+    Object.keys(deps).forEach((dep) => {
+      deps[dep][versions[dep]] = {};
+      deps[dep].version = versions[dep];
+    });
+  };
+
+  let deps;
+
+  /* 1. pacman.show of bin package (for distrib dep versions) */
+  const binPkg = utils.parsePkgRef(packageRef);
+  const binPkgInfo = yield* show(binPkg, version, distribution, next);
+
+  /* 2. pacman.show of src package (for deps) */
+  try {
+    const srcPkg = {...binPkg, ...{name: `${binPkg.name}-src`}};
+    const srcPkgInfo = yield* show(srcPkg, version, 'sources', next);
+
+    /* 3. Extract dependencies of the src package */
+    const srcDeps = extract(srcPkgInfo);
+
+    /* 4. Extract versions of src dependencies */
+    injectVersions(binPkgInfo, srcDeps);
+
+    deps = srcDeps;
+  } catch (ex) {
+    if (ex !== 'package not found') {
+      throw ex;
+    }
+
+    /* 3. Extract dependencies of the bin package */
+    const binDeps = extract(binPkgInfo);
+
+    return {}; // FIXME
+  }
+
+  for (const dep in {...deps}) {
+    const _deps = yield* getPackageBOM(
+      resp,
+      dep,
+      deps[dep].version,
+      distribution,
+      next
+    );
+
+    for (const _dep in _deps) {
+      const _version = _deps[_dep].version;
+      if (!deps[_dep]) {
+        deps[_dep] = _deps[_dep];
+      } else if (!deps[_dep][_version]) {
+        deps[_dep][_version] = _deps[_dep][_version];
+      }
+    }
+  }
+
+  return deps;
+}
+
+cmd.bom = function* (msg, resp, next) {
   const {packageRef} = msg.data;
   let distribution = getDistribution(msg);
   const version = msg.data.version;
 
   try {
-    const out = {};
-    const pkg = utils.parsePkgRef(packageRef);
+    const pkgBOM = yield* getPackageBOM(
+      resp,
+      packageRef,
+      version,
+      distribution,
+      next
+    );
 
-    const show = function* (name, version, next) {
-      return yield wpkg.show(name, pkg.arch, version, distribution, next);
-    };
-
-    const extract = function* (name, version, next) {
-      let dump;
-
-      try {
-        dump = yield* show(name, version, next);
-      } catch (ex) {
-        resp.log.warn(ex.message || ex);
-        if (!out[name]) {
-          out[name] = {
-            name,
-            version: [version],
-            missing: true,
-          };
-        } else if (!out[name].version.includes(version)) {
-          out[name].version.push(version);
-        }
-        return;
-      }
-
-      const _distribution = distribution.replace('/', '');
-      const key = `X-Craft-Packages-${_distribution}`;
-      if (dump[key] && dump[key] !== 'undefined') {
-        const pkgs = dump[key]
-          .split(', ')
-          .map((entry) => {
-            const m = entry.match(/([^ ]+) \((.*)\)/);
-            return {name: m[1], version: m[2]};
-          })
-          .filter((pkg) => !pkg.name.endsWith('-src'))
-          .filter(
-            (pkg) =>
-              dump?.Depends.split(', ')
-                .map((s) => s.split(' ', 1)[0])
-                .includes(pkg.name) ||
-              dump?.['Build-Depends']
-                .split(', ')
-                .map((s) => s.split(' ', 1)[0])
-                .includes(pkg.name) ||
-              dump?.['X-Craft-Build-Depends']
-                .split(', ')
-                .map((s) => s.split(' ', 1)[0])
-                .includes(`*${_distribution}@${pkg.name}`) ||
-              dump?.['X-Craft-Build-Depends']
-                .split(', ')
-                .map((s) => s.split(' ', 1)[0])
-                .includes(pkg.name)
-          );
-
-        for (const pkg of pkgs) {
-          if (out[pkg.name]) {
-            if (!out[pkg.name].version.includes(pkg.version)) {
-              out[pkg.name].version.push(pkg.version);
-            }
-            continue;
-          }
-
-          out[pkg.name] = {
-            name: pkg.name,
-            version: [pkg.version],
-          };
-
-          yield* extract(pkg.name, pkg.version, next);
-        }
-      }
-    };
-
-    yield* extract(pkg.name, version, next);
-
-    for (const pkg in out) {
+    for (const entry in pkgBOM) {
       resp.log.dbg(
-        `${out[pkg].name} ${out[pkg].version.join(',')} ${
-          out[pkg].missing ? 'MISSING' : ''
-        }`
+        `${entry} ${new Array(40 - entry.length).join(' ')} ${Object.keys(
+          pkgBOM[entry]
+        )
+          .filter((e) => e !== 'version')
+          .join(', ')}`
       );
     }
-    resp.events.send(`pacman.bom.${msg.id}.finished`, out);
+
+    resp.events.send(`pacman.bom.${msg.id}.finished`, pkgBOM);
   } catch (ex) {
     resp.log.err(ex.stack || ex.message || ex);
     resp.events.send(`pacman.bom.${msg.id}.error`, {
