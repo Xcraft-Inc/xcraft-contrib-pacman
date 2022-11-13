@@ -971,6 +971,7 @@ function* getPackageBOM(
   const injectVersions = function (pkg, deps) {
     const versions = pkg[`X-Craft-Packages-${distribution.replace('/', '')}`]
       .split(', ')
+      .filter((entry) => entry !== 'undefined')
       .map((entry) => {
         const m = entry.match(/([^ ]+) \((.*)\)/);
         return {
