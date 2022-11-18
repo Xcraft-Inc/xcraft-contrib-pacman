@@ -42,7 +42,7 @@ var extractPackages = function (
     pkgs = list.listProducts();
 
     pkgs.forEach(function (item) {
-      results.push(item.name);
+      results.push(item.Name);
     });
   } else {
     pkgs = packageRefs.split(',');
