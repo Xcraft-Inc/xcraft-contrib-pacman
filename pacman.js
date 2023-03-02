@@ -1232,6 +1232,30 @@ cmd.remove = function* (msg, resp) {
 };
 
 /**
+ * Autoremove implicit packages.
+ *
+ * @param {Object} msg - Xcraft message.
+ * @param {Object} resp - Response object.
+ */
+cmd.autoremove = function* (msg, resp) {
+  const wpkg = require('xcraft-contrib-wpkg')(resp);
+
+  const arch = xPlatform.getToolchainArch();
+  const distribution = getDistribution(msg);
+  let status = resp.events.status.succeeded;
+
+  try {
+    yield wpkg.autoremove(arch, distribution);
+    xEnv.devrootUpdate(distribution);
+  } catch (ex) {
+    resp.log.err(ex.stack || ex);
+    status = resp.events.status.failed;
+  }
+
+  resp.events.send(`pacman.autoremove.${msg.id}.finished`, status);
+};
+
+/**
  * Remove all the generated files from the temporary directory.
  *
  * @param {Object} msg - Xcraft message.
@@ -1885,6 +1909,14 @@ exports.xcraftCommands = function () {
         options: {
           params: {
             optional: ['packageRefs', 'distribution', 'recursive'],
+          },
+        },
+      },
+      'autoremove': {
+        desc: 'autoremove implicit packages',
+        options: {
+          params: {
+            optional: ['distribution'],
           },
         },
       },
