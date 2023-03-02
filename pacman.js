@@ -1232,6 +1232,55 @@ cmd.remove = function* (msg, resp) {
 };
 
 /**
+ * Try to remove all package that are installed in a distribution.
+ *
+ * @param {Object} msg - Xcraft message.
+ * @param {Object} resp - Response object.
+ * @param {function} next - Watt's callback.
+ */
+cmd.removeAll = function* (msg, resp, next) {
+  const wpkg = require('xcraft-contrib-wpkg')(resp);
+  let list = [];
+
+  try {
+    const {arch = xPlatform.getToolchainArch()} = msg.data;
+    const distribution = getDistribution(msg);
+
+    let skip = true;
+    list = (yield wpkg.list(arch, distribution, null, next))
+      .filter((row) => {
+        if (!skip) {
+          return true;
+        }
+        if (row.startsWith('+++')) {
+          skip = false;
+        }
+        return false;
+      })
+      .reduce((list, row) => {
+        const matches = row.match(/^[^ ]{2,3}[ ]+([^ ]+)/);
+        list.push(matches[1]);
+        return list;
+      }, []);
+
+    for (const packageName of list) {
+      yield wpkg.setSelection(packageName, arch, 'auto', distribution);
+    }
+
+    yield wpkg.autoremove(arch, distribution);
+    xEnv.devrootUpdate(distribution);
+  } catch (ex) {
+    resp.events.send(`pacman.removeAll.${msg.id}.error`, {
+      code: ex.code,
+      message: ex.message,
+      stack: ex.stack,
+    });
+  } finally {
+    resp.events.send(`pacman.removeAll.${msg.id}.finished`, list);
+  }
+};
+
+/**
  * Autoremove implicit packages.
  *
  * @param {Object} msg - Xcraft message.
@@ -1911,6 +1960,14 @@ exports.xcraftCommands = function () {
         options: {
           params: {
             optional: ['packageRefs', 'distribution', 'recursive'],
+          },
+        },
+      },
+      'removeAll': {
+        desc: 'remove all packages',
+        options: {
+          params: {
+            optional: ['distribution', 'arch'],
           },
         },
       },
