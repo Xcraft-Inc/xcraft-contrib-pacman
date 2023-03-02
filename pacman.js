@@ -1240,19 +1240,21 @@ cmd.remove = function* (msg, resp) {
 cmd.autoremove = function* (msg, resp) {
   const wpkg = require('xcraft-contrib-wpkg')(resp);
 
-  const arch = xPlatform.getToolchainArch();
-  const distribution = getDistribution(msg);
-  let status = resp.events.status.succeeded;
-
   try {
+    const {arch = xPlatform.getToolchainArch()} = msg.data;
+    const distribution = getDistribution(msg);
+
     yield wpkg.autoremove(arch, distribution);
     xEnv.devrootUpdate(distribution);
   } catch (ex) {
-    resp.log.err(ex.stack || ex);
-    status = resp.events.status.failed;
+    resp.events.send(`pacman.autoremove.${msg.id}.error`, {
+      code: ex.code,
+      message: ex.message,
+      stack: ex.stack,
+    });
+  } finally {
+    resp.events.send(`pacman.autoremove.${msg.id}.finished`);
   }
-
-  resp.events.send(`pacman.autoremove.${msg.id}.finished`, status);
 };
 
 /**
@@ -1916,7 +1918,7 @@ exports.xcraftCommands = function () {
         desc: 'autoremove implicit packages',
         options: {
           params: {
-            optional: ['distribution'],
+            optional: ['distribution', 'arch'],
           },
         },
       },
