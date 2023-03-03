@@ -1404,7 +1404,7 @@ cmd.unpublish = function* (msg, resp) {
         idx === pkgs.length - 1
       );
     } catch (ex) {
-      resp.log.err(ex.stack || ex);
+      resp.log.warn(ex.stack || ex);
       status = resp.events.status.failed;
     }
   }
