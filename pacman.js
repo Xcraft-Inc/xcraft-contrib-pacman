@@ -625,7 +625,7 @@ cmd.make = function* (msg, resp, next) {
           packageArgsOther[match[2]] = match[3];
         }
       } else {
-        match = arg.trim().match(/^d:([a-z]+)/);
+        match = arg.trim().match(/^d:([a-z]+@[a-z]+)/);
         if (match) {
           distribution = `${match[1]}/`;
         }
@@ -639,25 +639,13 @@ cmd.make = function* (msg, resp, next) {
     JSON.stringify(packageArgs, null, 2)
   );
 
-  /* FIXME: replace pacmanConfig.pkgToolchainRepository by distribution
-   *        and by default it should make the package for all distributions
-   *        (in the case of non-source packages)
-   */
-  const pkgs = extractPackages(
-    packageRefs,
-    pacmanConfig.pkgToolchainRepository,
-    resp
-  ).list;
+  const pkgs = extractPackages(packageRefs, distribution, resp).list;
   let status = resp.events.status.succeeded;
 
   const cleanArg = {};
   if (packageRefs) {
     cleanArg.packageNames = pkgs.join(',');
-    /* FIXME: replace pacmanConfig.pkgToolchainRepository by distribution
-     *        and by default it should clean the package for all distributions
-     *        (in the case of non-source packages)
-     */
-    cleanArg.distribution = pacmanConfig.pkgToolchainRepository;
+    cleanArg.distribution = distribution;
   }
 
   try {
@@ -683,7 +671,14 @@ cmd.make = function* (msg, resp, next) {
     }
 
     try {
-      const result = yield make.package(pkg.name, pkg.arch, pkgArgs, null);
+      const result = yield make.package(
+        pkg.name,
+        pkg.arch,
+        pkgArgs,
+        null,
+        distribution,
+        next
+      );
       if (result.bump.length) {
         /* Complete the bump list if necessary */
         for (const b of result.bump) {
