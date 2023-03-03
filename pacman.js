@@ -1234,6 +1234,13 @@ cmd.remove = function* (msg, resp) {
 /**
  * Try to remove all package that are installed in a distribution.
  *
+ * Here we use a trick. Instead of trying to remove explicitly each package
+ * with the recursive flag (it's possible to have errors in this case), we
+ * change the selection mode of all packages. When the selection is set to
+ * 'auto', it means that wpkg considers that these packages are not installed
+ * explicitly, then the autoremove wpkg command is able to remove all packages
+ * with this mode.
+ *
  * @param {Object} msg - Xcraft message.
  * @param {Object} resp - Response object.
  * @param {function} next - Watt's callback.
