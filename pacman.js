@@ -676,7 +676,9 @@ cmd.make = function* (msg, resp, next) {
         pkg.arch,
         pkgArgs,
         null,
-        distribution,
+        distribution !== pacmanConfig.pkgToolchainRepository
+          ? distribution
+          : null,
         next
       );
       if (result.bump.length) {
