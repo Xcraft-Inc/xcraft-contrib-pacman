@@ -678,8 +678,7 @@ cmd.make = function* (msg, resp, next) {
         null,
         distribution !== pacmanConfig.pkgToolchainRepository
           ? distribution
-          : null,
-        next
+          : null
       );
       if (result.bump.length) {
         /* Complete the bump list if necessary */
