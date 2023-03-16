@@ -625,7 +625,7 @@ cmd.make = function* (msg, resp, next) {
           packageArgsOther[match[2]] = match[3];
         }
       } else {
-        match = arg.trim().match(/^d:([a-z]+[+][a-z]+)/);
+        match = arg.trim().match(/^d:([a-z0-9]+[+][a-z0-9]+)/);
         if (match) {
           distribution = `${match[1]}/`;
         }
