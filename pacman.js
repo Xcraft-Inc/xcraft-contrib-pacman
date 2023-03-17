@@ -1249,6 +1249,11 @@ cmd.removeAll = function* (msg, resp, next) {
     const {arch = xPlatform.getToolchainArch()} = msg.data;
     const distribution = getDistribution(msg);
 
+    if (!wpkg.targetExists(distribution)) {
+      resp.events.send(`pacman.removeAll.${msg.id}.finished`, list);
+      return;
+    }
+
     let skip = true;
     list = (yield wpkg.list(arch, distribution, null, next))
       .filter((row) => {
