@@ -1461,6 +1461,24 @@ cmd.delSource = function* (msg, resp) {
   }
 };
 
+cmd.syncRepository = function* (msg, resp) {
+  const wpkg = require('xcraft-contrib-wpkg')(resp);
+
+  try {
+    const distribution = getDistribution(msg);
+
+    yield wpkg.syncRepository(distribution);
+  } catch (ex) {
+    resp.events.send(`pacman.syncRepository.${msg.id}.error`, {
+      code: ex.code,
+      message: ex.message,
+      stack: ex.stack,
+    });
+  } finally {
+    resp.events.send(`pacman.syncRepository.${msg.id}.finished`);
+  }
+};
+
 cmd.graph = function* (msg, resp) {
   const {graph} = require('./lib/graph.js')(resp);
 
@@ -2012,6 +2030,14 @@ exports.xcraftCommands = function () {
           params: {
             required: ['uri'],
             optional: ['distribution', 'arch', 'location', 'components'],
+          },
+        },
+      },
+      'syncRepository': {
+        desc: 'synchronize archives repositories',
+        options: {
+          params: {
+            optional: ['distribution'],
           },
         },
       },
