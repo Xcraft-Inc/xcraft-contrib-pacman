@@ -26,8 +26,8 @@ if [%1]==[cmake] (
 
 
 if not "[%SUBNAME%]"=="[]" (
-  set "_SUBNAME=%SUBNAME:<=%"
-  set "_SUBNAME=%_SUBNAME:>=%"
+  set "_SUBNAME=%SUBNAME:^<=%"
+  set "_SUBNAME=%_SUBNAME:^>=%"
 )
 if not [%_SUBNAME%]==[] if not [%_SUBNAME%]==[PACMAN.SUBNAME] (
   set NAME="%NAME%-%SUBNAME%"
