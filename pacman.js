@@ -1153,7 +1153,7 @@ cmd.build = function* (msg, resp) {
   resp.events.send(`pacman.build.${msg.id}.finished`, status);
 };
 
-cmd['zero-build'] = function* (msg, resp) {
+cmd['zeroBuild'] = function* (msg, resp) {
   const pacmanConfig = require('xcraft-core-etc')(null, resp).load(
     'xcraft-contrib-pacman'
   );
@@ -1181,10 +1181,10 @@ cmd['zero-build'] = function* (msg, resp) {
           `A 'source-debug-env.(sh|cmd)' script can be used in order to manually load the build environment.`
       ) + ' '
     );
-    resp.events.send(`pacman.zero-build.${msg.id}.finished`);
+    resp.events.send(`pacman.zeroBuild.${msg.id}.finished`);
   } catch (ex) {
     resp.log.err(ex.stack || ex.message || ex);
-    resp.events.send(`pacman.zero-build.${msg.id}.error`, {
+    resp.events.send(`pacman.zeroBuild.${msg.id}.error`, {
       code: ex.code,
       message: ex.message,
       stack: ex.stack,
@@ -1955,7 +1955,7 @@ exports.xcraftCommands = function () {
           },
         },
       },
-      'zero-build': {
+      'zeroBuild': {
         desc: 'prepare a package for building (without starting the build)',
         options: {
           params: {
