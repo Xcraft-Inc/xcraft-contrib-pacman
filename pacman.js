@@ -1385,6 +1385,7 @@ cmd.publish = function* (msg, resp) {
  * @param {Object} resp - Response object.
  */
 cmd.unpublish = function* (msg, resp) {
+  const wpkg = require('xcraft-contrib-wpkg')(resp);
   const publish = require('./lib/publish.js')(resp);
 
   const {list, distribution} = extractPackages(
@@ -1392,22 +1393,25 @@ cmd.unpublish = function* (msg, resp) {
     getDistribution(msg),
     resp
   );
+  let haveSrc = false;
   const pkgs = list;
   let status = resp.events.status.succeeded;
 
   /* Try to unpublish most of packages; continue with the next on error. */
-  for (const [idx, packageRef] of pkgs.entries()) {
+  for (const [, packageRef] of pkgs.entries()) {
+    const pkg = utils.parsePkgRef(packageRef);
+    haveSrc = pkg.name.endsWith('-src');
     try {
-      yield publish.remove(
-        packageRef,
-        null,
-        distribution,
-        idx === pkgs.length - 1
-      );
+      yield publish.remove(packageRef, null, distribution, false);
     } catch (ex) {
       resp.log.warn(ex.stack || ex);
       status = resp.events.status.failed;
     }
+  }
+
+  yield wpkg.syncRepository(distribution);
+  if (haveSrc) {
+    yield wpkg.syncRepository('sources/');
   }
 
   resp.events.send(`pacman.unpublish.${msg.id}.finished`, status);
