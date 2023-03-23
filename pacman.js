@@ -1397,6 +1397,11 @@ cmd.unpublish = function* (msg, resp) {
   const pkgs = list;
   let status = resp.events.status.succeeded;
 
+  if (!wpkg.targetExists(distribution)) {
+    resp.events.send(`pacman.unpublish.${msg.id}.finished`, status);
+    return;
+  }
+
   /* Try to unpublish most of packages; continue with the next on error. */
   for (const [, packageRef] of pkgs.entries()) {
     const pkg = utils.parsePkgRef(packageRef);
