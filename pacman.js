@@ -1431,6 +1431,7 @@ cmd.addSource = function* (msg, resp) {
     const {arch = xPlatform.getToolchainArch()} = msg.data;
     const {uri, distribution, location, components} = msg.data;
 
+    yield admindir.create(null, null, distribution);
     yield admindir.addSource(
       uri,
       arch,
