@@ -4,8 +4,8 @@ var should = require('should'); /* jshint ignore:line */
 var xPlatform = require('xcraft-core-platform');
 var utils = require('../lib/utils.js');
 
-describe('xcraft-contrib-pacman/utils', function () {
-  describe('#parsePkgRef ()', function () {
+describe('xcraft.pacman', function () {
+  describe('utils parsePkgRef', function () {
     var packageRef = {
       nameAll: 'namespace+foobar:all',
       nameArch: 'namespace+foobar:linux-amd64',
