@@ -52,6 +52,7 @@
   "author": "Mathieu Schroeter",
   "license": "MIT",
   "devDependencies": {
+    "chai": "^3.5.0",
     "prettier": "2.0.4",
     "should": "^11.2.1",
     "xcraft-dev-prettier": "^2.0.0",
