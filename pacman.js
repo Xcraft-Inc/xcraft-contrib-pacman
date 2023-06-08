@@ -1531,6 +1531,8 @@ cmd.version = function* (msg, resp) {
   const X = clc.redBright('⨯');
   const H = clc.magentaBright('?');
 
+  const checked = {};
+
   const checkVersion = watt(function* (type, uri) {
     let status = X;
     switch (type) {
@@ -1556,70 +1558,89 @@ cmd.version = function* (msg, resp) {
     return status;
   });
 
-  for (const [, packageRef] of list.entries()) {
-    try {
-      const pkg = utils.parsePkgRef(packageRef);
-      const packageDef = definition.load(pkg.name, {}, resp, null);
-      const getObj = utils.makeGetObj(clone(packageDef));
-      const type = xPeonUtils.typeFromUri(getObj);
-      if (!type) {
-        continue;
+  const check = watt(function* (packageRef, nextVersion = null) {
+    const pkg = utils.parsePkgRef(packageRef);
+    const packageDef = definition.load(pkg.name, {}, resp, null);
+    const getObj = utils.makeGetObj(clone(packageDef));
+    const type = xPeonUtils.typeFromUri(getObj);
+    if (!type) {
+      return;
+    }
+
+    if (nextVersion) {
+      packageDef.$version = semver.inc(nextVersion, 'patch');
+    }
+
+    const versions = [];
+    versions.push(`${packageDef.$version}`);
+
+    let version0 = versions[0];
+    const length = version0.split('.').length;
+    if (length <= 3 && getObj.uri !== packageDef.data.get.uri) {
+      switch (length) {
+        case 1:
+          version0 += '.0';
+        // eslint-disable-next-line no-fallthrough
+        case 2:
+          version0 += '.0';
       }
-
-      const versions = [];
-      versions.push(`${packageDef.$version}`);
-
-      let version0 = versions[0];
-      const length = version0.split('.').length;
-      if (length <= 3 && getObj.uri !== packageDef.data.get.uri) {
-        switch (length) {
-          case 1:
-            version0 += '.0';
-          // eslint-disable-next-line no-fallthrough
-          case 2:
-            version0 += '.0';
-        }
-        if (length >= 3) {
-          let version = semver.inc(version0, 'patch');
-          versions.push(version);
-        }
-        if (length >= 2) {
-          let version = semver.inc(version0, 'minor');
-          if (version && length === 2) {
-            version = version.split('.').slice(0, -1).join('.');
-          }
-          versions.push(version);
-        }
-        let version = semver.inc(version0, 'major');
-        if (version && length <= 2) {
-          version = version
-            .split('.')
-            .slice(0, length === 2 ? -1 : -2)
-            .join('.');
+      if (length >= 3) {
+        let version = semver.inc(version0, 'patch');
+        versions.push(version);
+      }
+      if (length >= 2) {
+        let version = semver.inc(version0, 'minor');
+        if (version && length === 2) {
+          version = version.split('.').slice(0, -1).join('.');
         }
         versions.push(version);
       }
-
-      for (const version of versions) {
-        if (!version) {
-          continue;
-        }
-        packageDef.$version = version;
-        const getObj = utils.makeGetObj(clone(packageDef));
-        const status = yield checkVersion(type, getObj.uri);
-
-        if (version === versions[0]) {
-          resp.log.info(
-            `[${status}] ${type.toUpperCase()}${new Array(5 - type.length).join(
-              ' '
-            )} ${pkg.name} v${version}`
-          );
-        } else if (version !== versions[versions.length - 1]) {
-          resp.log.info(` |- [${status}] v${version}`);
-        } else {
-          resp.log.info(` '- [${status}] v${version}`);
-        }
+      let version = semver.inc(version0, 'major');
+      if (version && length <= 2) {
+        version = version
+          .split('.')
+          .slice(0, length === 2 ? -1 : -2)
+          .join('.');
       }
+      versions.push(version);
+    }
+
+    let nextVersionCheck;
+
+    for (const version of versions) {
+      if (!version || checked[version]) {
+        continue;
+      }
+      packageDef.$version = version;
+      const getObj = utils.makeGetObj(clone(packageDef));
+      const status = yield checkVersion(type, getObj.uri);
+
+      if (status === V && version !== versions[0]) {
+        nextVersionCheck = version;
+      }
+
+      if (version === versions[0] && !nextVersion) {
+        resp.log.info(
+          `[${status}] ${type.toUpperCase()}${new Array(5 - type.length).join(
+            ' '
+          )} ${pkg.name} v${version}`
+        );
+      } else {
+        resp.log.info(` └ [${status}] v${version}`);
+      }
+
+      checked[version] = true;
+    }
+
+    return nextVersionCheck;
+  });
+
+  for (const [, packageRef] of list.entries()) {
+    try {
+      let nextVersion;
+      do {
+        nextVersion = yield check(packageRef, nextVersion);
+      } while (nextVersion);
     } catch (ex) {
       resp.log.err(ex.stack || ex);
       status = resp.events.status.failed;
