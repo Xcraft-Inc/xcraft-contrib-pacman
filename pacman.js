@@ -1685,6 +1685,7 @@ cmd.refrhash = function* (msg, resp, next) {
         fse.removeSync(tmp);
       }
     }
+    resp.events.send(`pacman.refrhash.${msg.id}.finished`);
   } catch (ex) {
     resp.log.err(ex.stack || ex.message || ex);
     resp.events.send(`pacman.refrhash.${msg.id}.error`, {
@@ -1692,8 +1693,6 @@ cmd.refrhash = function* (msg, resp, next) {
       message: ex.message,
       stack: ex.stack,
     });
-  } finally {
-    resp.events.send(`pacman.refrhash.${msg.id}.finished`);
   }
 };
 
