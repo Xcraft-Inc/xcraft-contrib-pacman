@@ -1650,6 +1650,44 @@ cmd.version = function* (msg, resp) {
   resp.events.send(`pacman.version.${msg.id}.finished`, status);
 };
 
+cmd.refrhash = function* (msg, resp, next) {
+  const clone = require('clone');
+  const make = require('./lib/make.js')(resp);
+  const xPeonUtils = require('xcraft-contrib-peon/lib/utils.js');
+
+  const xConfig = require('xcraft-core-etc')(null, resp).load('xcraft');
+  const tmpDir = xConfig.tempRoot;
+
+  try {
+    const {list} = extractPackages(null, null, resp);
+
+    for (const packageRef of list) {
+      const pkg = utils.parsePkgRef(packageRef);
+      const packageDef = definition.load(pkg.name, {}, resp, null);
+      const getObj = utils.makeGetObj(clone(packageDef));
+
+      const type = xPeonUtils.typeFromUri(getObj);
+      if (!/http|ftp/.test(type)) {
+        continue;
+      }
+
+      const tmp = path.join(tmpDir, 'refrhash');
+      const $hash = getObj.$hash;
+      getObj.$hash = '';
+      try {
+        const out = yield xPeonUtils.fileFromUri(getObj, tmp, true, resp, next);
+        if (out.hash && out.hash !== $hash) {
+          make.injectHash(pkg.name, out.hash);
+        }
+      } finally {
+        fse.removeSync(tmp);
+      }
+    }
+  } finally {
+    resp.events.send(`pacman.refrhash.${msg.id}.finished`);
+  }
+};
+
 cmd.gitMergeDefinitions = function* (msg, resp, next) {
   const parseGitDiff = require('parse-git-diff');
   const xProcess = require('xcraft-core-process')({logger: 'none', resp});
@@ -2080,6 +2118,10 @@ exports.xcraftCommands = function () {
             optional: ['packageNames', 'distribution'],
           },
         },
+      },
+      'refrhash': {
+        desc: 'refresh $hash entries of definitions',
+        parallel: true,
       },
       'version': {
         desc: 'read and test the version of the package(s)',
