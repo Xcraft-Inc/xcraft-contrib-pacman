@@ -1679,10 +1679,19 @@ cmd.refrhash = function* (msg, resp, next) {
         if (out.hash && out.hash !== $hash) {
           make.injectHash(pkg.name, out.hash);
         }
+      } catch (ex) {
+        resp.log.warn(ex.stack || ex.message || ex);
       } finally {
         fse.removeSync(tmp);
       }
     }
+  } catch (ex) {
+    resp.log.err(ex.stack || ex.message || ex);
+    resp.events.send(`pacman.refrhash.${msg.id}.error`, {
+      code: ex.code,
+      message: ex.message,
+      stack: ex.stack,
+    });
   } finally {
     resp.events.send(`pacman.refrhash.${msg.id}.finished`);
   }
