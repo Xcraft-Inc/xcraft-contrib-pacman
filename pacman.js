@@ -1237,9 +1237,10 @@ cmd.remove = function* (msg, resp) {
  * explicitly, then the autoremove wpkg command is able to remove all packages
  * with this mode.
  *
- * @param {Object} msg - Xcraft message.
- * @param {Object} resp - Response object.
- * @param {function} next - Watt's callback.
+ * @yields
+ * @param {object} msg - Xcraft message.
+ * @param {object} resp - Response object.
+ * @param {Function} next - Watt's callback.
  */
 cmd.removeAll = function* (msg, resp, next) {
   const wpkg = require('xcraft-contrib-wpkg')(resp);
