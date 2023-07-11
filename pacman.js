@@ -190,6 +190,53 @@ cmd.listStatus = function* (msg, resp, next) {
   }
 };
 
+cmd.listCheck = function* (msg, resp, next) {
+  const wpkg = require('xcraft-contrib-wpkg')(resp);
+
+  try {
+    const distribution = getDistribution(msg);
+    const {data: listFromDefs} = yield resp.command.send(
+      'pacman.list',
+      {},
+      next
+    );
+    const {data: listFromRoot} = yield resp.command.send(
+      'pacman.listStatus',
+      {distribution},
+      next
+    );
+
+    for (const {Name, Version} of listFromRoot) {
+      const pkgDef = listFromDefs.find((pkg) => pkg.Name === Name);
+      if (!pkgDef) {
+        continue;
+      }
+
+      if (Version === pkgDef.Version) {
+        continue;
+      }
+
+      const isV1Greater = yield wpkg.isV1Greater(Version, pkgDef.Version);
+      if (!isV1Greater) {
+        continue;
+      }
+
+      /* The version in the definition is lower, it's bad */
+      resp.log.err(
+        `${pkgDef.Name} in the definitions has a lower version than in the root directory: ${pkgDef.Version} < ${Version}\nPlease, fix the definitions!`
+      );
+    }
+  } catch (ex) {
+    resp.events.send(`pacman.listCheck.${msg.id}.error`, {
+      code: ex.code,
+      message: ex.message,
+      stack: ex.stack,
+    });
+  } finally {
+    resp.events.send(`pacman.listCheck.${msg.id}.finished`);
+  }
+};
+
 cmd.search = function* (msg, resp, next) {
   const wpkg = require('xcraft-contrib-wpkg')(resp);
   let list = [];
@@ -1892,6 +1939,15 @@ exports.xcraftCommands = function () {
         options: {
           params: {
             optional: ['pattern', 'distribution', 'arch'],
+          },
+        },
+      },
+      'listCheck': {
+        parallel: true,
+        desc: 'check versions of installed packages versus definitions',
+        options: {
+          params: {
+            optional: ['distribution'],
           },
         },
       },
