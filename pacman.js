@@ -169,7 +169,7 @@ cmd.list = function (msg, resp) {
   }
 };
 
-cmd['list-status'] = function* (msg, resp, next) {
+cmd.listStatus = function* (msg, resp, next) {
   const wpkg = require('xcraft-contrib-wpkg')(resp);
   let list = [];
 
@@ -180,13 +180,13 @@ cmd['list-status'] = function* (msg, resp, next) {
 
     list = yield wpkg.list(arch, distribution, pattern, next);
   } catch (ex) {
-    resp.events.send(`pacman.list-status.${msg.id}.error`, {
+    resp.events.send(`pacman.listStatus.${msg.id}.error`, {
       code: ex.code,
       message: ex.message,
       stack: ex.stack,
     });
   } finally {
-    resp.events.send(`pacman.list-status.${msg.id}.finished`, list);
+    resp.events.send(`pacman.listStatus.${msg.id}.finished`, list);
   }
 };
 
@@ -1901,7 +1901,7 @@ exports.xcraftCommands = function () {
         parallel: true,
         desc: 'list all available packages',
       },
-      'list-status': {
+      'listStatus': {
         parallel: true,
         desc: 'list status of installed packages',
         options: {
