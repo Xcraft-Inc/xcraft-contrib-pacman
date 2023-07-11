@@ -165,7 +165,7 @@ cmd.list = function (msg, resp) {
       stack: ex.stack,
     });
   } finally {
-    resp.events.send(`pacman.list.${msg.id}.finished`, list);
+    resp.events.send(`pacman.list.${msg.id}.finished`, results);
   }
 };
 
