@@ -1255,25 +1255,9 @@ cmd.removeAll = function* (msg, resp, next) {
       return;
     }
 
-    let skip = true;
-    list = (yield wpkg.list(arch, distribution, null, next))
-      .filter((row) => {
-        if (!skip) {
-          return true;
-        }
-        if (row.startsWith('+++')) {
-          skip = false;
-        }
-        return false;
-      })
-      .reduce((list, row) => {
-        const matches = row.match(/^[^ ]{2,3}[ ]+([^ ]+)/);
-        list.push(matches[1]);
-        return list;
-      }, []);
-
-    for (const packageName of list) {
-      yield wpkg.setSelection(packageName, arch, 'auto', distribution);
+    list = yield wpkg.list(arch, distribution, null, next);
+    for (const {Name} of list) {
+      yield wpkg.setSelection(Name, arch, 'auto', distribution);
     }
 
     yield wpkg.autoremove(arch, distribution);
