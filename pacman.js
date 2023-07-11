@@ -1900,7 +1900,7 @@ exports.xcraftCommands = function () {
     rc: {
       'list': {
         parallel: true,
-        desc: 'list all available packages',
+        desc: 'list all available packages from definitions',
       },
       'listStatus': {
         parallel: true,
