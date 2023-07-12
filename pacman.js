@@ -762,32 +762,37 @@ cmd.make = function* (msg, resp, next) {
     return bumpPkg;
   }
 
-  yield wrapOverwatch(
-    function* () {
-      const makeList = {};
-      let bumpPkg = yield* _makeList(pkgs, () => packageArgsOther, makeList);
-      let list = Object.keys(bumpPkg);
+  try {
+    yield wrapOverwatch(
+      function* () {
+        const makeList = {};
+        let bumpPkg = yield* _makeList(pkgs, () => packageArgsOther, makeList);
+        let list = Object.keys(bumpPkg);
 
-      while (list.length) {
-        bumpPkg = yield* _makeList(
-          list
-            .filter(
-              /* Only if the bump is useful and if it's the main list */
-              (pkg) => !bumpPkg[pkg] && pkgs.includes(pkg)
-            )
-            .filter(
-              /* Only if not already changed */
-              (pkg) => !makeList[pkg]
-            ),
-          () => ({p: 'p'}),
-          makeList
-        );
-        list = Object.keys(bumpPkg);
-      }
-    },
-    msg,
-    resp
-  );
+        while (list.length) {
+          bumpPkg = yield* _makeList(
+            list
+              .filter(
+                /* Only if the bump is useful and if it's the main list */
+                (pkg) => !bumpPkg[pkg] && pkgs.includes(pkg)
+              )
+              .filter(
+                /* Only if not already changed */
+                (pkg) => !makeList[pkg]
+              ),
+            () => ({p: 'p'}),
+            makeList
+          );
+          list = Object.keys(bumpPkg);
+        }
+      },
+      msg,
+      resp
+    );
+  } catch (ex) {
+    resp.log.err(ex.stack || ex);
+    status = resp.events.status.failed;
+  }
 
   resp.events.send(`pacman.make.${msg.id}.finished`, status);
 };
@@ -1181,21 +1186,26 @@ cmd.build = function* (msg, resp) {
   let status = resp.events.status.succeeded;
 
   /* Try to build most of packages; continue with the next on error. */
-  yield wrapOverwatch(
-    function* () {
-      for (const packageRef of pkgs) {
-        try {
-          yield build.package(packageRef, distribution);
-          xEnv.devrootUpdate(distribution);
-        } catch (ex) {
-          resp.log.err(ex.stack || ex);
-          status = resp.events.status.failed;
+  try {
+    yield wrapOverwatch(
+      function* () {
+        for (const packageRef of pkgs) {
+          try {
+            yield build.package(packageRef, distribution);
+            xEnv.devrootUpdate(distribution);
+          } catch (ex) {
+            resp.log.err(ex.stack || ex);
+            status = resp.events.status.failed;
+          }
         }
-      }
-    },
-    msg,
-    resp
-  );
+      },
+      msg,
+      resp
+    );
+  } catch (ex) {
+    resp.log.err(ex.stack || ex);
+    status = resp.events.status.failed;
+  }
 
   resp.events.send(`pacman.build.${msg.id}.finished`, status);
 };
