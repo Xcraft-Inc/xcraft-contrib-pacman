@@ -742,7 +742,13 @@ cmd.make = function* (msg, resp, next) {
       }
       return false;
     } catch (ex) {
-      resp.log.err(ex.stack || ex);
+      let _ex = ex;
+      if (!Array.isArray(ex)) {
+        _ex = [ex];
+      }
+      for (const ex of _ex) {
+        resp.log.err(ex.stack || ex.message || ex);
+      }
       status = resp.events.status.failed;
     }
   }
