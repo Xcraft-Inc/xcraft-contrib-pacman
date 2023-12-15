@@ -1257,6 +1257,54 @@ cmd['zeroBuild'] = function* (msg, resp) {
   }
 };
 
+function* full(msg, resp) {
+  const fullpac = require('./lib/fullpac.js');
+
+  if (new RegExp(depsPattern).test(msg.data.packageRefs)) {
+    throw new Error(
+      `The use of ${depsPattern} pattern is prohibited with the 'full' command`
+    );
+  }
+
+  let pkgs = [null];
+  const {all, list, distribution} = extractPackages(
+    msg.data.packageRefs,
+    getDistribution(msg),
+    resp
+  );
+
+  if (all) {
+    throw new Error(
+      "You must specify at least one package; you can't use this command to fullpac all packages"
+    );
+  }
+
+  pkgs = list;
+
+  yield wrapOverwatch(
+    function* () {
+      for (const packageRef of pkgs) {
+        yield fullpac(resp, packageRef, true, distribution);
+      }
+    },
+    msg,
+    resp
+  );
+}
+
+cmd.full = function* (msg, resp) {
+  let status = resp.events.status.succeeded;
+
+  try {
+    yield* full(msg, resp);
+  } catch (ex) {
+    resp.log.err(ex.stack || ex);
+    status = resp.events.status.failed;
+  }
+
+  resp.events.send(`pacman.full.${msg.id}.finished`, status);
+};
+
 /**
  * Try to remove the developement package.
  *
@@ -2094,6 +2142,15 @@ exports.xcraftCommands = function () {
         options: {
           params: {
             required: 'packageRef',
+            optional: ['distribution'],
+          },
+        },
+      },
+      'full': {
+        desc: 'make, build and install packages',
+        options: {
+          params: {
+            required: 'packageRefs',
             optional: ['distribution'],
           },
         },
