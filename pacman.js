@@ -808,7 +808,7 @@ function* install(msg, resp, reinstall = false) {
 
   const subCmd = reinstall ? 'reinstall' : 'install';
 
-  const {prodRoot} = msg.data;
+  const {prodRoot, version} = msg.data;
 
   const {list, distribution} = extractPackages(
     msg.data.packageRefs,
@@ -816,11 +816,21 @@ function* install(msg, resp, reinstall = false) {
     resp
   );
   const pkgs = list;
-  var status = resp.events.status.succeeded;
+  let status = resp.events.status.succeeded;
 
   for (const packageRef of pkgs) {
     try {
-      yield install.package(packageRef, distribution, prodRoot, reinstall);
+      if (version) {
+        yield install.packageArchive(
+          packageRef,
+          version,
+          distribution,
+          prodRoot,
+          reinstall
+        );
+      } else {
+        yield install.package(packageRef, distribution, prodRoot, reinstall);
+      }
       if (!prodRoot) {
         xEnv.devrootUpdate(distribution);
       }
@@ -2083,7 +2093,7 @@ exports.xcraftCommands = function () {
           'install the package (provide a prodRoot if you try to install a product)',
         options: {
           params: {
-            optional: ['packageRefs', 'distribution', 'prodRoot'],
+            optional: ['packageRefs', 'distribution', 'prodRoot', 'version'],
           },
         },
       },
