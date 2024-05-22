@@ -923,6 +923,7 @@ cmd.status = function* (msg, resp) {
 /**
  * Show informations about a package.
  *
+ * @yields
  * @param {Object} msg - Xcraft message.
  * @param {Object} resp - Response object.
  * @param {function} next - Watt's callback.
