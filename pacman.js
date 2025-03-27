@@ -15,6 +15,7 @@ var xUtils = require('xcraft-core-utils');
 var xEnv = require('xcraft-core-env');
 const xWizard = require('xcraft-core-wizard');
 const xPlatform = require('xcraft-core-platform');
+const debversion = require('wpkg-debversion');
 
 var cmd = {};
 
@@ -191,8 +192,6 @@ cmd.listStatus = function* (msg, resp, next) {
 };
 
 cmd.listCheck = function* (msg, resp, next) {
-  const wpkg = require('xcraft-contrib-wpkg')(resp);
-
   try {
     const distribution = getDistribution(msg);
     const {data: listFromDefs} = yield resp.command.send(
@@ -216,8 +215,8 @@ cmd.listCheck = function* (msg, resp, next) {
         continue;
       }
 
-      const isV1Greater = yield wpkg.isV1Greater(Version, pkgDef.Version);
-      if (!isV1Greater) {
+      const comp = yield debversion(Version, pkgDef.Version);
+      if (comp < 0) {
         continue;
       }
 
@@ -1870,12 +1869,9 @@ cmd.gitMergeDefinitions = function* (msg, resp, next) {
     }
 
     if (def.version[0] && def.version[1]) {
-      const wpkg = require('xcraft-contrib-wpkg')(resp);
       const pacmanDef = require('./lib/def.js');
-      const isV2Greater = yield wpkg.isV1Greater(
-        def.version[1], // V2
-        def.version[0] //  V1
-      );
+      const comp = yield debversion(def.version[1], def.version[0]); // V2, V1
+      const isV2Greater = comp > 0;
 
       if (isV2Greater) {
         def.version.shift();
@@ -1893,10 +1889,8 @@ cmd.gitMergeDefinitions = function* (msg, resp, next) {
       if (isConflict) {
         /* It's a merge conflict */
         if (def.version[1]) {
-          const isV3Greater = yield wpkg.isV1Greater(
-            def.version[1], // V3
-            def.version[0] //  V2
-          );
+          const comp = yield debversion(def.version[1], def.version[0]); // V3, V2
+          const isV3Greater = comp > 0;
           if (isV3Greater) {
             def.version.shift();
             def.$ref.shift();
