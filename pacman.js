@@ -1970,6 +1970,7 @@ cmd.gitMergeDefinitions = function* (msg, resp, next) {
 
 cmd['_postload'] = function* (msg, resp, next) {
   try {
+    yield debversion.init(); /* init for WASM */
     yield resp.command.send('overwatch.init', null, next);
 
     let {wpkgHttp} = require('./lib/index.js');
