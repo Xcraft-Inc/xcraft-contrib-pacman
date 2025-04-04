@@ -1247,12 +1247,14 @@ cmd['zeroBuild'] = function* (msg, resp) {
   try {
     yield build.package(packageRef, distribution);
     resp.log.info(
-      colors.blueBright(colors.bold(
-        `Go to the source directory of ${packageRef} in the ${
-          distribution || pacmanConfig.pkgToolchainRepository
-        } distribution.\n` +
-          `A 'source-debug-env.(sh|cmd)' script can be used in order to manually load the build environment.`
-      )) + ' '
+      colors.blueBright(
+        colors.bold(
+          `Go to the source directory of ${packageRef} in the ${
+            distribution || pacmanConfig.pkgToolchainRepository
+          } distribution.\n` +
+            `A 'source-debug-env.(sh|cmd)' script can be used in order to manually load the build environment.`
+        )
+      ) + ' '
     );
     resp.events.send(`pacman.zeroBuild.${msg.id}.finished`);
   } catch (ex) {
