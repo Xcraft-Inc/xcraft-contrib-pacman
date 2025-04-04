@@ -3,7 +3,7 @@
 
 var path = require('path');
 var _ = require('lodash');
-const colors = require('picocolors');
+const colors = require('picocolors').createColors(true);
 const fse = require('fs-extra');
 
 const watt = require('gigawatts');
@@ -1617,7 +1617,6 @@ cmd.graph = function* (msg, resp) {
 };
 
 cmd.version = function* (msg, resp) {
-  const colors = require('picocolors');
   const url = require('url');
   const semver = require('semver');
   const clone = require('clone');
