@@ -3,7 +3,7 @@
 
 var path = require('path');
 var _ = require('lodash');
-const clc = require('cli-color');
+const colors = require('picocolors');
 const fse = require('fs-extra');
 
 const watt = require('gigawatts');
@@ -1247,12 +1247,12 @@ cmd['zeroBuild'] = function* (msg, resp) {
   try {
     yield build.package(packageRef, distribution);
     resp.log.info(
-      clc.blueBright.bold(
+      colors.blueBright(colors.bold(
         `Go to the source directory of ${packageRef} in the ${
           distribution || pacmanConfig.pkgToolchainRepository
         } distribution.\n` +
           `A 'source-debug-env.(sh|cmd)' script can be used in order to manually load the build environment.`
-      ) + ' '
+      )) + ' '
     );
     resp.events.send(`pacman.zeroBuild.${msg.id}.finished`);
   } catch (ex) {
@@ -1617,7 +1617,7 @@ cmd.graph = function* (msg, resp) {
 };
 
 cmd.version = function* (msg, resp) {
-  const clc = require('cli-color');
+  const colors = require('picocolors');
   const url = require('url');
   const semver = require('semver');
   const clone = require('clone');
@@ -1633,9 +1633,9 @@ cmd.version = function* (msg, resp) {
   );
   let status = resp.events.status.succeeded;
 
-  const V = clc.greenBright('✓');
-  const X = clc.redBright('⨯');
-  const H = clc.magentaBright('?');
+  const V = colors.greenBright('✓');
+  const X = colors.redBright('⨯');
+  const H = colors.magentaBright('?');
 
   const checked = {};
 
