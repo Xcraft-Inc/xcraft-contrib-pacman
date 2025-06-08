@@ -1,6 +1,6 @@
 {
   "name": "xcraft-contrib-pacman",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Xcraft package manager",
   "main": "lib/index.js",
   "scripts": {
