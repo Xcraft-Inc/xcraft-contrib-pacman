@@ -50,7 +50,12 @@
     "xcraft-core-wizard": "^1.0.1",
     "xcraft-traverse": "^0.7.0"
   },
-  "author": "Mathieu Schroeter",
+  "author": "Epsitec SA",
+  "contributors": [
+    "Mathieu Schroeter <schroeter@epsitec.ch>",
+    "Samuel Loup <loup@epsitec.ch>",
+    "Gillian Fries <fries@epsitec.ch>"
+  ],
   "license": "MIT",
   "devDependencies": {
     "chai": "^3.5.0",
