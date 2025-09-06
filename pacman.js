@@ -2233,6 +2233,7 @@ exports.xcraftCommands = function () {
       },
       'syncRepository': {
         desc: 'synchronize archives repositories',
+        parallel: true,
         options: {
           params: {
             optional: ['distribution'],
