@@ -36,7 +36,7 @@
     "semver": "^7.3.5",
     "url-exist": "^2.0.2",
     "wpkg-debversion": "^1.1.2",
-    "xcraft-contrib-peon": "^0.5.0",
+    "xcraft-contrib-peon": "^0.6.0",
     "xcraft-contrib-wpkg": "^1.0.0",
     "xcraft-core-env": "^3.0.0",
     "xcraft-core-etc": "^3.0.0",
