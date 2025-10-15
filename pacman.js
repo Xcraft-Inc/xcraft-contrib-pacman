@@ -1950,6 +1950,7 @@ cmd.gitMergeDefinitions = function* (msg, resp, next) {
   try {
     const packages = xFs
       .lsdir(xConfig.pkgProductsRoot)
+      .filter((dir) => !dir.startsWith('.'))
       .map((pkg) =>
         path.join(xConfig.pkgProductsRoot, pkg, pacmanConfig.pkgCfgFileName)
       );

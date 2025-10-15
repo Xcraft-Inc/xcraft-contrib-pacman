@@ -183,10 +183,13 @@ exports.header = [
     message:
       'List of packages to bump (must be rebuilt when this one has changed)',
     choices: function () {
-      return xFs.lsdir(xcraftConfig.pkgProductsRoot).reduce((list, dir) => {
-        list.push(dir);
-        return list;
-      }, []);
+      return xFs
+        .lsdir(xcraftConfig.pkgProductsRoot)
+        .filter((dir) => !dir.startsWith('.'))
+        .reduce((list, dir) => {
+          list.push(dir);
+          return list;
+        }, []);
     },
   },
 ];
@@ -213,25 +216,28 @@ var dependency = function (type) {
       name: 'dependency/' + type,
       message: "Package's name",
       choices: function () {
-        return xFs.lsdir(xcraftConfig.pkgProductsRoot).reduce((list, dir) => {
-          list.push(dir);
-          const def = utils.yaml.fromFile(
-            path.join(
-              xcraftConfig.pkgProductsRoot,
-              dir,
-              pacmanConfig.pkgCfgFileName
-            )
-          );
-          if (def.subpackage) {
-            list.push(
-              ...def.subpackage
-                .filter((sub) => sub.indexOf('*') === -1)
-                .map((sub) => sub.replace(/:.*/, ''))
-                .map((sub) => `${dir}-${sub}`)
+        return xFs
+          .lsdir(xcraftConfig.pkgProductsRoot)
+          .filter((dir) => !dir.startsWith('.'))
+          .reduce((list, dir) => {
+            list.push(dir);
+            const def = utils.yaml.fromFile(
+              path.join(
+                xcraftConfig.pkgProductsRoot,
+                dir,
+                pacmanConfig.pkgCfgFileName
+              )
             );
-          }
-          return list;
-        }, []);
+            if (def.subpackage) {
+              list.push(
+                ...def.subpackage
+                  .filter((sub) => sub.indexOf('*') === -1)
+                  .map((sub) => sub.replace(/:.*/, ''))
+                  .map((sub) => `${dir}-${sub}`)
+              );
+            }
+            return list;
+          }, []);
       },
     },
     {
