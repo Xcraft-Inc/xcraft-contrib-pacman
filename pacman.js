@@ -1783,8 +1783,8 @@ cmd.refrhash = function* (msg, resp, next) {
       getObj.$hash = '';
       try {
         const out = yield xPeonUtils.fileFromUri(getObj, tmp, true, resp, next);
-        if (out.hash && out.hash !== $hash) {
-          make.injectHash(pkg.name, out.hash);
+        if (out.hash) {
+          make.injectBaseHash(pkg.name, out.hash);
         }
       } catch (ex) {
         resp.log.warn(ex.stack || ex.message || ex);
