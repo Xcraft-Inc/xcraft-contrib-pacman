@@ -16,6 +16,8 @@ var xEnv = require('xcraft-core-env');
 const xWizard = require('xcraft-core-wizard');
 const xPlatform = require('xcraft-core-platform');
 const debversion = require('wpkg-debversion');
+const xConfig = require('xcraft-core-etc')().load('xcraft');
+const {syncPackagesSymlinks} = require('xcraft-core-server');
 
 var cmd = {};
 
@@ -153,6 +155,7 @@ const wrapOverwatch = watt(function* (func, msg, resp, next) {
 });
 
 cmd.list = function (msg, resp) {
+  syncPackagesSymlinks(xConfig.pkgProductsRoot);
   try {
     resp.log.info('list of all products');
 
@@ -283,6 +286,7 @@ cmd.unlock = function* (msg, resp, next) {
  * @param {Object} resp - Response object.
  */
 cmd.edit = function (msg, resp) {
+  syncPackagesSymlinks(xConfig.pkgProductsRoot);
   var packageName = msg.data.packageName || '';
 
   msg.data.wizardImpl = xWizard.stringify(path.join(__dirname, './wizard.js'));
@@ -642,6 +646,7 @@ cmd['edit.upload'] = function (msg, resp) {
  * @param {function} next - Watt's callback.
  */
 cmd.make = function* (msg, resp, next) {
+  syncPackagesSymlinks(xConfig.pkgProductsRoot);
   const pacmanConfig = require('xcraft-core-etc')(null, resp).load(
     'xcraft-contrib-pacman'
   );
