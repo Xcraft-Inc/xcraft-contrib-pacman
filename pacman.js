@@ -1680,7 +1680,28 @@ cmd.version = function* (msg, resp) {
     }
 
     if (nextVersion) {
-      packageDef.$version = semver.inc(nextVersion, 'patch');
+      const {length} = nextVersion.split('.');
+      switch (length) {
+        case 1:
+          packageDef.$version = semver.inc(nextVersion + '.0.0', 'major');
+          break;
+
+        case 2:
+          packageDef.$version = semver.inc(nextVersion + '.0', 'minor');
+          break;
+
+        default:
+        case 3:
+          packageDef.$version = semver.inc(nextVersion, 'patch');
+          break;
+      }
+
+      if (packageDef.$version) {
+        packageDef.$version = packageDef.$version
+          .split('.')
+          .slice(0, 2)
+          .join('.');
+      }
     }
 
     const versions = [];
