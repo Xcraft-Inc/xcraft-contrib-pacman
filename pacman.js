@@ -1699,7 +1699,7 @@ cmd.version = function* (msg, resp) {
       if (packageDef.$version) {
         packageDef.$version = packageDef.$version
           .split('.')
-          .slice(0, 2)
+          .slice(0, length)
           .join('.');
       }
     }
