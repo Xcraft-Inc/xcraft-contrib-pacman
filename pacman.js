@@ -746,6 +746,7 @@ cmd.make = function* (msg, resp, next) {
       }
       return false;
     } catch (ex) {
+      resp.log.err(`Error with ${packageRef}`);
       let _ex = ex;
       if (!Array.isArray(ex)) {
         _ex = [ex];
