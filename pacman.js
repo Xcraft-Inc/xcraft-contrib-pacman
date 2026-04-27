@@ -42,7 +42,7 @@ var extractPackages = function (
 
   var all = !packageRefs || !packageRefs.length;
   if (all) {
-    pkgs = list.listProducts();
+    pkgs = list.listProducts(resp);
 
     pkgs.forEach(function (item) {
       results.push(item.Name);
