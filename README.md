@@ -44,13 +44,17 @@ Le module gère les dépendances entre paquets et permet de construire automatiq
 - **Dépendances de construction** (`build`) : Nécessaires pour compiler le paquet
 - **Dépendances de make** (`make`) : Nécessaires pour générer les fichiers de contrôle, déployées avant la phase de make
 
+### Synchronisation des liens symboliques de paquets
+
+Avant les opérations `list`, `edit` et `make`, pacman appelle `syncPackagesSymlinks(xConfig.pkgProductsRoot)` (fourni par [xcraft-core-server]) afin de synchroniser les liens symboliques du répertoire des produits. Cela garantit que les définitions de paquets exposées via des liens symboliques (par exemple depuis des dépôts externes) sont à jour avant toute lecture ou modification des définitions.
+
 ### Pattern `@deps`
 
 Dans les commandes acceptant des `packageRefs`, il est possible d'utiliser le motif `@deps` pour inclure automatiquement toutes les dépendances d'un paquet. Par exemple `my-package,@deps` résoudra récursivement toutes les dépendances de `my-package`.
 
 ### Gestion des versions et des hachages
 
-Le système maintient automatiquement les références (`$ref`) et les hachages (`$hash`) des sources pour garantir la reproductibilité des builds. Lorsqu'un paquet est construit, ces informations sont mises à jour dans la définition du paquet.
+Le système maintient automatiquement les références (`$ref`) et les hachages (`$hash`) des sources pour garantir la reproductibilité des builds. Lorsqu'un paquet est construit, ces informations sont mises à jour dans la définition du paquet. Les comparaisons de versions Debian s'appuient sur la librairie `wpkg-debversion`, initialisée (mode WASM) au chargement du module (`pacman._postload`).
 
 ### Système de tampons (stamps)
 
@@ -144,6 +148,8 @@ zog pacman.gitMergeDefinitions
 - **[xcraft-core-etc]** : Chargement de la configuration du module et de Xcraft
 - **[xcraft-core-fs]** : Opérations sur le système de fichiers (listage, copie, suppression)
 - **[xcraft-core-platform]** : Détection de la plateforme hôte et de l'architecture
+- **[xcraft-core-server]** : Synchronisation des liens symboliques des paquets (`syncPackagesSymlinks`) avant les commandes `list`, `edit` et `make`
+- **[xcraft-core-utils]** : Utilitaires génériques (conversion de motifs en expressions régulières, lecture/écriture YAML)
 - **[xcraft-contrib-wpkg]** : Toutes les opérations WPKG sous-jacentes (construction, installation, publication)
 - **[xcraft-contrib-peon]** : Téléchargement et préparation des sources lors du make
 - **[xcraft-core-wizard]** : Interface d'édition interactive pour la création de paquets
@@ -191,13 +197,13 @@ Deux fonctions internes méritent une attention particulière :
 
 #### Méthodes publiques (commandes)
 
-- **`list(msg, resp)`** — Liste tous les paquets disponibles à partir des définitions locales, avec synchronisation préalable des liens symboliques
+- **`list(msg, resp)`** — Synchronise les liens symboliques des paquets puis liste tous les paquets disponibles à partir des définitions locales
 - **`listStatus(msg, resp, next)`** — Liste l'état des paquets installés via WPKG avec filtrage optionnel par pattern et architecture
-- **`listCheck(msg, resp, next)`** — Compare les versions des paquets installés avec celles des définitions et signale les incohérences
+- **`listCheck(msg, resp, next)`** — Compare les versions des paquets installés avec celles des définitions (via `wpkg-debversion`) et signale les incohérences lorsque la définition est en retard
 - **`search(msg, resp, next)`** — Recherche des fichiers dans les paquets installés selon un pattern
 - **`unlock(msg, resp, next)`** — Supprime le verrou de la base de données WPKG en cas de blocage
-- **`edit(msg, resp)`** — Lance l'assistant wizard interactif pour créer ou modifier un paquet
-- **`make(msg, resp, next)`** — Génère les fichiers de contrôle WPKG ; gère les dépendances make, le bumping automatique de version et le système de tampons
+- **`edit(msg, resp)`** — Synchronise les liens symboliques des paquets puis lance l'assistant wizard interactif pour créer ou modifier un paquet
+- **`make(msg, resp, next)`** — Synchronise les liens symboliques des paquets puis génère les fichiers de contrôle WPKG ; gère les dépendances make, le bumping automatique de version et le système de tampons
 - **`install(msg, resp)`** — Installe un ou plusieurs paquets dans l'environnement cible
 - **`reinstall(msg, resp)`** — Force la réinstallation d'un paquet déjà installé
 - **`upgrade(msg, resp, next)`** — Met à jour tous les paquets d'une distribution via `wpkg update` puis `wpkg upgrade`
@@ -329,7 +335,7 @@ data:
 #### Méthodes publiques
 
 - **`loadAll(packageName, props, resp)`** — Charge toutes les définitions d'un paquet pour toutes les distributions disponibles (fichiers `config*.yaml`)
-- **`getBasePackageDef(packageName, resp)`** — Obtient la définition de base avec résolution des variantes `-src`, `-dev`, `-stub` et fusion des modifications unstaged
+- **`getBasePackageDef(packageName, resp)`** — Obtient la définition de base avec résolution des variantes `-src`, `-dev`, `-stub` et fusion des modifications unstaged (avec vérification, via `wpkg-debversion`, que la version unstaged n'est pas inférieure à la version de base)
 - **`load(packageName, props, resp, distribution)`** — Charge une définition complète pour une distribution spécifique en fusionnant base + distribution + props
 - **`baseUpdate(packageName, props, resp)`** — Met à jour directement le fichier de base (sans passer par l'unstage)
 - **`update(packageName, props, resp, distribution)`** — Met à jour les modifications non validées (fichier `.config.yaml`) ou le fichier de distribution spécifique
@@ -395,7 +401,7 @@ Responsable de la génération des fichiers de contrôle WPKG et de la préparat
 
 1. Déploiement des dépendances make (`_deployMakeDep` → `fullpac` si nécessaire)
 2. Vérification du tampon (stamp) pour détecter les changements
-3. Vérification et bumping automatique de version si le paquet est déjà archivé
+3. Vérification et bumping automatique de version si le paquet est déjà archivé (avec comparaison via `wpkg-debversion` et avertissement si la version demandée est inférieure à la dernière archivée)
 4. Génération des fichiers : control, changelog, copyright, CMakeLists, etc.
 5. Copie des patches et assets, téléchargement/préparation des sources via peon
 6. Construction du paquet WPKG (`wpkgBuild`)
@@ -451,7 +457,7 @@ Implémente un serveur HTTP Express pour accéder aux dépôts WPKG via le rése
 
 - Surveillance automatique de `var/wpkg*` via `chokidar` pour détecter de nouveaux dépôts
 - Enregistrement dynamique de routes Express pour chaque dépôt détecté
-- Gestion du fallback de distribution pour les variantes `distribution+variant` : si le répertoire spécifique n'existe pas, redirige vers la distribution de base
+- Gestion du fallback de distribution pour les variantes `distribution+variant` : si le répertoire spécifique n'existe pas, redirige vers la distribution de base (aussi bien pour les dépôts standards que pour les archives versionnées sous `/versions`)
 - Service des archives versionnées sous la route `/versions`
 
 #### Méthodes publiques
@@ -483,13 +489,26 @@ Génère le fichier `CMakeLists.txt` pour les paquets source (`architecture: sou
 
 Génère les fichiers de configuration d'environnement au format JSON dans `etc/env/<key>/<packageName>.json`, utilisés par le système de gestion d'environnement Xcraft lors de l'installation.
 
+### Tests
+
+Le module inclut des tests unitaires avec `chai`/`should` couvrant notamment :
+
+- **`test/lib.make.spec.js`** — Vérifie la construction des expressions régulières de tampon (`_getStampRegex`) pour les distributions standards et spécifiques (avec variante `+`)
+- **`test/lib.utils.spec.js`** — Vérifie l'analyse des références de paquets (`parsePkgRef`) dans différents formats (nom seul, nom+architecture, architecture seule, chaîne vide)
+
 ## Licence
 
 Ce module est distribué sous [licence MIT](./LICENSE).
 
+_Ce contenu a été généré par IA_
+
+---
+
 [xcraft-core-etc]: https://github.com/Xcraft-Inc/xcraft-core-etc
 [xcraft-core-fs]: https://github.com/Xcraft-Inc/xcraft-core-fs
 [xcraft-core-platform]: https://github.com/Xcraft-Inc/xcraft-core-platform
+[xcraft-core-server]: https://github.com/Xcraft-Inc/xcraft-core-server
+[xcraft-core-utils]: https://github.com/Xcraft-Inc/xcraft-core-utils
 [xcraft-contrib-wpkg]: https://github.com/Xcraft-Inc/xcraft-contrib-wpkg
 [xcraft-contrib-peon]: https://github.com/Xcraft-Inc/xcraft-contrib-peon
 [xcraft-core-wizard]: https://github.com/Xcraft-Inc/xcraft-core-wizard
@@ -499,5 +518,3 @@ Ce module est distribué sous [licence MIT](./LICENSE).
 [xcraft-core-uri]: https://github.com/Xcraft-Inc/xcraft-core-uri
 [xcraft-core-ftp]: https://github.com/Xcraft-Inc/xcraft-core-ftp
 [goblin-overwatch]: https://github.com/Xcraft-Inc/goblin-overwatch
-
-_Ce contenu a été généré par IA_
