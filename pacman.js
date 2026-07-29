@@ -1806,7 +1806,6 @@ cmd.refrhash = function* (msg, resp, next) {
       }
 
       const tmp = path.join(tmpDir, 'refrhash');
-      const $hash = getObj.$hash;
       getObj.$hash = '';
       try {
         const out = yield xPeonUtils.fileFromUri(getObj, tmp, true, resp, next);
