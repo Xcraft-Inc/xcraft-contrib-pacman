@@ -1793,7 +1793,7 @@ cmd.refrhash = function* (msg, resp, next) {
   const tmpDir = xConfig.tempRoot;
 
   try {
-    const {list} = extractPackages(null, null, resp);
+    const {list} = extractPackages(msg.data.packageNames, null, resp);
 
     for (const packageRef of list) {
       const pkg = utils.parsePkgRef(packageRef);
@@ -2280,6 +2280,11 @@ exports.xcraftCommands = function () {
       'refrhash': {
         desc: 'refresh $hash entries of definitions',
         parallel: true,
+        options: {
+          params: {
+            optional: ['packageNames'],
+          },
+        },
       },
       'version': {
         desc: 'read and test the version of the package(s)',
