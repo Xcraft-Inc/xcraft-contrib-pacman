@@ -221,20 +221,24 @@ var dependency = function (type) {
           .filter((dir) => !dir.startsWith('.'))
           .reduce((list, dir) => {
             list.push(dir);
-            const def = utils.yaml.fromFile(
-              path.join(
-                xcraftConfig.pkgProductsRoot,
-                dir,
-                pacmanConfig.pkgCfgFileName
-              )
-            );
-            if (def.subpackage) {
-              list.push(
-                ...def.subpackage
-                  .filter((sub) => sub.indexOf('*') === -1)
-                  .map((sub) => sub.replace(/:.*/, ''))
-                  .map((sub) => `${dir}-${sub}`)
+            try {
+              const def = utils.yaml.fromFile(
+                path.join(
+                  xcraftConfig.pkgProductsRoot,
+                  dir,
+                  pacmanConfig.pkgCfgFileName
+                )
               );
+              if (def.subpackage) {
+                list.push(
+                  ...def.subpackage
+                    .filter((sub) => sub.indexOf('*') === -1)
+                    .map((sub) => sub.replace(/:.*/, ''))
+                    .map((sub) => `${dir}-${sub}`)
+                );
+              }
+            } catch (ex) {
+              console.error(ex.stack || ex.message || ex);
             }
             return list;
           }, []);
