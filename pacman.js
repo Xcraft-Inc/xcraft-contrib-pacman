@@ -979,12 +979,23 @@ cmd.show = function* (msg, resp, next) {
 
     resp.events.send(`pacman.show.${msg.id}.finished`, out);
   } catch (ex) {
-    resp.log.err(ex.stack || ex.message || ex);
-    resp.events.send(`pacman.show.${msg.id}.error`, {
-      code: ex.code,
-      message: ex.message,
-      stack: ex.stack,
-    });
+    let error = {};
+    if (ex === 'package not found') {
+      resp.log.warn(ex);
+      error = {
+        code: 'ENOENT',
+        message: ex,
+        stack: '',
+      };
+    } else {
+      resp.log.err(ex.stack || ex.message || ex);
+      error = {
+        code: ex.code,
+        message: ex.message,
+        stack: ex.stack,
+      };
+    }
+    resp.events.send(`pacman.show.${msg.id}.error`, error);
   }
 };
 
