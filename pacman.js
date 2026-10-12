@@ -1312,9 +1312,7 @@ function* full(msg, resp) {
 
   yield wrapOverwatch(
     function* () {
-      for (const packageRef of pkgs) {
-        yield fullpac(resp, packageRef, true, distribution);
-      }
+      yield fullpac(resp, pkgs, true, distribution);
     },
     msg,
     resp
